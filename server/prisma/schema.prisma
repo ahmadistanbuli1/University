@@ -1,0 +1,256 @@
+// =============================================================================
+// University Web System — Prisma schema (PostgreSQL)
+// Source of truth: docs/2-database-schema.md
+// Domains: Users | Structure | Academic | Library | News & Audit
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  STUDENT
+  FACULTY
+  LIBRARIAN
+  AFFAIRS
+  MANAGER
+}
+
+enum GradeAppealStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TranscriptRequestStatus {
+  PENDING
+  PROCESSED
+  DELIVERED
+}
+
+// -----------------------------------------------------------------------------
+// User management
+// -----------------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole
+  collegeId String?  @map("college_id") @db.Uuid
+  college   College? @relation(fields: [collegeId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  studentProfile Student?
+  facultyCourses FacultyCourse[] @relation("FacultyCourses")
+  booksAdded     Book[]          @relation("BookAddedBy")
+  newsArticles   News[]
+  auditLogs      AuditLog[]
+
+  @@map("users")
+}
+
+// -----------------------------------------------------------------------------
+// University structure
+// -----------------------------------------------------------------------------
+
+model College {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  description String       @db.Text
+  departments Department[]
+  users       User[]
+  news        News[]
+
+  @@map("colleges")
+}
+
+model Department {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  collegeId String   @map("college_id") @db.Uuid
+  college   College  @relation(fields: [collegeId], references: [id])
+  courses   Course[]
+  students  Student[]
+  books     Book[]
+
+  @@map("departments")
+}
+
+model Course {
+  id           String          @id @default(uuid()) @db.Uuid
+  name         String
+  code         String          @unique
+  departmentId String          @map("department_id") @db.Uuid
+  department   Department      @relation(fields: [departmentId], references: [id])
+  enrollments  Enrollment[]
+  facultyLinks FacultyCourse[]
+
+  @@map("courses")
+}
+
+/// Links faculty users to course offerings (semester / academic year).
+model FacultyCourse {
+  id           String   @id @default(uuid()) @db.Uuid
+  facultyId    String   @map("faculty_id") @db.Uuid
+  faculty      User     @relation("FacultyCourses", fields: [facultyId], references: [id])
+  courseId     String   @map("course_id") @db.Uuid
+  course       Course   @relation(fields: [courseId], references: [id])
+  semester     String
+  academicYear String   @map("academic_year")
+  examResults  ExamResult[]
+
+  @@index([facultyId])
+  @@index([courseId])
+  @@map("faculty_courses")
+}
+
+// -----------------------------------------------------------------------------
+// Academic & student affairs
+// -----------------------------------------------------------------------------
+
+model Student {
+  id                  String               @id @default(uuid()) @db.Uuid
+  userId              String               @unique @map("user_id") @db.Uuid
+  user                User                 @relation(fields: [userId], references: [id])
+  departmentId        String               @map("department_id") @db.Uuid
+  department          Department           @relation(fields: [departmentId], references: [id])
+  academicNumber      String               @unique @map("academic_number")
+  currentSemester     Int                  @map("current_semester")
+  enrollments         Enrollment[]
+  examResults         ExamResult[]
+  gradeAppeals        GradeAppeal[]
+  transcriptRequests  TranscriptRequest[]
+
+  @@map("students")
+}
+
+model Enrollment {
+  id           String   @id @default(uuid()) @db.Uuid
+  studentId    String   @map("student_id") @db.Uuid
+  student      Student  @relation(fields: [studentId], references: [id])
+  courseId     String   @map("course_id") @db.Uuid
+  course       Course   @relation(fields: [courseId], references: [id])
+  semester     String
+  academicYear String   @map("academic_year")
+
+  @@map("enrollments")
+}
+
+model ExamResult {
+  id              String        @id @default(uuid()) @db.Uuid
+  studentId       String        @map("student_id") @db.Uuid
+  student         Student       @relation(fields: [studentId], references: [id])
+  facultyCourseId String        @map("faculty_course_id") @db.Uuid
+  facultyCourse   FacultyCourse @relation(fields: [facultyCourseId], references: [id])
+  score           Decimal       @db.Decimal(5, 2)
+  attemptNumber   Int           @default(1) @map("attempt_number")
+  semester        String
+  academicYear    String        @map("academic_year")
+  /// PostgreSQL DATE (spec: result_date Date, default now).
+  resultDate      DateTime      @default(now()) @map("result_date") @db.Date
+  gradeAppeals    GradeAppeal[]
+
+  @@unique([studentId, facultyCourseId, attemptNumber])
+  @@map("exam_results")
+}
+
+model GradeAppeal {
+  id            String              @id @default(uuid()) @db.Uuid
+  studentId     String              @map("student_id") @db.Uuid
+  student       Student             @relation(fields: [studentId], references: [id])
+  examResultId  String              @map("exam_result_id") @db.Uuid
+  examResult    ExamResult          @relation(fields: [examResultId], references: [id])
+  reason        String              @db.Text
+  status        GradeAppealStatus
+  adminResponse String?             @map("admin_response") @db.Text
+  submittedAt   DateTime            @default(now()) @map("submitted_at")
+
+  @@map("grade_appeals")
+}
+
+model TranscriptRequest {
+  id          String                   @id @default(uuid()) @db.Uuid
+  studentId   String                   @map("student_id") @db.Uuid
+  student     Student                  @relation(fields: [studentId], references: [id])
+  status      TranscriptRequestStatus
+  filePath    String?                  @map("file_path")
+  requestedAt DateTime                 @default(now()) @map("requested_at")
+  processedAt DateTime?                @map("processed_at")
+
+  @@map("transcript_requests")
+}
+
+// -----------------------------------------------------------------------------
+// Library
+// -----------------------------------------------------------------------------
+
+model Book {
+  id              String        @id @default(uuid()) @db.Uuid
+  title           String
+  filePath        String        @map("file_path")
+  departmentId    String        @map("department_id") @db.Uuid
+  department      Department    @relation(fields: [departmentId], references: [id])
+  addedById       String        @map("added_by") @db.Uuid
+  addedBy         User          @relation("BookAddedBy", fields: [addedById], references: [id])
+  downloadsCount  Int           @default(0) @map("downloads_count")
+  readsCount      Int           @default(0) @map("reads_count")
+  publishYear     Int           @map("publish_year")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  keywords        BookKeyword[]
+
+  @@map("books")
+}
+
+model BookKeyword {
+  id      String @id @default(uuid()) @db.Uuid
+  bookId  String @map("book_id") @db.Uuid
+  book    Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  keyword String
+
+  @@map("book_keywords")
+}
+
+// -----------------------------------------------------------------------------
+// News & audit
+// -----------------------------------------------------------------------------
+
+model News {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String
+  content   String   @db.Text
+  imageUrl  String?  @map("image_url")
+  collegeId String?  @map("college_id") @db.Uuid
+  college   College? @relation(fields: [collegeId], references: [id])
+  authorId  String   @map("author_id") @db.Uuid
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("news")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String   @map("entity_id")
+  details   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
