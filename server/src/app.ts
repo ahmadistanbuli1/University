@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import path from 'node:path';
+import path, { resolve } from 'node:path';
 import type { Env } from './config.js';
 import { prisma } from './lib/prisma.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -40,6 +40,10 @@ import { AdminRepository } from './domains/admin/admin.repository.js';
 import { AdminService } from './domains/admin/admin.service.js';
 import { AdminController } from './domains/admin/admin.controller.js';
 import { createAdminRouter } from './domains/admin/admin.routes.js';
+import { TuitionRepository } from './domains/tuition/tuition.repository.js';
+import { TuitionService } from './domains/tuition/tuition.service.js';
+import { TuitionController } from './domains/tuition/tuition.controller.js';
+import { createTuitionRouter } from './domains/tuition/tuition.routes.js';
 
 export function createApp(env: Env) {
   const app = express();
@@ -73,7 +77,7 @@ export function createApp(env: Env) {
   const studentController = new StudentServicesController(studentService);
 
   const libraryRepo = new LibraryRepository(prisma);
-  const libraryService = new LibraryService(libraryRepo, auditService);
+  const libraryService = new LibraryService(libraryRepo, auditService, resolve(env.UPLOAD_DIR));
   const libraryController = new LibraryController(libraryService);
 
   const newsRepo = new NewsRepository(prisma);
@@ -83,6 +87,10 @@ export function createApp(env: Env) {
   const adminRepo = new AdminRepository(prisma);
   const adminService = new AdminService(adminRepo, auditService);
   const adminController = new AdminController(adminService);
+
+  const tuitionRepo = new TuitionRepository(prisma);
+  const tuitionService = new TuitionService(tuitionRepo, auditService);
+  const tuitionController = new TuitionController(tuitionService);
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
@@ -98,6 +106,7 @@ export function createApp(env: Env) {
   app.use('/api/library', createLibraryRouter(libraryController, authenticate, env));
   app.use('/api/news', createNewsRouter(newsController, authenticate));
   app.use('/api/admin', createAdminRouter(adminController, authenticate));
+  app.use('/api/tuition', createTuitionRouter(tuitionController, authenticate, env));
 
   app.use(errorHandler);
   return app;

@@ -40,6 +40,28 @@ export class AcademicService {
     return { results, gpa };
   }
 
+  async getSectionRoster(facultyUserId: string, role: UserRole, facultyCourseId: string) {
+    const fc = await this.repo.findFacultyCourse(facultyCourseId);
+    if (!fc) {
+      throw new AppError(404, 'Course section not found');
+    }
+    if (role === 'FACULTY' && fc.facultyId !== facultyUserId) {
+      throw new AppError(403, 'Forbidden');
+    }
+    if (role !== 'FACULTY' && role !== 'ADMIN') {
+      throw new AppError(403, 'Forbidden');
+    }
+    const enrollments = await this.repo.listStudentsEnrolledInCourse(fc.courseId);
+    return enrollments.map((e) => ({
+      studentId: e.student.id,
+      academicNumber: e.student.academicNumber,
+      name: e.student.user.name,
+      email: e.student.user.email,
+      department: e.student.department.name,
+      currentSemester: e.student.currentSemester,
+    }));
+  }
+
   async submitResult(input: {
     facultyUserId: string;
     studentId: string;
@@ -52,6 +74,10 @@ export class AcademicService {
     const fc = await this.repo.findFacultyCourse(input.facultyCourseId);
     if (!fc || fc.facultyId !== input.facultyUserId) {
       throw new AppError(403, 'Not assigned to this course section');
+    }
+    const roster = await this.repo.listStudentsEnrolledInCourse(fc.courseId);
+    if (!roster.some((e) => e.student.id === input.studentId)) {
+      throw new AppError(400, 'Student is not enrolled in this course');
     }
     const attempt = input.attemptNumber ?? 1;
     const created = await this.repo.createExamResult({

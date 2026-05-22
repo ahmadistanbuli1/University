@@ -1,8 +1,9 @@
-import type { UserRole } from '@prisma/client';
 import type { Env } from '../../config.js';
 import { AppError } from '../../utils/AppError.js';
 import { hashPassword, verifyPassword } from '../../utils/password.js';
 import { signToken } from '../../utils/jwt.js';
+import { prisma } from '../../lib/prisma.js';
+import { ensureStudentTuitionInstallments } from '../../lib/tuition-bootstrap.js';
 import type { AuthRepository } from './auth.repository.js';
 import type { AuditService } from '../audit/audit.service.js';
 
@@ -22,6 +23,9 @@ export class AuthService {
     if (!ok) {
       throw new AppError(401, 'Invalid credentials');
     }
+    if (user.active === false) {
+      throw new AppError(403, 'Account is deactivated');
+    }
     const token = signToken(this.env, {
       sub: user.id,
       role: user.role,
@@ -40,18 +44,50 @@ export class AuthService {
     };
   }
 
-  async register(input: { name: string; email: string; password: string }) {
+  async register(input: {
+    name: string;
+    email: string;
+    password: string;
+    departmentId: string;
+    academicNumber: string;
+    currentSemester: number;
+    academicYear: string;
+  }) {
     const existing = await this.users.findByEmail(input.email);
     if (existing) {
       throw new AppError(409, 'Email already registered');
     }
+
+    const department = await this.users.findDepartmentById(input.departmentId);
+    if (!department) {
+      throw new AppError(400, 'Invalid department');
+    }
+
+    const existingNumber = await this.users.findStudentByAcademicNumber(input.academicNumber);
+    if (existingNumber) {
+      throw new AppError(409, 'Academic number already registered');
+    }
+
     const hashed = await hashPassword(input.password);
-    const user = await this.users.createUser({
+    const user = await this.users.createStudentUser({
       name: input.name,
       email: input.email,
       password: hashed,
-      role: 'STUDENT' as UserRole,
+      collegeId: department.collegeId,
+      departmentId: input.departmentId,
+      academicNumber: input.academicNumber,
+      currentSemester: input.currentSemester,
+      academicYear: input.academicYear,
     });
+    const student = await prisma.student.findUnique({ where: { userId: user.id } });
+    if (student) {
+      await ensureStudentTuitionInstallments(
+        prisma,
+        student.id,
+        department.collegeId,
+        input.academicYear
+      );
+    }
     await this.audit?.log({
       userId: user.id,
       action: 'REGISTER',

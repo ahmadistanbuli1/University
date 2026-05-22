@@ -1,8 +1,10 @@
 import type { Request, Response } from 'express';
 import { paramId } from '../../utils/paramId.js';
 import {
+  affairsUpdateStudentSchema,
   createAppealSchema,
   fulfillTranscriptSchema,
+  listStudentsQuerySchema,
   updateAppealSchema,
 } from './studentServices.schemas.js';
 import type { StudentServicesService } from './studentServices.service.js';
@@ -18,6 +20,11 @@ export class StudentServicesController {
 
   listAppeals = async (req: Request, res: Response) => {
     const list = await this.svc.listAppeals(req.authUser!.id);
+    res.json(list);
+  };
+
+  myAppeals = async (req: Request, res: Response) => {
+    const list = await this.svc.listMyAppeals(req.authUser!.id, req.authUser!.role);
     res.json(list);
   };
 
@@ -51,5 +58,17 @@ export class StudentServicesController {
   listTranscripts = async (req: Request, res: Response) => {
     const list = await this.svc.listAllTranscripts(req.authUser!.role);
     res.json(list);
+  };
+
+  listStudents = async (req: Request, res: Response) => {
+    const q = listStudentsQuerySchema.parse(req.query);
+    const result = await this.svc.listStudents(req.authUser!.role, q);
+    res.json(result);
+  };
+
+  patchStudent = async (req: Request, res: Response) => {
+    const body = affairsUpdateStudentSchema.parse(req.body);
+    const updated = await this.svc.updateStudentProfile(req.authUser!.role, paramId(req), body);
+    res.json(updated);
   };
 }

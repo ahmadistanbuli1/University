@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useCreateNewsMutation } from '../api/hooks.js';
@@ -8,14 +9,28 @@ import { Field } from '../components/ui/Field.js';
 import { Input } from '../components/ui/Input.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
 import { Textarea } from '../components/ui/Textarea.js';
+import { managerNewsFormSchema } from '../lib/form-schemas.js';
+
+type NewsForm = {
+  title: string;
+  content: string;
+  imageUrl: string;
+  collegeId: string;
+};
 
 export function ManagerNewsPage() {
   const { t } = useTranslation('nav');
   const create = useCreateNewsMutation();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [collegeId, setCollegeId] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<NewsForm>({
+    resolver: zodResolver(managerNewsFormSchema),
+    defaultValues: { title: '', content: '', imageUrl: '', collegeId: '' },
+  });
 
   return (
     <section>
@@ -23,39 +38,35 @@ export function ManagerNewsPage() {
       <Card className="max-w-md">
         <form
           className="flex flex-col gap-3"
-          onSubmit={(e) => {
-            e.preventDefault();
+          onSubmit={handleSubmit((vals) => {
             create.mutate(
               {
-                title,
-                content,
-                imageUrl: imageUrl || undefined,
-                collegeId: collegeId || null,
+                title: vals.title,
+                content: vals.content,
+                imageUrl: vals.imageUrl || undefined,
+                collegeId: vals.collegeId || null,
               },
               {
                 onSuccess: () => {
                   toast.success(t('messages.newsCreated'));
-                  setTitle('');
-                  setContent('');
-                  setImageUrl('');
-                  setCollegeId('');
+                  reset();
                 },
                 onError: () => toast.error(t('messages.loadError')),
               }
             );
-          }}
+          })}
         >
-          <Field label={t('labels.title')}>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <Field label={t('labels.title')} error={errors.title?.message}>
+            <Input aria-invalid={!!errors.title} {...register('title')} />
           </Field>
-          <Field label={t('labels.content')}>
-            <Textarea value={content} onChange={(e) => setContent(e.target.value)} required rows={6} />
+          <Field label={t('labels.content')} error={errors.content?.message}>
+            <Textarea rows={6} aria-invalid={!!errors.content} {...register('content')} />
           </Field>
-          <Field label={t('labels.imageUrl')}>
-            <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} type="url" />
+          <Field label={t('labels.imageUrl')} error={errors.imageUrl?.message}>
+            <Input type="url" aria-invalid={!!errors.imageUrl} {...register('imageUrl')} />
           </Field>
-          <Field label={t('labels.collegeId')}>
-            <Input value={collegeId} onChange={(e) => setCollegeId(e.target.value)} />
+          <Field label={t('labels.collegeId')} error={errors.collegeId?.message}>
+            <Input aria-invalid={!!errors.collegeId} {...register('collegeId')} />
           </Field>
           <Button type="submit" disabled={create.isPending}>
             {t('labels.publishNews')}

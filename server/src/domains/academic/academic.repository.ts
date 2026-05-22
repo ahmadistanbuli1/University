@@ -56,6 +56,21 @@ export class AcademicRepository {
     });
   }
 
+  listStudentsEnrolledInCourse(courseId: string) {
+    return this.db.enrollment.findMany({
+      where: { courseId },
+      include: {
+        student: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+            department: { select: { id: true, name: true } },
+          },
+        },
+      },
+      orderBy: { student: { academicNumber: 'asc' } },
+    });
+  }
+
   async analyticsForFacultyCourse(facultyCourseId: string) {
     const rows = await this.db.examResult.findMany({
       where: { facultyCourseId },

@@ -39,6 +39,15 @@ export class StudentServicesService {
     return this.repo.listAppeals('PENDING');
   }
 
+  async listMyAppeals(userId: string, role: UserRole) {
+    if (role !== 'STUDENT' && role !== 'FACULTY') {
+      throw new AppError(403, 'Forbidden');
+    }
+    const student = await this.repo.findStudentByUserId(userId);
+    if (!student) return [];
+    return this.repo.listAppealsForStudent(student.id);
+  }
+
   async updateAppealStatus(
     adminId: string,
     appealId: string,
@@ -126,5 +135,48 @@ export class StudentServicesService {
       throw new AppError(403, 'Forbidden');
     }
     return this.repo.listAllTranscripts();
+  }
+
+  async listStudents(
+    role: UserRole,
+    params: { page: number; pageSize: number; search?: string; departmentId?: string }
+  ) {
+    if (role !== 'AFFAIRS' && role !== 'ADMIN') {
+      throw new AppError(403, 'Forbidden');
+    }
+    const [items, total] = await this.repo.listStudents(params);
+    return { items, total, page: params.page, pageSize: params.pageSize };
+  }
+
+  async updateStudentProfile(
+    role: UserRole,
+    studentId: string,
+    updates: {
+      departmentId?: string;
+      academicNumber?: string;
+      currentSemester?: number;
+      academicYear?: string;
+    }
+  ) {
+    if (role !== 'AFFAIRS' && role !== 'ADMIN') {
+      throw new AppError(403, 'Forbidden');
+    }
+    const student = await this.repo.findStudentById(studentId);
+    if (!student) {
+      throw new AppError(404, 'Student not found');
+    }
+    if (updates.academicNumber && updates.academicNumber !== student.academicNumber) {
+      const dup = await this.repo.findStudentByAcademicNumber(updates.academicNumber);
+      if (dup && dup.id !== studentId) {
+        throw new AppError(409, 'Academic number already in use');
+      }
+    }
+    if (updates.departmentId) {
+      const dept = await this.repo.findDepartment(updates.departmentId);
+      if (!dept) {
+        throw new AppError(400, 'Invalid department');
+      }
+    }
+    return this.repo.updateStudent(studentId, updates);
   }
 }

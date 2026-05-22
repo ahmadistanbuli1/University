@@ -26,6 +26,9 @@ The database is relational and consists of 5 main domains: User Management, Univ
 
 **Table: `departments`**
 
+- `code`: Unique stable identifier (e.g. `COMP_ENG`) for registration and i18n.
+- `description`: Optional group overview shown at student registration.
+
 - `id`: Primary Key
 - `name`: String
 - `college_id`: Foreign Key -> Links to `colleges`
@@ -53,7 +56,8 @@ The database is relational and consists of 5 main domains: User Management, Univ
 - `user_id`: Foreign Key (Unique) -> Links to `users`
 - `department_id`: Foreign Key -> Links to `departments`
 - `academic_number`: String (Unique)
-- `current_semester`: Integer
+- `current_semester`: Integer (study level / year in program, 1–10)
+- `academic_year`: String (cohort, e.g. `2025-2026`)
 
 **Table: `enrollments`** (Courses students are currently taking)
 

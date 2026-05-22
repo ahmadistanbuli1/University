@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { paramId } from '../../utils/paramId.js';
 import { analyticsQuerySchema, createResultSchema } from './academic.schemas.js';
 import type { AcademicService } from './academic.service.js';
 
@@ -13,6 +14,16 @@ export class AcademicController {
   myResults = async (req: Request, res: Response) => {
     const data = await this.academic.getMyResults(req.authUser!.id, req.authUser!.role);
     res.json(data);
+  };
+
+  sectionRoster = async (req: Request, res: Response) => {
+    const facultyCourseId = paramId(req);
+    const list = await this.academic.getSectionRoster(
+      req.authUser!.id,
+      req.authUser!.role,
+      facultyCourseId
+    );
+    res.json(list);
   };
 
   createResult = async (req: Request, res: Response) => {

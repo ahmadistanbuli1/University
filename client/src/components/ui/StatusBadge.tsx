@@ -9,6 +9,9 @@ const tones: Record<string, string> = {
   PROCESSED: 'bg-sky-100 text-sky-900 ring-1 ring-sky-600/15 dark:bg-sky-500/15 dark:text-sky-100 dark:ring-sky-400/25',
   DELIVERED:
     'bg-emerald-100 text-emerald-900 ring-1 ring-emerald-600/15 dark:bg-emerald-500/15 dark:text-emerald-100 dark:ring-emerald-400/25',
+  PAID: 'bg-emerald-100 text-emerald-900 ring-1 ring-emerald-600/15 dark:bg-emerald-500/15 dark:text-emerald-100 dark:ring-emerald-400/25',
+  PARTIAL:
+    'bg-amber-100 text-amber-900 ring-1 ring-amber-500/15 dark:bg-amber-500/15 dark:text-amber-100 dark:ring-amber-400/25',
 };
 
 type StatusBadgeProps = {

@@ -10,6 +10,8 @@ export const createNewsSchema = z.object({
   content: z.string().min(1),
   imageUrl: z.string().url().optional().nullable(),
   collegeId: z.string().uuid().optional().nullable(),
+  category: z.enum(['GENERAL', 'TUITION']).optional(),
+  enablePayNow: z.boolean().optional(),
 });
 
 export const updateNewsSchema = createNewsSchema.partial();

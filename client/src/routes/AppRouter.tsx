@@ -11,13 +11,13 @@ import { AdminDashboardPage } from '../pages/AdminDashboardPage.js';
 import { AdminLogsPage } from '../pages/AdminLogsPage.js';
 import { AdminNewsPage } from '../pages/AdminNewsPage.js';
 import { AdminUsersPage } from '../pages/AdminUsersPage.js';
+import { AffairsStudentsPage } from '../pages/AffairsStudentsPage.js';
 import { AffairsDashboardPage } from '../pages/AffairsDashboardPage.js';
 import { AffairsTranscriptsPage } from '../pages/AffairsTranscriptsPage.js';
 import { FacultyAnalyticsPage } from '../pages/FacultyAnalyticsPage.js';
 import { FacultyClassesPage } from '../pages/FacultyClassesPage.js';
 import { FacultyDashboardPage } from '../pages/FacultyDashboardPage.js';
 import { FacultyGradesPage } from '../pages/FacultyGradesPage.js';
-import { FacultyDirectoryPage } from '../pages/FacultyDirectoryPage.js';
 import { HomePage } from '../pages/HomePage.js';
 import { LibrarianBooksPage } from '../pages/LibrarianBooksPage.js';
 import { LibrarianDashboardPage } from '../pages/LibrarianDashboardPage.js';
@@ -32,6 +32,10 @@ import { StudentCoursesPage } from '../pages/StudentCoursesPage.js';
 import { StudentDashboardPage } from '../pages/StudentDashboardPage.js';
 import { StudentGradesPage } from '../pages/StudentGradesPage.js';
 import { StudentTranscriptsPage } from '../pages/StudentTranscriptsPage.js';
+import { StudentTuitionPage } from '../pages/StudentTuitionPage.js';
+import { StudentPaymentPage } from '../pages/StudentPaymentPage.js';
+import { StudentDiscountsPage } from '../pages/StudentDiscountsPage.js';
+import { AdminDiscountsPage } from '../pages/AdminDiscountsPage.js';
 import { ProtectedRoute } from './ProtectedRoute.js';
 import { RoleRoute } from './RoleRoute.js';
 
@@ -43,7 +47,6 @@ export function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/news" element={<NewsPage />} />
-        <Route path="/faculty-directory" element={<FacultyDirectoryPage />} />
         <Route path="/library" element={<LibraryPage />} />
       </Route>
 
@@ -61,6 +64,9 @@ export function AppRouter() {
           <Route path="grades" element={<StudentGradesPage />} />
           <Route path="appeals" element={<StudentAppealsPage />} />
           <Route path="transcripts" element={<StudentTranscriptsPage />} />
+          <Route path="tuition" element={<StudentTuitionPage />} />
+          <Route path="pay/:installmentId" element={<StudentPaymentPage />} />
+          <Route path="discounts" element={<StudentDiscountsPage />} />
         </Route>
 
         <Route
@@ -87,8 +93,10 @@ export function AppRouter() {
         >
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
+          <Route path="students" element={<AffairsStudentsPage />} />
           <Route path="news" element={<AdminNewsPage />} />
           <Route path="appeals" element={<AdminAppealsPage />} />
+          <Route path="discounts" element={<AdminDiscountsPage />} />
           <Route path="logs" element={<AdminLogsPage />} />
         </Route>
 
@@ -101,6 +109,7 @@ export function AppRouter() {
           }
         >
           <Route index element={<AffairsDashboardPage />} />
+          <Route path="students" element={<AffairsStudentsPage />} />
           <Route path="transcripts" element={<AffairsTranscriptsPage />} />
         </Route>
 
@@ -126,6 +135,7 @@ export function AppRouter() {
         >
           <Route index element={<LibrarianDashboardPage />} />
           <Route path="books" element={<LibrarianBooksPage />} />
+          <Route path="news" element={<NewsPage />} />
         </Route>
       </Route>
 

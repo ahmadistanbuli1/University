@@ -15,6 +15,11 @@ export function createStudentServicesRouter(
     requireRoles('STUDENT', 'FACULTY'),
     asyncHandler(controller.createAppeal.bind(controller))
   );
+  r.get(
+    '/appeals/me',
+    requireRoles('STUDENT', 'FACULTY'),
+    asyncHandler(controller.myAppeals.bind(controller))
+  );
   r.get('/appeals', requireRoles('ADMIN'), asyncHandler(controller.listAppeals.bind(controller)));
   r.patch(
     '/appeals/:id/status',
@@ -40,6 +45,16 @@ export function createStudentServicesRouter(
     '/transcripts/:id',
     requireRoles('AFFAIRS', 'ADMIN'),
     asyncHandler(controller.patchTranscript.bind(controller))
+  );
+  r.get(
+    '/students',
+    requireRoles('AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.listStudents.bind(controller))
+  );
+  r.patch(
+    '/students/:id',
+    requireRoles('AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.patchStudent.bind(controller))
   );
   return r;
 }

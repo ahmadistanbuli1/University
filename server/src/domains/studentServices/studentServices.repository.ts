@@ -44,6 +44,20 @@ export class StudentServicesRepository {
     return this.db.gradeAppeal.findUnique({ where: { id } });
   }
 
+  listAppealsForStudent(studentId: string) {
+    return this.db.gradeAppeal.findMany({
+      where: { studentId },
+      orderBy: { submittedAt: 'desc' },
+      include: {
+        examResult: {
+          include: {
+            facultyCourse: { include: { course: { select: { name: true, code: true } } } },
+          },
+        },
+      },
+    });
+  }
+
   createTranscriptRequest(studentId: string) {
     return this.db.transcriptRequest.create({
       data: {
@@ -81,5 +95,85 @@ export class StudentServicesRepository {
         student: { include: { user: { select: { id: true, name: true, email: true } } } },
       },
     });
+  }
+
+  listStudents(params: {
+    page: number;
+    pageSize: number;
+    search?: string;
+    departmentId?: string;
+  }) {
+    const skip = (params.page - 1) * params.pageSize;
+    const where: {
+      departmentId?: string;
+      OR?: Array<{
+        academicNumber?: { contains: string; mode: 'insensitive' };
+        user?: { name?: { contains: string; mode: 'insensitive' }; email?: { contains: string; mode: 'insensitive' } };
+      }>;
+    } = {};
+    if (params.departmentId) where.departmentId = params.departmentId;
+    if (params.search?.trim()) {
+      const q = params.search.trim();
+      where.OR = [
+        { academicNumber: { contains: q, mode: 'insensitive' } },
+        { user: { name: { contains: q, mode: 'insensitive' } } },
+        { user: { email: { contains: q, mode: 'insensitive' } } },
+      ];
+    }
+    return Promise.all([
+      this.db.student.findMany({
+        where,
+        skip,
+        take: params.pageSize,
+        orderBy: { academicNumber: 'asc' },
+        include: {
+          user: { select: { id: true, name: true, email: true, active: true } },
+          department: { include: { college: true } },
+          enrollments: {
+            include: { course: { select: { id: true, name: true, code: true } } },
+          },
+        },
+      }),
+      this.db.student.count({ where }),
+    ]);
+  }
+
+  findStudentById(id: string) {
+    return this.db.student.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        department: { include: { college: true } },
+        enrollments: { include: { course: true } },
+      },
+    });
+  }
+
+  updateStudent(
+    id: string,
+    data: Partial<{
+      departmentId: string;
+      academicNumber: string;
+      currentSemester: number;
+      academicYear: string;
+    }>
+  ) {
+    return this.db.student.update({
+      where: { id },
+      data,
+      include: {
+        user: { select: { id: true, name: true, email: true, active: true } },
+        department: { include: { college: true } },
+        enrollments: { include: { course: { select: { id: true, name: true, code: true } } } },
+      },
+    });
+  }
+
+  findStudentByAcademicNumber(academicNumber: string) {
+    return this.db.student.findUnique({ where: { academicNumber } });
+  }
+
+  findDepartment(id: string) {
+    return this.db.department.findUnique({ where: { id } });
   }
 }

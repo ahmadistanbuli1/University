@@ -1,6 +1,10 @@
 import type { Request, Response } from 'express';
 import { paramId } from '../../utils/paramId.js';
-import { createBookFieldsSchema, listBooksQuerySchema } from './library.schemas.js';
+import {
+  createBookFieldsSchema,
+  listBooksQuerySchema,
+  updateBookSchema,
+} from './library.schemas.js';
 import type { LibraryService } from './library.service.js';
 
 export class LibraryController {
@@ -12,6 +16,7 @@ export class LibraryController {
       page: q.page,
       pageSize: q.pageSize,
       keyword: q.keyword,
+      category: q.category,
     });
     res.json(result);
   };
@@ -34,6 +39,7 @@ export class LibraryController {
       librarianId: req.authUser!.id,
       title: body.title,
       filePath,
+      category: body.category,
       departmentId: body.departmentId,
       publishYear: body.publishYear,
       keywords,
@@ -49,5 +55,21 @@ export class LibraryController {
   patchDownload = async (req: Request, res: Response) => {
     const updated = await this.library.incrementDownload(paramId(req));
     res.json(updated);
+  };
+
+  stats = async (_req: Request, res: Response) => {
+    const data = await this.library.getLibrarianStats();
+    res.json(data);
+  };
+
+  updateBook = async (req: Request, res: Response) => {
+    const body = updateBookSchema.parse(req.body);
+    const updated = await this.library.updateBook(req.authUser!.id, paramId(req), body);
+    res.json(updated);
+  };
+
+  deleteBook = async (req: Request, res: Response) => {
+    const result = await this.library.deleteBook(req.authUser!.id, paramId(req));
+    res.json(result);
   };
 }

@@ -30,12 +30,16 @@ export class NewsService {
     content: string;
     imageUrl?: string | null;
     authorCollegeId: string | null;
+    category?: 'GENERAL' | 'TUITION';
+    enablePayNow?: boolean;
   }) {
     if (input.role === 'ADMIN') {
       const news = await this.repo.create({
         title: input.title,
         content: input.content,
         imageUrl: input.imageUrl ?? undefined,
+        category: input.category ?? 'GENERAL',
+        enablePayNow: input.enablePayNow ?? false,
         author: { connect: { id: input.authorId } },
         college: input.collegeId ? { connect: { id: input.collegeId } } : undefined,
       });
@@ -59,6 +63,8 @@ export class NewsService {
         title: input.title,
         content: input.content,
         imageUrl: input.imageUrl ?? undefined,
+        category: input.category ?? 'GENERAL',
+        enablePayNow: input.enablePayNow ?? false,
         author: { connect: { id: input.authorId } },
         college: { connect: { id: collegeId } },
       });
@@ -76,7 +82,14 @@ export class NewsService {
   async updateNews(
     id: string,
     actor: { id: string; role: UserRole; collegeId: string | null },
-    data: { title?: string; content?: string; imageUrl?: string | null; collegeId?: string | null }
+    data: {
+      title?: string;
+      content?: string;
+      imageUrl?: string | null;
+      collegeId?: string | null;
+      category?: 'GENERAL' | 'TUITION';
+      enablePayNow?: boolean;
+    }
   ) {
     const existing = await this.repo.findById(id);
     if (!existing) {
@@ -87,6 +100,8 @@ export class NewsService {
         title: data.title,
         content: data.content,
         imageUrl: data.imageUrl,
+        category: data.category,
+        enablePayNow: data.enablePayNow,
         ...(data.collegeId !== undefined
           ? data.collegeId
             ? { college: { connect: { id: data.collegeId } } }
@@ -109,6 +124,8 @@ export class NewsService {
         title: data.title,
         content: data.content,
         imageUrl: data.imageUrl,
+        category: data.category,
+        enablePayNow: data.enablePayNow,
       });
       await this.audit?.log({
         userId: actor.id,

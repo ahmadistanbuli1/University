@@ -1,3 +1,6 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import type { LibraryBookCategory } from '@prisma/client';
 import { AppError } from '../../utils/AppError.js';
 import type { LibraryRepository } from './library.repository.js';
 import type { AuditService } from '../audit/audit.service.js';
@@ -5,24 +8,36 @@ import type { AuditService } from '../audit/audit.service.js';
 export class LibraryService {
   constructor(
     private readonly repo: LibraryRepository,
-    private readonly audit: AuditService | null
+    private readonly audit: AuditService | null,
+    private readonly uploadDir: string
   ) {}
 
-  async listBooks(params: { page: number; pageSize: number; keyword?: string }) {
+  async listBooks(params: {
+    page: number;
+    pageSize: number;
+    keyword?: string;
+    category?: LibraryBookCategory;
+  }) {
     return this.repo.listBooks(params);
+  }
+
+  async getLibrarianStats() {
+    return this.repo.getDashboardStats();
   }
 
   async createBook(input: {
     librarianId: string;
     title: string;
     filePath: string;
-    departmentId: string;
+    category: LibraryBookCategory;
+    departmentId?: string;
     publishYear: number;
     keywords: string[];
   }) {
     const book = await this.repo.createBook({
       title: input.title,
       filePath: input.filePath,
+      category: input.category,
       departmentId: input.departmentId,
       addedById: input.librarianId,
       publishYear: input.publishYear,
@@ -52,5 +67,66 @@ export class LibraryService {
       throw new AppError(404, 'Book not found');
     }
     return this.repo.incrementDownloads(bookId);
+  }
+
+  async updateBook(
+    librarianId: string,
+    bookId: string,
+    input: {
+      title?: string;
+      category?: LibraryBookCategory;
+      publishYear?: number;
+      keywords?: string;
+    }
+  ) {
+    const book = await this.repo.findBook(bookId);
+    if (!book) throw new AppError(404, 'Book not found');
+
+    const keywords = input.keywords
+      ? input.keywords
+          .split(',')
+          .map((k) => k.trim())
+          .filter(Boolean)
+      : undefined;
+
+    const updated = await this.repo.updateBook(bookId, {
+      title: input.title,
+      category: input.category,
+      publishYear: input.publishYear,
+      keywords,
+    });
+
+    await this.audit?.log({
+      userId: librarianId,
+      action: 'UPDATE_BOOK',
+      entity: 'books',
+      entityId: bookId,
+    });
+
+    return updated;
+  }
+
+  async deleteBook(librarianId: string, bookId: string) {
+    const book = await this.repo.findBook(bookId);
+    if (!book) throw new AppError(404, 'Book not found');
+
+    await this.repo.deleteBook(bookId);
+
+    const filename = book.filePath.replace(/^\/uploads\//, '');
+    try {
+      await fs.unlink(path.resolve(this.uploadDir, filename));
+    } catch {
+      /* file may be missing */
+    }
+
+    await this.audit?.log({
+      userId: librarianId,
+      action: 'DELETE_BOOK',
+      entity: 'books',
+      entityId: bookId,
+      details: { title: book.title },
+    });
+
+    return { ok: true };
   }
 }

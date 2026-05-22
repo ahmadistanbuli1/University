@@ -1,38 +1,18 @@
 import { PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { seedCollegeManagers } from './seed-managers.js';
+import { seedUniversityStructure } from './seed-structure.js';
+import { SEED_STUDENT_PASSWORD } from './seed-students-data.js';
+import { seedStudentsAndAcademics } from './seed-students.js';
+import { seedTuitionAndDiscounts } from './seed-tuition.js';
+import { seedLibraryBooks } from './seed-library.js';
 
 const prisma = new PrismaClient();
 
-async function main() {
-  const existingUsers = await prisma.user.count();
-  if (existingUsers > 0) {
-    console.log(
-      'Seed skipped: database already has users. To re-seed, truncate tables or use a fresh database.'
-    );
-    return;
-  }
-
-  const password = await bcrypt.hash('Password123!', 10);
-
-  const collegeA = await prisma.college.create({
-    data: { name: 'College of Engineering', description: 'Engineering programs' },
-  });
-  const collegeB = await prisma.college.create({
-    data: { name: 'College of Science', description: 'Science programs' },
-  });
-
-  const deptCS = await prisma.department.create({
-    data: { name: 'Computer Science', collegeId: collegeA.id },
-  });
-  const deptMath = await prisma.department.create({
-    data: { name: 'Mathematics', collegeId: collegeB.id },
-  });
-
-  const courseAlgo = await prisma.course.create({
-    data: { name: 'Algorithms', code: 'CS301', departmentId: deptCS.id },
-  });
-  const courseDb = await prisma.course.create({
-    data: { name: 'Databases', code: 'CS302', departmentId: deptCS.id },
+async function seedStaffAndContent(password: string) {
+  const deptCompEng = await prisma.department.findUniqueOrThrow({ where: { code: 'COMP_ENG' } });
+  const collegeEng = await prisma.college.findFirstOrThrow({
+    where: { name: 'College of Engineering & Technology' },
   });
 
   const admin = await prisma.user.create({
@@ -44,7 +24,7 @@ async function main() {
     },
   });
 
-  const affairs = await prisma.user.create({
+  await prisma.user.create({
     data: {
       name: 'Student Affairs',
       email: 'affairs@university.edu',
@@ -62,86 +42,12 @@ async function main() {
     },
   });
 
-  const manager = await prisma.user.create({
-    data: {
-      name: 'Engineering Manager',
-      email: 'manager@university.edu',
-      password,
-      role: UserRole.MANAGER,
-      collegeId: collegeA.id,
-    },
-  });
-
-  const faculty = await prisma.user.create({
-    data: {
-      name: 'Dr. Faculty',
-      email: 'faculty@university.edu',
-      password,
-      role: UserRole.FACULTY,
-    },
-  });
-
-  const studentUser = await prisma.user.create({
-    data: {
-      name: 'Alex Student',
-      email: 'student@university.edu',
-      password,
-      role: UserRole.STUDENT,
-    },
-  });
-
-  const student = await prisma.student.create({
-    data: {
-      userId: studentUser.id,
-      departmentId: deptCS.id,
-      academicNumber: 'STU-2025-001',
-      currentSemester: 5,
-    },
-  });
-
-  const fc1 = await prisma.facultyCourse.create({
-    data: {
-      facultyId: faculty.id,
-      courseId: courseAlgo.id,
-      semester: 'Fall 2025',
-      academicYear: '2025-2026',
-    },
-  });
-
-  await prisma.facultyCourse.create({
-    data: {
-      facultyId: faculty.id,
-      courseId: courseDb.id,
-      semester: 'Fall 2025',
-      academicYear: '2025-2026',
-    },
-  });
-
-  await prisma.enrollment.create({
-    data: {
-      studentId: student.id,
-      courseId: courseAlgo.id,
-      semester: 'Fall 2025',
-      academicYear: '2025-2026',
-    },
-  });
-
-  await prisma.examResult.create({
-    data: {
-      studentId: student.id,
-      facultyCourseId: fc1.id,
-      score: 88.5,
-      attemptNumber: 1,
-      semester: 'Fall 2025',
-      academicYear: '2025-2026',
-    },
-  });
-
   await prisma.book.create({
     data: {
       title: 'Introduction to Algorithms',
       filePath: '/uploads/sample-placeholder.pdf',
-      departmentId: deptCS.id,
+      category: 'PROGRAMMING',
+      departmentId: deptCompEng.id,
       addedById: librarian.id,
       publishYear: 2022,
       keywords: {
@@ -158,24 +64,57 @@ async function main() {
     },
   });
 
-  await prisma.news.create({
-    data: {
-      title: 'Engineering town hall',
-      content: 'Join us this Friday.',
-      authorId: manager.id,
-      collegeId: collegeA.id,
-    },
+  const engManager = await prisma.user.findFirst({
+    where: { role: UserRole.MANAGER, collegeId: collegeEng.id },
   });
 
-  console.log('Seed complete. Sample credentials (password: Password123!):');
+  if (engManager) {
+    await prisma.news.create({
+      data: {
+        title: 'Engineering town hall',
+        content: 'Join us this Friday.',
+        authorId: engManager.id,
+        collegeId: collegeEng.id,
+      },
+    });
+  }
+
+  console.log('Staff & content seeded.');
   console.log({
     admin: admin.email,
-    student: studentUser.email,
-    faculty: faculty.email,
     librarian: librarian.email,
-    affairs: affairs.email,
-    manager: manager.email,
+    affairs: 'affairs@university.edu',
+    faculty: 'faculty@university.edu',
   });
+}
+
+async function main() {
+  await seedUniversityStructure(prisma);
+
+  const password = await bcrypt.hash(SEED_STUDENT_PASSWORD, 10);
+
+  const managers = await seedCollegeManagers(prisma, password);
+  console.log('\nCollege managers (password: Password123!):');
+  for (const m of managers) {
+    console.log(`  ${m.email} — ${m.collegeName}`);
+  }
+
+  const existingUsers = await prisma.user.count();
+  if (existingUsers === 0) {
+    await seedStaffAndContent(password);
+  } else {
+    console.log('Staff seed skipped (users already exist).');
+  }
+
+  const studentCreds = await seedStudentsAndAcademics(prisma, password);
+
+  await seedTuitionAndDiscounts(prisma);
+  await seedLibraryBooks(prisma);
+
+  console.log('\nStudent accounts (password: Password123!):');
+  for (const s of studentCreds) {
+    console.log(`  ${s.email} — ${s.name} (${s.department}) · ${s.academicNumber}`);
+  }
 }
 
 main()

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 const baseURL = import.meta.env.VITE_API_URL ?? '';
 
-export const http = axios.create({
+export const axiosInstance = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' },
 });
@@ -22,7 +22,7 @@ function attachAuth(config: InternalAxiosRequestConfig) {
   return config;
 }
 
-http.interceptors.request.use(attachAuth);
+axiosInstance.interceptors.request.use(attachAuth);
 
 formHttp.interceptors.request.use((config) => {
   attachAuth(config);
@@ -33,7 +33,7 @@ formHttp.interceptors.request.use((config) => {
   return config;
 });
 
-http.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (res) => res,
   (err: unknown) => {
     if (axios.isAxiosError(err) && !err.response) {

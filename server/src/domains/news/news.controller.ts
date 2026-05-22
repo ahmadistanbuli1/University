@@ -27,6 +27,8 @@ export class NewsController {
       content: body.content,
       imageUrl: body.imageUrl,
       authorCollegeId: req.authUser!.collegeId ?? null,
+      category: body.category,
+      enablePayNow: body.enablePayNow,
     });
     res.status(201).json(created);
   };

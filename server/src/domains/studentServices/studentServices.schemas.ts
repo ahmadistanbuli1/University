@@ -14,3 +14,22 @@ export const fulfillTranscriptSchema = z.object({
   filePath: z.string().min(1),
   status: z.enum(['DELIVERED', 'PROCESSED']).default('DELIVERED'),
 });
+
+export const listStudentsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  search: z.string().max(120).optional(),
+  departmentId: z.string().uuid().optional(),
+});
+
+export const affairsUpdateStudentSchema = z.object({
+  departmentId: z.string().uuid().optional(),
+  academicNumber: z
+    .string()
+    .min(3)
+    .max(32)
+    .regex(/^[A-Za-z0-9-]+$/)
+    .optional(),
+  currentSemester: z.coerce.number().int().min(1).max(10).optional(),
+  academicYear: z.string().regex(/^\d{4}-\d{4}$/).optional(),
+});

@@ -5,7 +5,7 @@ export function FeedList({ children, className }: { children: ReactNode; classNa
   return (
     <ul
       className={cn(
-        'm-0 list-none divide-y divide-slate-200 rounded-2xl border border-slate-200/90 bg-white p-0 shadow-sm',
+        'm-0 list-none divide-y divide-zinc-200/90 rounded-2xl border border-zinc-200/90 bg-white/90 p-0 shadow-sm dark:divide-white/10 dark:border-white/10 dark:bg-zinc-900/70',
         className
       )}
     >
@@ -24,9 +24,13 @@ type FeedListItemProps = {
 export function FeedListItem({ title, meta, children, className }: FeedListItemProps) {
   return (
     <li className={cn('px-4 py-4', className)}>
-      <div className="mb-1 text-base font-bold text-slate-900">{title}</div>
-      {meta ? <div className="mb-2 text-xs text-slate-500">{meta}</div> : null}
-      {children ? <div className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{children}</div> : null}
+      <div className="mb-1 text-base font-bold text-zinc-900 dark:text-zinc-50">{title}</div>
+      {meta ? <div className="mb-2 text-xs text-zinc-500 dark:text-zinc-400">{meta}</div> : null}
+      {children ? (
+        <div className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+          {children}
+        </div>
+      ) : null}
     </li>
   );
 }

@@ -1,9 +1,25 @@
 @import 'tailwindcss';
 
+/* SPU / Shamal Private University — see docs/design-system.md */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-sans: 'Cairo', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand: #7c3aed;
+  --color-brand-secondary: #a78bfa;
+  --color-brand-glow: #c084fc;
+  --color-bg-app: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-border: #e5e7eb;
+
+  --color-bg-app-dark: #09090b;
+  --color-surface-dark: #18181b;
+  --color-text-primary-dark: #fafafa;
+  --color-text-secondary-dark: #a1a1aa;
+  --color-border-dark: #27272a;
 }
 
 @layer base {
@@ -15,8 +31,13 @@
 
   body {
     @apply m-0 min-h-screen antialiased transition-colors duration-300;
-    @apply bg-zinc-50 text-zinc-900;
-    @apply dark:bg-zinc-950 dark:text-zinc-100;
+    background-color: var(--color-bg-app);
+    color: var(--color-text-primary);
+  }
+
+  .dark body {
+    background-color: var(--color-bg-app-dark);
+    color: var(--color-text-primary-dark);
   }
 
   #root {

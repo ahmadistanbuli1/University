@@ -38,6 +38,39 @@ enum TranscriptRequestStatus {
   DELIVERED
 }
 
+enum NewsCategory {
+  GENERAL
+  TUITION
+}
+
+enum TuitionInstallmentStatus {
+  PENDING
+  PARTIAL
+  PAID
+}
+
+enum DiscountRequestType {
+  MARTYR_RELATIVE
+  ACADEMIC_EXCELLENCE
+  HUMANITARIAN
+}
+
+enum DiscountRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum LibraryBookCategory {
+  MEDICAL
+  ADMINISTRATIVE
+  SCIENTIFIC
+  PROGRAMMING
+  FRONTEND_WEB
+  BACKEND_WEB
+  ARTIFICIAL_INTELLIGENCE
+}
+
 // -----------------------------------------------------------------------------
 // User management
 // -----------------------------------------------------------------------------
@@ -48,6 +81,7 @@ model User {
   email     String   @unique
   password  String
   role      UserRole
+  active    Boolean  @default(true)
   collegeId String?  @map("college_id") @db.Uuid
   college   College? @relation(fields: [collegeId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")
@@ -72,18 +106,21 @@ model College {
   departments Department[]
   users       User[]
   news        News[]
+  tuitionConfig CollegeTuitionConfig?
 
   @@map("colleges")
 }
 
 model Department {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  collegeId String   @map("college_id") @db.Uuid
-  college   College  @relation(fields: [collegeId], references: [id])
-  courses   Course[]
-  students  Student[]
-  books     Book[]
+  id          String   @id @default(uuid()) @db.Uuid
+  code        String   @unique
+  name        String
+  description String?  @db.Text
+  collegeId   String   @map("college_id") @db.Uuid
+  college     College  @relation(fields: [collegeId], references: [id])
+  courses     Course[]
+  students    Student[]
+  books       Book[]
 
   @@map("departments")
 }
@@ -128,10 +165,14 @@ model Student {
   department          Department           @relation(fields: [departmentId], references: [id])
   academicNumber      String               @unique @map("academic_number")
   currentSemester     Int                  @map("current_semester")
+  academicYear        String               @map("academic_year")
   enrollments         Enrollment[]
   examResults         ExamResult[]
   gradeAppeals        GradeAppeal[]
   transcriptRequests  TranscriptRequest[]
+  tuitionInstallments StudentTuitionInstallment[]
+  tuitionPayments     TuitionPayment[]
+  discountRequests    DiscountRequest[]
 
   @@map("students")
 }
@@ -197,11 +238,12 @@ model TranscriptRequest {
 // -----------------------------------------------------------------------------
 
 model Book {
-  id              String        @id @default(uuid()) @db.Uuid
+  id              String              @id @default(uuid()) @db.Uuid
   title           String
-  filePath        String        @map("file_path")
-  departmentId    String        @map("department_id") @db.Uuid
-  department      Department    @relation(fields: [departmentId], references: [id])
+  filePath        String              @map("file_path")
+  category        LibraryBookCategory @default(SCIENTIFIC)
+  departmentId    String?             @map("department_id") @db.Uuid
+  department      Department?         @relation(fields: [departmentId], references: [id])
   addedById       String        @map("added_by") @db.Uuid
   addedBy         User          @relation("BookAddedBy", fields: [addedById], references: [id])
   downloadsCount  Int           @default(0) @map("downloads_count")
@@ -227,17 +269,80 @@ model BookKeyword {
 // -----------------------------------------------------------------------------
 
 model News {
-  id        String   @id @default(uuid()) @db.Uuid
-  title     String
-  content   String   @db.Text
-  imageUrl  String?  @map("image_url")
-  collegeId String?  @map("college_id") @db.Uuid
-  college   College? @relation(fields: [collegeId], references: [id])
-  authorId  String   @map("author_id") @db.Uuid
-  author    User     @relation(fields: [authorId], references: [id])
-  createdAt DateTime @default(now()) @map("created_at")
+  id           String       @id @default(uuid()) @db.Uuid
+  title        String
+  content      String       @db.Text
+  imageUrl     String?      @map("image_url")
+  category     NewsCategory @default(GENERAL)
+  enablePayNow Boolean      @default(false) @map("enable_pay_now")
+  collegeId    String?      @map("college_id") @db.Uuid
+  college      College?     @relation(fields: [collegeId], references: [id])
+  authorId     String       @map("author_id") @db.Uuid
+  author       User         @relation(fields: [authorId], references: [id])
+  createdAt    DateTime     @default(now()) @map("created_at")
 
   @@map("news")
+}
+
+// -----------------------------------------------------------------------------
+// Tuition & payments (simulated)
+// -----------------------------------------------------------------------------
+
+model CollegeTuitionConfig {
+  id             String  @id @default(uuid()) @db.Uuid
+  collegeId      String  @unique @map("college_id") @db.Uuid
+  college        College @relation(fields: [collegeId], references: [id])
+  totalAmount    Decimal @map("total_amount") @db.Decimal(10, 2)
+  semesterAmount Decimal @map("semester_amount") @db.Decimal(10, 2)
+
+  @@map("college_tuition_configs")
+}
+
+model StudentTuitionInstallment {
+  id              String                   @id @default(uuid()) @db.Uuid
+  studentId       String                   @map("student_id") @db.Uuid
+  student         Student                  @relation(fields: [studentId], references: [id])
+  academicYear    String                   @map("academic_year")
+  semesterKey     String                   @map("semester_key")
+  label           String
+  amountDue       Decimal                  @map("amount_due") @db.Decimal(10, 2)
+  amountPaid      Decimal                  @default(0) @map("amount_paid") @db.Decimal(10, 2)
+  status          TuitionInstallmentStatus @default(PENDING)
+  payments        TuitionPayment[]
+
+  @@unique([studentId, academicYear, semesterKey])
+  @@map("student_tuition_installments")
+}
+
+model TuitionPayment {
+  id            String                    @id @default(uuid()) @db.Uuid
+  studentId     String                    @map("student_id") @db.Uuid
+  student       Student                   @relation(fields: [studentId], references: [id])
+  installmentId String                    @map("installment_id") @db.Uuid
+  installment   StudentTuitionInstallment @relation(fields: [installmentId], references: [id])
+  amount        Decimal                   @db.Decimal(10, 2)
+  referenceCode String                    @unique @map("reference_code")
+  method        String                    @default("SIMULATED")
+  paidAt        DateTime                  @default(now()) @map("paid_at")
+
+  @@map("tuition_payments")
+}
+
+model DiscountRequest {
+  id              String                @id @default(uuid()) @db.Uuid
+  studentId       String                @map("student_id") @db.Uuid
+  student         Student               @relation(fields: [studentId], references: [id])
+  type            DiscountRequestType
+  notes           String?               @db.Text
+  proofFilePath   String?               @map("proof_file_path")
+  status          DiscountRequestStatus @default(PENDING)
+  discountPercent Decimal?              @map("discount_percent") @db.Decimal(5, 2)
+  discountAmount  Decimal?              @map("discount_amount") @db.Decimal(10, 2)
+  adminResponse   String?               @map("admin_response") @db.Text
+  submittedAt     DateTime              @default(now()) @map("submitted_at")
+  reviewedAt      DateTime?             @map("reviewed_at")
+
+  @@map("discount_requests")
 }
 
 model AuditLog {

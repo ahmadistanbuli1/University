@@ -1,0 +1,70 @@
+/** Demo student accounts — one per department. Password for all: Password123! */
+export type StudentSeed = {
+  name: string;
+  email: string;
+  departmentCode: string;
+  academicNumber: string;
+  currentSemester: number;
+  academicYear: string;
+};
+
+export const SEED_STUDENTS: StudentSeed[] = [
+  {
+    name: 'Omar Al-Hassan',
+    email: 'student.compeng@university.edu',
+    departmentCode: 'COMP_ENG',
+    academicNumber: 'STU-2025-COMP-01',
+    currentSemester: 3,
+    academicYear: '2025-2026',
+  },
+  {
+    name: 'Layla Mansour',
+    email: 'student.energy@university.edu',
+    departmentCode: 'ENERGY_ENG',
+    academicNumber: 'STU-2025-ENRG-01',
+    currentSemester: 2,
+    academicYear: '2025-2026',
+  },
+  {
+    name: 'Karim Saleh',
+    email: 'student.biomed@university.edu',
+    departmentCode: 'BIOMED_ENG',
+    academicNumber: 'STU-2025-BMED-01',
+    currentSemester: 4,
+    academicYear: '2025-2026',
+  },
+  {
+    name: 'Nour Ibrahim',
+    email: 'student.pharmacy@university.edu',
+    departmentCode: 'PHARMACY',
+    academicNumber: 'STU-2025-PHRM-01',
+    currentSemester: 5,
+    academicYear: '2025-2026',
+  },
+  {
+    name: 'Sara Mahmoud',
+    email: 'student.anesthesia@university.edu',
+    departmentCode: 'ANESTHESIA',
+    academicNumber: 'STU-2025-ANES-01',
+    currentSemester: 3,
+    academicYear: '2025-2026',
+  },
+  {
+    name: 'James Walker',
+    email: 'student.english@university.edu',
+    departmentCode: 'ENGLISH',
+    academicNumber: 'STU-2025-ENGL-01',
+    currentSemester: 2,
+    academicYear: '2024-2025',
+  },
+  {
+    name: 'Fatima Al-Khatib',
+    email: 'student.admin@university.edu',
+    departmentCode: 'ADMIN_SCI',
+    academicNumber: 'STU-2025-ADMN-01',
+    currentSemester: 6,
+    academicYear: '2025-2026',
+  },
+];
+
+export const SEED_STUDENT_PASSWORD = 'Password123!';

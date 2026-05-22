@@ -37,6 +37,12 @@ export function createLibraryRouter(
   const counterLimiter = rateLimit({ windowMs: 60_000, max: 120 });
 
   r.get('/books', asyncHandler(controller.listBooks.bind(controller)));
+  r.get(
+    '/stats',
+    authenticate,
+    requireRoles('LIBRARIAN'),
+    asyncHandler(controller.stats.bind(controller))
+  );
   r.patch('/books/:id/read', counterLimiter, asyncHandler(controller.patchRead.bind(controller)));
   r.patch(
     '/books/:id/download',
@@ -49,6 +55,18 @@ export function createLibraryRouter(
     requireRoles('LIBRARIAN'),
     upload.single('file'),
     asyncHandler(controller.createBook.bind(controller))
+  );
+  r.patch(
+    '/books/:id',
+    authenticate,
+    requireRoles('LIBRARIAN'),
+    asyncHandler(controller.updateBook.bind(controller))
+  );
+  r.delete(
+    '/books/:id',
+    authenticate,
+    requireRoles('LIBRARIAN'),
+    asyncHandler(controller.deleteBook.bind(controller))
   );
   return r;
 }

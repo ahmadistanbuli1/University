@@ -1,78 +1,95 @@
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { FileUp, Upload } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { useCreateBookMutation, useDepartmentsQuery } from '../api/hooks.js';
-import { Alert } from '../components/ui/Alert.js';
+import { useCreateBookMutation } from '../api/hooks.js';
 import { Button } from '../components/ui/Button.js';
 import { Card } from '../components/ui/Card.js';
 import { Field } from '../components/ui/Field.js';
 import { Input } from '../components/ui/Input.js';
-import { LoadingState } from '../components/ui/LoadingState.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
 import { Select } from '../components/ui/Select.js';
+import { librarianBookFieldsSchema, type LibrarianBookFormValues } from '../lib/form-schemas.js';
+import { DEFAULT_LIBRARY_CATEGORY, LIBRARY_CATEGORIES } from '../lib/library-categories.js';
 
 export function LibrarianBooksPage() {
   const { t } = useTranslation('nav');
-  const { data: depts, isLoading, isError } = useDepartmentsQuery();
   const upload = useCreateBookMutation();
-  const [title, setTitle] = useState('');
-  const [departmentId, setDepartmentId] = useState('');
-  const [publishYear, setPublishYear] = useState(String(new Date().getFullYear()));
-  const [keywords, setKeywords] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
-  if (isLoading) return <LoadingState />;
-  if (isError || !depts) return <Alert variant="error">{t('messages.loadError')}</Alert>;
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<LibrarianBookFormValues>({
+    resolver: zodResolver(librarianBookFieldsSchema),
+    defaultValues: {
+      title: '',
+      category: DEFAULT_LIBRARY_CATEGORY,
+      publishYear: new Date().getFullYear(),
+      keywords: '',
+    },
+  });
 
   return (
     <section>
-      <PageHeader title={t('headings.librarianBooks')} />
+      <PageHeader title={t('headings.librarianBooks')} description={t('messages.librarianBooksLead')} icon={Upload} />
       <Card className="max-w-md">
-        <form className="flex flex-col gap-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!file) return;
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={handleSubmit((vals) => {
+            const file = fileRef.current?.files?.[0];
+            if (!file) {
+              setFileError(t('messages.pdfRequired'));
+              return;
+            }
+            setFileError(null);
             const fd = new FormData();
-            fd.append('title', title);
-            fd.append('departmentId', departmentId);
-            fd.append('publishYear', publishYear);
-            if (keywords) fd.append('keywords', keywords);
+            fd.append('title', vals.title);
+            fd.append('category', vals.category);
+            fd.append('publishYear', String(vals.publishYear));
+            if (vals.keywords) fd.append('keywords', vals.keywords);
             fd.append('file', file);
             upload.mutate(fd, {
               onSuccess: () => {
                 toast.success(t('messages.bookUploaded'));
-                setTitle('');
-                setFile(null);
+                reset({ title: '', category: vals.category, publishYear: vals.publishYear, keywords: '' });
+                if (fileRef.current) fileRef.current.value = '';
               },
-              onError: () => {
-                toast.error(t('messages.loadError'));
-              },
+              onError: () => toast.error(t('messages.loadError')),
             });
-          }}
+          })}
         >
-          <Field label={t('labels.title')}>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <Field label={t('labels.title')} error={errors.title?.message}>
+            <Input aria-invalid={!!errors.title} {...register('title')} />
           </Field>
-          <Field label={t('labels.department')}>
-            <Select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)} required>
-              <option value="">—</option>
-              {depts.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
+          <Field label={t('library.bookCategory')} error={errors.category?.message}>
+            <Select aria-invalid={!!errors.category} {...register('category')}>
+              {LIBRARY_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {t(`library.categories.${cat}`)}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label={t('labels.publishYear')}>
-            <Input type="number" value={publishYear} onChange={(e) => setPublishYear(e.target.value)} required />
+          <Field label={t('labels.publishYear')} error={errors.publishYear?.message}>
+            <Input type="number" aria-invalid={!!errors.publishYear} {...register('publishYear', { valueAsNumber: true })} />
           </Field>
-          <Field label={t('labels.keywords')}>
-            <Input value={keywords} onChange={(e) => setKeywords(e.target.value)} />
+          <Field label={t('labels.keywords')} error={errors.keywords?.message}>
+            <Input {...register('keywords')} />
           </Field>
-          <Field label={t('labels.pdfFile')}>
-            <Input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required />
+          <Field label={t('labels.pdfFile')} error={fileError ?? undefined}>
+            <div className="flex items-center gap-2">
+              <FileUp className="size-5 shrink-0 text-violet-600 dark:text-violet-400" aria-hidden />
+              <Input ref={fileRef} type="file" accept="application/pdf" className="flex-1" onChange={() => setFileError(null)} />
+            </div>
           </Field>
-          <Button type="submit" disabled={upload.isPending}>
+          <Button type="submit" disabled={upload.isPending} className="gap-2">
+            <Upload className="size-4" aria-hidden />
             {t('labels.uploadBook')}
           </Button>
         </form>

@@ -3,11 +3,11 @@ import { cn } from '../../lib/cn.js';
 
 const variants = {
   primary:
-    'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm ring-1 ring-inset ring-indigo-700/10 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:ring-indigo-400/25',
+    'bg-gradient-to-r from-[#7C3AED] to-[#A78BFA] text-white shadow-md shadow-violet-500/20 ring-1 ring-inset ring-white/10 hover:from-[#6D28D9] hover:to-[#9779fa] dark:from-[#7C3AED] dark:to-[#8B5CF6] dark:hover:from-[#8B5CF6] dark:hover:to-[#C084FC]/90',
   secondary:
-    'bg-white text-slate-800 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 dark:bg-white/5 dark:text-zinc-100 dark:ring-white/10 dark:hover:bg-white/10',
+    'bg-[var(--color-surface)] text-[var(--color-text-primary)] ring-1 ring-inset ring-[var(--color-border)] hover:bg-zinc-50 dark:bg-[var(--color-surface-dark)] dark:text-[var(--color-text-primary-dark)] dark:ring-[var(--color-border-dark)] dark:hover:bg-zinc-800/80',
   ghost:
-    'bg-transparent text-slate-600 hover:bg-slate-100 ring-1 ring-transparent dark:text-zinc-300 dark:hover:bg-white/10',
+    'bg-transparent text-[var(--color-text-secondary)] ring-1 ring-transparent hover:bg-black/[0.04] dark:text-[var(--color-text-secondary-dark)] dark:hover:bg-white/10',
   danger:
     'bg-red-600 text-white hover:bg-red-700 shadow-sm dark:bg-red-500 dark:hover:bg-red-400',
 } as const;
@@ -32,7 +32,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:outline-indigo-400',
+        'inline-flex items-center justify-center gap-2 font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7C3AED] disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:outline-[#A78BFA]',
         variants[variant],
         sizes[size],
         className

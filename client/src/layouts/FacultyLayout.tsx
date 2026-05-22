@@ -15,7 +15,7 @@ const navItems: NavItem[] = [
   { to: '/faculty/classes', labelKey: 'faculty.classes', icon: PanelsTopLeft },
   { to: '/faculty/grades', labelKey: 'faculty.grades', icon: PenLine },
   { to: '/faculty/analytics', labelKey: 'faculty.analytics', icon: BarChart3 },
-  { to: '/student/courses', labelKey: 'student.courses', icon: BookOpen },
+  { to: '/student/courses', labelKey: 'student.courses', icon: BookOpen, sectionLabelKey: 'faculty.studentPortalSection' },
   { to: '/student/grades', labelKey: 'student.grades', icon: TrendingUp },
   { to: '/student/appeals', labelKey: 'student.appeals', icon: Scale },
   { to: '/student/transcripts', labelKey: 'student.transcripts', icon: FileBadge },

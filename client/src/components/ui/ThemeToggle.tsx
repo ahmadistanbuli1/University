@@ -15,7 +15,7 @@ export function ThemeToggle() {
       type="button"
       variant="ghost"
       size="sm"
-      className="rounded-2xl border border-zinc-200/80 bg-zinc-50/90 px-2.5 py-2 text-zinc-700 shadow-sm hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:hover:bg-white/10"
+      className="rounded-2xl border border-zinc-200/80 bg-zinc-50/90 px-2.5 py-2 text-zinc-700 shadow-sm hover:bg-violet-50 hover:text-violet-800 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:hover:bg-violet-500/12 dark:hover:text-violet-100"
       onClick={() => dispatch(toggleTheme())}
       aria-label={isDark ? t('themeSwitchLight') : t('themeSwitchDark')}
       title={isDark ? t('themeSwitchLight') : t('themeSwitchDark')}
