@@ -33,6 +33,20 @@ export function useMyResultsQuery() {
   });
 }
 
+export function useMyStudyPlanQuery(studyYear?: number) {
+  return useQuery({
+    queryKey: ['study-plan', 'me', studyYear ?? 'current'],
+    queryFn: async () => {
+      const params = studyYear != null ? { studyYear } : {};
+      const { data } = await axiosInstance.get<Record<string, unknown>>(
+        '/api/academic/study-plan/me',
+        { params }
+      );
+      return data;
+    },
+  });
+}
+
 export function useMyTranscriptsQuery() {
   return useQuery({
     queryKey: ['transcripts', 'me'],

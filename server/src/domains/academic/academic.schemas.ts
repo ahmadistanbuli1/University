@@ -12,3 +12,7 @@ export const createResultSchema = z.object({
 export const analyticsQuerySchema = z.object({
   facultyCourseId: z.string().uuid(),
 });
+
+export const studyPlanQuerySchema = z.object({
+  studyYear: z.coerce.number().int().min(1).max(6).optional(),
+});

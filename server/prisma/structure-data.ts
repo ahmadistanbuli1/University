@@ -11,41 +11,48 @@ export type CollegeSeed = {
   departments: DepartmentSeed[];
 };
 
+/** Seven colleges — each has one department (college name = program focus). */
 export const UNIVERSITY_STRUCTURE: CollegeSeed[] = [
   {
-    name: 'College of Engineering & Technology',
-    description: 'Engineering programs including computing, energy, and biomedical systems.',
+    name: 'College of Information Engineering',
+    description: 'Software systems, networks, embedded systems, and information technology engineering.',
     departments: [
       {
-        code: 'COMP_ENG',
-        name: 'Computer Engineering',
+        code: 'INFO_ENG',
+        name: 'Information Engineering',
         description:
-          'Focus on software systems, networks, embedded systems, and information technology for engineering applications.',
+          'Software systems, networks, embedded systems, and information technology for engineering applications.',
       },
+    ],
+  },
+  {
+    name: 'College of Medical Engineering',
+    description: 'Medical devices, diagnostics, and hospital technology systems.',
+    departments: [
       {
-        code: 'ENERGY_ENG',
-        name: 'Energy Engineering',
-        description:
-          'Study of power generation, renewable energy, energy efficiency, and sustainable engineering solutions.',
-      },
-      {
-        code: 'BIOMED_ENG',
-        name: 'Biomedical Engineering',
+        code: 'MED_ENG',
+        name: 'Medical Engineering',
         description:
           'Intersection of engineering and healthcare: medical devices, diagnostics, and hospital technology systems.',
       },
     ],
   },
   {
-    name: 'College of Health Sciences',
-    description: 'Clinical and pharmaceutical programs preparing healthcare professionals.',
+    name: 'College of Alternative Energy Engineering',
+    description: 'Power generation, renewable energy, efficiency, and sustainable engineering.',
     departments: [
       {
-        code: 'PHARMACY',
-        name: 'Pharmacy',
+        code: 'ALT_ENERGY_ENG',
+        name: 'Alternative Energy Engineering',
         description:
-          'Pharmaceutical sciences, drug formulation, clinical pharmacy, and medication safety in healthcare settings.',
+          'Study of power generation, renewable energy, energy efficiency, and sustainable engineering solutions.',
       },
+    ],
+  },
+  {
+    name: 'College of Health Sciences — Anesthesia',
+    description: 'Perioperative care, anesthesia techniques, and surgical patient monitoring.',
+    departments: [
       {
         code: 'ANESTHESIA',
         name: 'Anesthesia',
@@ -55,20 +62,8 @@ export const UNIVERSITY_STRUCTURE: CollegeSeed[] = [
     ],
   },
   {
-    name: 'College of Humanities',
-    description: 'Language, communication, and cultural studies for academic and professional excellence.',
-    departments: [
-      {
-        code: 'ENGLISH',
-        name: 'English Language',
-        description:
-          'English linguistics, literature, translation, and communication skills for academic and international careers.',
-      },
-    ],
-  },
-  {
     name: 'College of Administrative Sciences',
-    description: 'Business administration, management, and organizational leadership programs.',
+    description: 'Business administration, management, accounting, and organizational leadership.',
     departments: [
       {
         code: 'ADMIN_SCI',
@@ -78,4 +73,43 @@ export const UNIVERSITY_STRUCTURE: CollegeSeed[] = [
       },
     ],
   },
+  {
+    name: 'College of Pharmaceutical Sciences',
+    description: 'Pharmaceutical sciences, clinical pharmacy, and medication safety.',
+    departments: [
+      {
+        code: 'PHARMACY',
+        name: 'Pharmacy',
+        description:
+          'Pharmaceutical sciences, drug formulation, clinical pharmacy, and medication safety in healthcare settings.',
+      },
+    ],
+  },
+  {
+    name: 'College of English Language & Literature',
+    description: 'English linguistics, literature, translation, and professional communication.',
+    departments: [
+      {
+        code: 'ENGLISH_LIT',
+        name: 'English Language & Literature',
+        description:
+          'English linguistics, literature, translation, and communication skills for academic and international careers.',
+      },
+    ],
+  },
+];
+
+/** Legacy department codes → canonical codes (for DB migration on seed). */
+export const DEPARTMENT_CODE_MIGRATIONS: Record<string, string> = {
+  COMP_ENG: 'INFO_ENG',
+  ENERGY_ENG: 'ALT_ENERGY_ENG',
+  BIOMED_ENG: 'MED_ENG',
+  ENGLISH: 'ENGLISH_LIT',
+};
+
+/** Aggregated colleges replaced by per-program colleges. */
+export const OBSOLETE_COLLEGE_NAMES = [
+  'College of Engineering & Technology',
+  'College of Health Sciences',
+  'College of Humanities',
 ];

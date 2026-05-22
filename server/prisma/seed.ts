@@ -6,13 +6,14 @@ import { SEED_STUDENT_PASSWORD } from './seed-students-data.js';
 import { seedStudentsAndAcademics } from './seed-students.js';
 import { seedTuitionAndDiscounts } from './seed-tuition.js';
 import { seedLibraryBooks } from './seed-library.js';
+import { seedCurriculum } from './seed-curriculum.js';
 
 const prisma = new PrismaClient();
 
 async function seedStaffAndContent(password: string) {
-  const deptCompEng = await prisma.department.findUniqueOrThrow({ where: { code: 'COMP_ENG' } });
-  const collegeEng = await prisma.college.findFirstOrThrow({
-    where: { name: 'College of Engineering & Technology' },
+  const deptInfoEng = await prisma.department.findUniqueOrThrow({ where: { code: 'INFO_ENG' } });
+  const collegeInfoEng = await prisma.college.findFirstOrThrow({
+    where: { name: 'College of Information Engineering' },
   });
 
   const admin = await prisma.user.create({
@@ -47,7 +48,7 @@ async function seedStaffAndContent(password: string) {
       title: 'Introduction to Algorithms',
       filePath: '/uploads/sample-placeholder.pdf',
       category: 'PROGRAMMING',
-      departmentId: deptCompEng.id,
+      departmentId: deptInfoEng.id,
       addedById: librarian.id,
       publishYear: 2022,
       keywords: {
@@ -64,17 +65,17 @@ async function seedStaffAndContent(password: string) {
     },
   });
 
-  const engManager = await prisma.user.findFirst({
-    where: { role: UserRole.MANAGER, collegeId: collegeEng.id },
+  const infoEngManager = await prisma.user.findFirst({
+    where: { role: UserRole.MANAGER, collegeId: collegeInfoEng.id },
   });
 
-  if (engManager) {
+  if (infoEngManager) {
     await prisma.news.create({
       data: {
-        title: 'Engineering town hall',
+        title: 'Information Engineering town hall',
         content: 'Join us this Friday.',
-        authorId: engManager.id,
-        collegeId: collegeEng.id,
+        authorId: infoEngManager.id,
+        collegeId: collegeInfoEng.id,
       },
     });
   }
@@ -107,6 +108,8 @@ async function main() {
   }
 
   const studentCreds = await seedStudentsAndAcademics(prisma, password);
+
+  await seedCurriculum(prisma);
 
   await seedTuitionAndDiscounts(prisma);
   await seedLibraryBooks(prisma);

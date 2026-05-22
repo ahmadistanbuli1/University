@@ -1,7 +1,8 @@
-/** Academic year options in YYYY-YYYY format (e.g. 2025-2026). */
+/** Academic year options in YYYY-YYYY format (e.g. 2021-2022). */
 export function buildAcademicYearOptions(anchorYear = new Date().getFullYear()): string[] {
+  const START_YEAR = 2021;
   const years: string[] = [];
-  for (let y = anchorYear - 1; y <= anchorYear + 3; y++) {
+  for (let y = START_YEAR; y <= anchorYear + 3; y++) {
     years.push(`${y}-${y + 1}`);
   }
   return years;

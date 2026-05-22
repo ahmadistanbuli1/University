@@ -16,7 +16,20 @@
     "appeals": "تظلمات الدرجات",
     "transcripts": "الكشوفات",
     "tuition": "الأقساط والرسوم",
-    "discounts": "طلبات الخصم"
+    "discounts": "طلبات الخصم",
+    "studyPlan": "الخطة الدراسية"
+  },
+  "studyPlan": {
+    "lead": "عرض مواد كل سنة حسب الفصل الأول والثاني، مع درجات العملي والنظري ومعدل السنة.",
+    "yearGpa": "معدل السنة:",
+    "termGpa": "معدل الفصل:",
+    "termFirst": "الفصل الأول",
+    "termSecond": "الفصل الثاني",
+    "courseName": "المادة",
+    "practical": "عملي ({{max}})",
+    "theory": "نظري ({{max}})",
+    "total": "المجموع",
+    "passLegend": "درجة النجاح: العملي 40 — النظري 60 (المجموع 100)."
   },
   "profile": {
     "lead": "بيانات حسابك وسجلك الأكاديمي في مكان واحد.",
@@ -81,6 +94,7 @@
     "studentProfile": "الملف الشخصي",
     "studentCourses": "التسجيلات",
     "studentGrades": "النتائج",
+    "studentStudyPlan": "الخطة الدراسية",
     "studentAppeals": "تقديم تظلم",
     "studentTranscripts": "طلبات الكشوفات",
     "studentTuition": "الأقساط والرسوم",

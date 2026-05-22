@@ -78,4 +78,28 @@ export class AcademicRepository {
     });
     return rows;
   }
+
+  findStudentWithDepartment(userId: string) {
+    return this.db.student.findUnique({
+      where: { userId },
+      include: { department: true },
+    });
+  }
+
+  listCurriculumCourses(departmentId: string, studyYear: number) {
+    return this.db.curriculumCourse.findMany({
+      where: { departmentId, studyYear },
+      orderBy: [{ term: 'asc' }, { sortOrder: 'asc' }],
+    });
+  }
+
+  listCurriculumGradesForYear(studentId: string, studyYear: number) {
+    return this.db.studentCurriculumGrade.findMany({
+      where: {
+        studentId,
+        curriculumCourse: { studyYear },
+      },
+      include: { curriculumCourse: true },
+    });
+  }
 }

@@ -18,6 +18,11 @@ export function createAcademicRouter(controller: AcademicController, authenticat
     asyncHandler(controller.myResults.bind(controller))
   );
   r.get(
+    '/study-plan/me',
+    requireRoles('STUDENT', 'FACULTY'),
+    asyncHandler(controller.myStudyPlan.bind(controller))
+  );
+  r.get(
     '/faculty-courses/:id/roster',
     requireRoles('FACULTY'),
     asyncHandler(controller.sectionRoster.bind(controller))

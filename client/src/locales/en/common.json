@@ -41,13 +41,13 @@
   "registerError": "Could not create account. Check your details and try again.",
   "registerToastSuccess": "Account created successfully.",
   "registerDeptInfo": {
-    "COMP_ENG": "Software systems, networks, embedded systems, and computing for engineering applications.",
-    "ENERGY_ENG": "Power generation, renewable energy, efficiency, and sustainable engineering.",
-    "BIOMED_ENG": "Medical devices, diagnostics, and healthcare technology systems.",
-    "PHARMACY": "Pharmaceutical sciences, clinical pharmacy, and medication safety.",
+    "INFO_ENG": "Software systems, networks, embedded systems, and information technology engineering.",
+    "MED_ENG": "Medical devices, diagnostics, and healthcare technology systems.",
+    "ALT_ENERGY_ENG": "Power generation, renewable energy, efficiency, and sustainable engineering.",
     "ANESTHESIA": "Perioperative care, anesthesia techniques, and surgical patient monitoring.",
-    "ENGLISH": "Linguistics, literature, translation, and professional communication.",
-    "ADMIN_SCI": "Management, accounting, economics, and organizational leadership."
+    "ADMIN_SCI": "Management, accounting, economics, and organizational leadership.",
+    "PHARMACY": "Pharmaceutical sciences, clinical pharmacy, and medication safety.",
+    "ENGLISH_LIT": "Linguistics, literature, translation, and professional communication."
   },
   "haveAccountLogin": "Already have an account? Sign in",
   "logout": "Log out",

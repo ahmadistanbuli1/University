@@ -1,26 +1,32 @@
 const AR_DEPARTMENTS: Record<string, string> = {
-  COMP_ENG: 'هندسة الحاسوب',
-  ENERGY_ENG: 'هندسة الطاقة',
-  BIOMED_ENG: 'الهندسة الطبية الحيوية',
-  PHARMACY: 'الصيدلة',
-  ANESTHESIA: 'التخدير',
-  ENGLISH: 'اللغة الإنجليزية',
-  ADMIN_SCI: 'العلوم الإدارية',
+  INFO_ENG: 'هندسة المعلوماتية',
+  MED_ENG: 'الهندسة الطبية',
+  ALT_ENERGY_ENG: 'هندسة الطاقة البديلة',
+  ANESTHESIA: 'كلية العلوم الصحية — تخدير',
+  ADMIN_SCI: 'كلية العلوم الإدارية',
+  PHARMACY: 'كلية العلوم الصيدلة',
+  ENGLISH_LIT: 'كلية آداب اللغة الإنجليزية',
 };
 
 const AR_COLLEGES: Record<string, string> = {
-  'College of Engineering & Technology': 'كلية الهندسة والتكنولوجيا',
-  'College of Health Sciences': 'كلية العلوم الصحية',
-  'College of Humanities': 'كلية الإنسانيات',
+  'College of Information Engineering': 'هندسة المعلوماتية',
+  'College of Medical Engineering': 'الهندسة الطبية',
+  'College of Alternative Energy Engineering': 'هندسة الطاقة البديلة',
+  'College of Health Sciences — Anesthesia': 'كلية العلوم الصحية — تخدير',
   'College of Administrative Sciences': 'كلية العلوم الإدارية',
+  'College of Pharmaceutical Sciences': 'كلية العلوم الصيدلة',
+  'College of English Language & Literature': 'كلية آداب اللغة الإنجليزية',
 };
 
-const ENGINEERING_CODES = new Set(['COMP_ENG', 'ENERGY_ENG', 'BIOMED_ENG']);
+const ENGINEERING_CODES = new Set(['INFO_ENG', 'MED_ENG', 'ALT_ENERGY_ENG']);
+
+export function studyYearFromSemester(currentSemester: number): number {
+  return Math.floor((Math.max(1, currentSemester) - 1) / 2) + 1;
+}
 
 export function getMaxStudyYears(departmentCode?: string | null): number {
   if (!departmentCode) return 4;
   if (ENGINEERING_CODES.has(departmentCode)) return 5;
-  if (departmentCode === 'ADMIN_SCI') return 4;
   return 4;
 }
 

@@ -1,8 +1,25 @@
-import type { UserRole } from '@prisma/client';
+import type { StudyTerm, UserRole } from '@prisma/client';
 import { AppError } from '../../utils/AppError.js';
 import type { AcademicRepository } from './academic.repository.js';
 import type { AuditService } from '../audit/audit.service.js';
 import { computeGpaFromLatestAttempts } from './gpa.js';
+import {
+  averageCourseTotals,
+  courseTotalScore,
+  isCourseReachable,
+  studyYearFromSemester,
+  termFromSemester,
+} from './study-plan.js';
+
+const DEPT_MAX_STUDY_YEARS: Record<string, number> = {
+  INFO_ENG: 5,
+  MED_ENG: 5,
+  ALT_ENERGY_ENG: 5,
+  ANESTHESIA: 4,
+  ADMIN_SCI: 4,
+  PHARMACY: 4,
+  ENGLISH_LIT: 4,
+};
 
 export class AcademicService {
   constructor(
@@ -133,6 +150,90 @@ export class AcademicService {
       passRatePercent: passRate,
       sampleSize: count,
       scoreDistribution,
+    };
+  }
+
+  async getMyStudyPlan(userId: string, role: UserRole, requestedStudyYear?: number) {
+    if (role !== 'STUDENT' && role !== 'FACULTY') {
+      throw new AppError(403, 'Forbidden');
+    }
+    const student = await this.repo.findStudentWithDepartment(userId);
+    if (!student) {
+      throw new AppError(404, 'Student profile not found');
+    }
+
+    const deptCode = student.department.code;
+    const maxStudyYears = DEPT_MAX_STUDY_YEARS[deptCode] ?? 4;
+    const currentStudyYear = studyYearFromSemester(student.currentSemester);
+    const currentTerm = termFromSemester(student.currentSemester);
+    const studyYear = requestedStudyYear ?? currentStudyYear;
+
+    if (studyYear < 1 || studyYear > maxStudyYears) {
+      throw new AppError(400, 'Invalid study year');
+    }
+
+    const courses = await this.repo.listCurriculumCourses(student.departmentId, studyYear);
+    const grades = await this.repo.listCurriculumGradesForYear(student.id, studyYear);
+    const gradeByCourseId = new Map(grades.map((g) => [g.curriculumCourseId, g]));
+
+    const terms: StudyTerm[] = ['FIRST', 'SECOND'];
+    const termBlocks = terms.map((term) => {
+      const termCourses = courses.filter((c) => c.term === term);
+      const courseRows = termCourses.map((course) => {
+        const grade = gradeByCourseId.get(course.id);
+        const reachable = isCourseReachable(
+          student.currentSemester,
+          course.studyYear,
+          course.term
+        );
+        const hasGrade =
+          reachable &&
+          grade?.practicalScore != null &&
+          grade?.theoryScore != null;
+        const practicalNum = hasGrade ? Number(grade!.practicalScore!.toString()) : null;
+        const theoryNum = hasGrade ? Number(grade!.theoryScore!.toString()) : null;
+        const total =
+          practicalNum != null && theoryNum != null
+            ? courseTotalScore(practicalNum, theoryNum)
+            : null;
+
+        return {
+          id: course.id,
+          code: course.code,
+          name: course.name,
+          practicalPass: course.practicalPass,
+          theoryPass: course.theoryPass,
+          practicalScore: practicalNum,
+          theoryScore: theoryNum,
+          totalScore: total,
+          practicalDisplay: hasGrade ? String(practicalNum) : '—',
+          theoryDisplay: hasGrade ? String(theoryNum) : '—',
+          hasGrade,
+        };
+      });
+
+      const termTotals = courseRows
+        .filter((r) => r.totalScore != null)
+        .map((r) => r.totalScore as number);
+      const termGpa = averageCourseTotals(termTotals);
+
+      return { term, courses: courseRows, termGpa };
+    });
+
+    const yearTotals = termBlocks
+      .flatMap((t) => t.courses)
+      .filter((c) => c.totalScore != null)
+      .map((c) => c.totalScore as number);
+    const yearGpa = averageCourseTotals(yearTotals);
+
+    return {
+      departmentCode: deptCode,
+      maxStudyYears,
+      currentStudyYear,
+      currentTerm,
+      selectedStudyYear: studyYear,
+      yearGpa,
+      terms: termBlocks,
     };
   }
 }

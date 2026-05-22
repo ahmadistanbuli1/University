@@ -31,6 +31,7 @@ import { StudentAppealsPage } from '../pages/StudentAppealsPage.js';
 import { StudentCoursesPage } from '../pages/StudentCoursesPage.js';
 import { StudentDashboardPage } from '../pages/StudentDashboardPage.js';
 import { StudentGradesPage } from '../pages/StudentGradesPage.js';
+import { StudentStudyPlanPage } from '../pages/StudentStudyPlanPage.js';
 import { StudentTranscriptsPage } from '../pages/StudentTranscriptsPage.js';
 import { StudentTuitionPage } from '../pages/StudentTuitionPage.js';
 import { StudentPaymentPage } from '../pages/StudentPaymentPage.js';
@@ -62,6 +63,7 @@ export function AppRouter() {
           <Route index element={<StudentDashboardPage />} />
           <Route path="courses" element={<StudentCoursesPage />} />
           <Route path="grades" element={<StudentGradesPage />} />
+          <Route path="study-plan" element={<StudentStudyPlanPage />} />
           <Route path="appeals" element={<StudentAppealsPage />} />
           <Route path="transcripts" element={<StudentTranscriptsPage />} />
           <Route path="tuition" element={<StudentTuitionPage />} />

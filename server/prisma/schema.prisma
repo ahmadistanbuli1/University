@@ -71,6 +71,11 @@ enum LibraryBookCategory {
   ARTIFICIAL_INTELLIGENCE
 }
 
+enum StudyTerm {
+  FIRST
+  SECOND
+}
+
 // -----------------------------------------------------------------------------
 // User management
 // -----------------------------------------------------------------------------
@@ -118,9 +123,10 @@ model Department {
   description String?  @db.Text
   collegeId   String   @map("college_id") @db.Uuid
   college     College  @relation(fields: [collegeId], references: [id])
-  courses     Course[]
-  students    Student[]
-  books       Book[]
+  courses            Course[]
+  curriculumCourses  CurriculumCourse[]
+  students           Student[]
+  books              Book[]
 
   @@map("departments")
 }
@@ -173,8 +179,42 @@ model Student {
   tuitionInstallments StudentTuitionInstallment[]
   tuitionPayments     TuitionPayment[]
   discountRequests    DiscountRequest[]
+  curriculumGrades    StudentCurriculumGrade[]
 
   @@map("students")
+}
+
+/// Planned course in the official study plan (per department, year, and term).
+model CurriculumCourse {
+  id             String                   @id @default(uuid()) @db.Uuid
+  departmentId   String                   @map("department_id") @db.Uuid
+  department     Department               @relation(fields: [departmentId], references: [id])
+  studyYear      Int                      @map("study_year")
+  term           StudyTerm
+  name           String
+  code           String                   @unique
+  practicalPass  Int                      @default(40) @map("practical_pass")
+  theoryPass     Int                      @default(60) @map("theory_pass")
+  sortOrder      Int                      @default(0) @map("sort_order")
+  studentGrades  StudentCurriculumGrade[]
+
+  @@unique([departmentId, studyYear, term, code])
+  @@index([departmentId, studyYear, term])
+  @@map("curriculum_courses")
+}
+
+/// Student scores on curriculum courses (practical / theoretical components).
+model StudentCurriculumGrade {
+  id                 String           @id @default(uuid()) @db.Uuid
+  studentId          String           @map("student_id") @db.Uuid
+  student            Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  curriculumCourseId String           @map("curriculum_course_id") @db.Uuid
+  curriculumCourse   CurriculumCourse @relation(fields: [curriculumCourseId], references: [id], onDelete: Cascade)
+  practicalScore     Decimal?         @map("practical_score") @db.Decimal(5, 2)
+  theoryScore        Decimal?         @map("theory_score") @db.Decimal(5, 2)
+
+  @@unique([studentId, curriculumCourseId])
+  @@map("student_curriculum_grades")
 }
 
 model Enrollment {

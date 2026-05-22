@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { getDepartmentLabel } from '../lib/department-labels.js';
+import { getDepartmentLabel, studyYearFromSemester } from '../lib/department-labels.js';
 import { Link } from 'react-router-dom';
 import {
   useMeQuery,
@@ -104,8 +104,21 @@ export function StudentDashboardPage() {
             />
             <ProfileField
               label={t('profile.studyLevel')}
-              value={t('profile.studyLevelValue', { level: profile.currentSemester ?? '—' })}
+              value={t('profile.studyLevelValue', {
+                level:
+                  profile.currentSemester != null
+                    ? studyYearFromSemester(profile.currentSemester)
+                    : '—',
+              })}
             />
+            <p className="m-0 mt-2">
+              <Link
+                to="/student/study-plan"
+                className="text-sm font-semibold text-violet-600 hover:underline dark:text-violet-300"
+              >
+                {t('student.studyPlan')} →
+              </Link>
+            </p>
             <ProfileField
               label={t('labels.academicYear')}
               value={profile.academicYear ?? '—'}

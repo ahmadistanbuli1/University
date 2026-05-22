@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { paramId } from '../../utils/paramId.js';
-import { analyticsQuerySchema, createResultSchema } from './academic.schemas.js';
+import { analyticsQuerySchema, createResultSchema, studyPlanQuerySchema } from './academic.schemas.js';
 import type { AcademicService } from './academic.service.js';
 
 export class AcademicController {
@@ -42,6 +42,16 @@ export class AcademicController {
       role: req.authUser!.role,
       facultyCourseId: q.facultyCourseId,
     });
+    res.json(data);
+  };
+
+  myStudyPlan = async (req: Request, res: Response) => {
+    const q = studyPlanQuerySchema.parse(req.query);
+    const data = await this.academic.getMyStudyPlan(
+      req.authUser!.id,
+      req.authUser!.role,
+      q.studyYear
+    );
     res.json(data);
   };
 }
