@@ -3,7 +3,12 @@ import { AppError } from '../../utils/AppError.js';
 import { hashPassword, verifyPassword } from '../../utils/password.js';
 import { signToken } from '../../utils/jwt.js';
 import { prisma } from '../../lib/prisma.js';
+import {
+  normalizeRegistrationSemester,
+  syncStudentDepartmentEnrollments,
+} from '../../lib/student-enrollment.js';
 import { ensureStudentTuitionInstallments } from '../../lib/tuition-bootstrap.js';
+import { maxStudyYearsForDepartment } from '../../lib/dept-study-years.js';
 import type { AuthRepository } from './auth.repository.js';
 import type { AuditService } from '../audit/audit.service.js';
 
@@ -68,6 +73,12 @@ export class AuthService {
       throw new AppError(409, 'Academic number already registered');
     }
 
+    const maxStudyYears = maxStudyYearsForDepartment(department.code);
+    const currentSemester = normalizeRegistrationSemester(
+      input.currentSemester,
+      maxStudyYears
+    );
+
     const hashed = await hashPassword(input.password);
     const user = await this.users.createStudentUser({
       name: input.name,
@@ -76,11 +87,16 @@ export class AuthService {
       collegeId: department.collegeId,
       departmentId: input.departmentId,
       academicNumber: input.academicNumber,
-      currentSemester: input.currentSemester,
+      currentSemester,
       academicYear: input.academicYear,
     });
     const student = await prisma.student.findUnique({ where: { userId: user.id } });
     if (student) {
+      await syncStudentDepartmentEnrollments(prisma, {
+        studentId: student.id,
+        departmentId: input.departmentId,
+        academicYear: input.academicYear,
+      });
       await ensureStudentTuitionInstallments(
         prisma,
         student.id,

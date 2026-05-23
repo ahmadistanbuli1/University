@@ -22,7 +22,7 @@ export const SEED_STUDENTS: StudentSeed[] = [
     email: 'student.medeng@university.edu',
     departmentCode: 'MED_ENG',
     academicNumber: 'STU-2025-MED-01',
-    currentSemester: 4,
+    currentSemester: 1,
     academicYear: '2025-2026',
   },
   {
@@ -30,7 +30,7 @@ export const SEED_STUDENTS: StudentSeed[] = [
     email: 'student.altenergy@university.edu',
     departmentCode: 'ALT_ENERGY_ENG',
     academicNumber: 'STU-2025-ALT-01',
-    currentSemester: 2,
+    currentSemester: 1,
     academicYear: '2025-2026',
   },
   {
@@ -38,7 +38,7 @@ export const SEED_STUDENTS: StudentSeed[] = [
     email: 'student.anesthesia@university.edu',
     departmentCode: 'ANESTHESIA',
     academicNumber: 'STU-2025-ANES-01',
-    currentSemester: 3,
+    currentSemester: 1,
     academicYear: '2025-2026',
   },
   {
@@ -46,7 +46,7 @@ export const SEED_STUDENTS: StudentSeed[] = [
     email: 'student.admin@university.edu',
     departmentCode: 'ADMIN_SCI',
     academicNumber: 'STU-2025-ADMN-01',
-    currentSemester: 6,
+    currentSemester: 1,
     academicYear: '2025-2026',
   },
   {
@@ -54,7 +54,7 @@ export const SEED_STUDENTS: StudentSeed[] = [
     email: 'student.pharmacy@university.edu',
     departmentCode: 'PHARMACY',
     academicNumber: 'STU-2025-PHRM-01',
-    currentSemester: 5,
+    currentSemester: 1,
     academicYear: '2025-2026',
   },
   {
@@ -62,8 +62,8 @@ export const SEED_STUDENTS: StudentSeed[] = [
     email: 'student.english@university.edu',
     departmentCode: 'ENGLISH_LIT',
     academicNumber: 'STU-2025-ENGL-01',
-    currentSemester: 2,
-    academicYear: '2024-2025',
+    currentSemester: 1,
+    academicYear: '2025-2026',
   },
 ];
 

@@ -1,14 +1,17 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { isAxiosError } from 'axios';
 import {
+  useAdminUserQuery,
   useCollegesQuery,
   useCreateUserMutation,
   useDeactivateUserMutation,
   useDepartmentsQuery,
+  useStructureCoursesQuery,
   useUpdateUserMutation,
   useUsersListQuery,
   type UserListItem,
@@ -30,6 +33,7 @@ import {
   type AdminEditUserFormValues,
 } from '../lib/form-schemas.js';
 import { buildAcademicYearOptions } from '../lib/academic-options.js';
+import { FacultyCourseAssignmentPicker } from '../components/admin/FacultyCourseAssignmentPicker.js';
 
 const ROLES = ['ADMIN', 'STUDENT', 'FACULTY', 'LIBRARIAN', 'AFFAIRS', 'MANAGER'] as const;
 
@@ -48,18 +52,22 @@ export function AdminUsersPage() {
   const { t } = useTranslation('nav');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search.trim(), 400);
   const [roleFilter, setRoleFilter] = useState('');
   const [collegeFilter, setCollegeFilter] = useState('');
   const [deptFilter, setDeptFilter] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('true');
   const [editing, setEditing] = useState<UserListItem | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [facultyCourseIds, setFacultyCourseIds] = useState<string[]>([]);
 
   const { data: colleges } = useCollegesQuery();
   const { data: departments } = useDepartmentsQuery();
-  const { data, isLoading, isError } = useUsersListQuery({
+  const { data: allCourses } = useStructureCoursesQuery();
+  const editingUserDetail = useAdminUserQuery(editing?.role === 'FACULTY' ? editing.id : null);
+  const { data, isLoading, isError, isFetching } = useUsersListQuery({
     page,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     role: roleFilter || undefined,
     collegeId: collegeFilter || undefined,
     departmentId: deptFilter || undefined,
@@ -96,6 +104,7 @@ export function AdminUsersPage() {
   const openEdit = (row: UserListItem) => {
     setShowCreate(false);
     setEditing(row);
+    setFacultyCourseIds([]);
     editForm.reset({
       name: row.name,
       email: row.email,
@@ -109,6 +118,14 @@ export function AdminUsersPage() {
       academicYear: row.studentProfile?.academicYear ?? '2025-2026',
     });
   };
+
+  useEffect(() => {
+    if (editing?.role !== 'FACULTY' || !editingUserDetail.data?.facultyCourses) return;
+    const ids = editingUserDetail.data.facultyCourses
+      .map((fc) => fc.course?.id)
+      .filter((id): id is string => Boolean(id));
+    setFacultyCourseIds(ids);
+  }, [editing?.id, editing?.role, editingUserDetail.data]);
 
   const submitCreate = createForm.handleSubmit((vals) => {
     const body: Record<string, unknown> = {
@@ -126,11 +143,15 @@ export function AdminUsersPage() {
         academicYear: vals.academicYear || '2025-2026',
       };
     }
+    if (vals.role === 'FACULTY' && facultyCourseIds.length > 0) {
+      body.facultyCourseIds = facultyCourseIds;
+    }
     createMut.mutate(body, {
       onSuccess: () => {
         toast.success(t('messages.userCreated'));
         setShowCreate(false);
         createForm.reset();
+        setFacultyCourseIds([]);
       },
       onError: (e) => apiErrorToast(e, t('messages.loadError')),
     });
@@ -154,6 +175,9 @@ export function AdminUsersPage() {
         academicYear: vals.academicYear,
       };
     }
+    if (vals.role === 'FACULTY') {
+      body.facultyCourseIds = facultyCourseIds;
+    }
     updateMut.mutate(
       { id: editing.id, body },
       {
@@ -167,9 +191,9 @@ export function AdminUsersPage() {
   });
 
   if (isLoading && !data) return <LoadingState />;
-  if (isError || !data) return <Alert variant="error">{t('messages.loadError')}</Alert>;
+  if (isError && !data) return <Alert variant="error">{t('messages.loadError')}</Alert>;
 
-  const rows = data.items;
+  const rows = data?.items ?? [];
 
   return (
     <section className="flex flex-col gap-6">
@@ -177,7 +201,13 @@ export function AdminUsersPage() {
 
       <Card className="flex flex-wrap items-end gap-3">
         <Field label={t('labels.search')} className="min-w-[12rem] flex-1">
-          <Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+          <Input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
         </Field>
         <Field label={t('labels.role')}>
           <Select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}>
@@ -210,7 +240,14 @@ export function AdminUsersPage() {
             <option value="false">{t('labels.inactive')}</option>
           </Select>
         </Field>
-        <Button type="button" onClick={() => { setShowCreate(true); setEditing(null); }}>
+        <Button
+          type="button"
+          onClick={() => {
+            setShowCreate(true);
+            setEditing(null);
+            setFacultyCourseIds([]);
+          }}
+        >
           {t('labels.createUser')}
         </Button>
       </Card>
@@ -245,6 +282,16 @@ export function AdminUsersPage() {
                 </Select>
               </Field>
             )}
+            {createRole === 'FACULTY' ? (
+              <FacultyCourseAssignmentPicker
+                key="create-faculty-courses"
+                colleges={colleges}
+                departments={departments}
+                courses={allCourses}
+                value={facultyCourseIds}
+                onChange={setFacultyCourseIds}
+              />
+            ) : null}
             {createRole === 'STUDENT' && (
               <>
                 <Field label={t('labels.department')} error={createForm.formState.errors.departmentId?.message}>
@@ -316,6 +363,16 @@ export function AdminUsersPage() {
                 <option value="false">{t('labels.inactive')}</option>
               </select>
             </Field>
+            {editRole === 'FACULTY' ? (
+              <FacultyCourseAssignmentPicker
+                key={`edit-faculty-courses-${editing.id}`}
+                colleges={colleges}
+                departments={departments}
+                courses={allCourses}
+                value={facultyCourseIds}
+                onChange={setFacultyCourseIds}
+              />
+            ) : null}
             {editRole === 'STUDENT' && (
               <>
                 <Field label={t('labels.department')}>
@@ -345,6 +402,7 @@ export function AdminUsersPage() {
         </Card>
       ) : null}
 
+      <div className={isFetching ? 'opacity-60 transition-opacity' : undefined}>
       <DataTable<UserListItem>
         rowKey={(r) => r.id}
         emptyMessage="—"
@@ -393,6 +451,8 @@ export function AdminUsersPage() {
         ]}
         rows={rows}
       />
+      </div>
+      {data ? (
       <Pagination
         page={page}
         pageSize={data.pageSize}
@@ -400,6 +460,7 @@ export function AdminUsersPage() {
         onPageChange={setPage}
         summary={<>{t('labels.page')} {page}</>}
       />
+      ) : null}
     </section>
   );
 }

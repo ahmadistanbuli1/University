@@ -43,6 +43,7 @@ import {
   LIBRARY_CATEGORIES,
   type LibraryCategory,
 } from '../lib/library-categories.js';
+import { chartTickStyle, truncateChartLabel } from '../lib/chart-utils.js';
 import { resolveMediaUrl } from '../lib/mediaUrl.js';
 
 const BRAND = { primary: '#7C3AED', secondary: '#A78BFA', glow: '#C084FC', dark: '#8B5CF6' };
@@ -97,7 +98,8 @@ export function LibrarianDashboardPage() {
   const readsByBook = useMemo(
     () =>
       (stats?.topByReads ?? []).slice(0, 8).map((b: LibraryStatsDto['topByReads'][number]) => ({
-        name: b.title.length > 28 ? `${b.title.slice(0, 28)}…` : b.title,
+        name: truncateChartLabel(b.title, 24),
+        fullName: b.title,
         reads: b.readsCount,
         downloads: b.downloadsCount,
       })),
@@ -107,12 +109,22 @@ export function LibrarianDashboardPage() {
   const categoryActivity = useMemo(
     () =>
       (stats?.byCategory ?? []).map((row: LibraryStatsDto['byCategory'][number]) => ({
-        name: t(`library.categories.${row.category}`),
+        name: truncateChartLabel(t(`library.categories.${row.category}`), 18),
+        fullName: t(`library.categories.${row.category}`),
         reads: row.reads,
         downloads: row.downloads,
       })),
     [stats?.byCategory, t]
   );
+
+  const yAxisWidth = useMemo(() => {
+    const labels = [
+      ...readsByBook.map((r) => r.name),
+      ...categoryActivity.map((c) => c.name),
+    ];
+    const longest = labels.reduce((m, s) => Math.max(m, s.length), 0);
+    return Math.min(200, Math.max(96, longest * 7));
+  }, [readsByBook, categoryActivity]);
 
   const gridStroke = isDark ? '#3f3f46' : '#e5e7eb';
   const tickFill = isDark ? '#a1a1aa' : '#6b7280';
@@ -168,34 +180,43 @@ export function LibrarianDashboardPage() {
         <h2 className="m-0 mb-4 text-sm font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
           {t('librarian.chartReadsByBook')}
         </h2>
-        <div className="min-h-[300px] w-full">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={readsByBook} margin={{ top: 12, right: 12, left: 4, bottom: 72 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
-              <XAxis
+        <div className="min-h-[320px] w-full" dir="ltr">
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart
+              layout="vertical"
+              data={readsByBook}
+              margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} horizontal={false} />
+              <XAxis type="number" tick={chartTickStyle(tickFill)} allowDecimals={false} />
+              <YAxis
+                type="category"
                 dataKey="name"
-                tick={{ fill: tickFill, fontSize: 10 }}
+                width={yAxisWidth}
+                tick={chartTickStyle(tickFill, 11)}
                 interval={0}
-                angle={-35}
-                textAnchor="end"
-                height={72}
               />
-              <YAxis tick={{ fill: tickFill, fontSize: 11 }} allowDecimals={false} width={36} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                labelFormatter={(_, payload) => {
+                  const row = payload?.[0]?.payload as { fullName?: string } | undefined;
+                  return row?.fullName ?? '';
+                }}
+              />
               <Legend wrapperStyle={{ paddingTop: 8 }} />
               <Bar
                 dataKey="reads"
                 name={t('labels.reads')}
                 fill={isDark ? BRAND.dark : BRAND.primary}
-                radius={[4, 4, 0, 0]}
-                maxBarSize={40}
+                radius={[0, 4, 4, 0]}
+                maxBarSize={22}
               />
               <Bar
                 dataKey="downloads"
                 name={t('labels.downloads')}
                 fill={BRAND.secondary}
-                radius={[4, 4, 0, 0]}
-                maxBarSize={40}
+                radius={[0, 4, 4, 0]}
+                maxBarSize={22}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -207,17 +228,17 @@ export function LibrarianDashboardPage() {
           <h2 className="m-0 mb-2 text-sm font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
             {t('librarian.chartBooksByCategory')}
           </h2>
-          <div className="min-h-[280px] w-full">
-            <ResponsiveContainer width="100%" height={280}>
+          <div className="min-h-[300px] w-full" dir="ltr">
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={pieData}
                   dataKey="value"
                   nameKey="name"
-                  cx="50%"
-                  cy="45%"
-                  innerRadius={48}
-                  outerRadius={72}
+                  cx="38%"
+                  cy="50%"
+                  innerRadius={44}
+                  outerRadius={68}
                   paddingAngle={2}
                 >
                   {pieData.map((_: { name: string; value: number }, i: number) => (
@@ -226,9 +247,10 @@ export function LibrarianDashboardPage() {
                 </Pie>
                 <Tooltip contentStyle={tooltipStyle} />
                 <Legend
-                  layout="horizontal"
-                  verticalAlign="bottom"
-                  wrapperStyle={{ fontSize: 11, lineHeight: '1.4', paddingTop: 12 }}
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  wrapperStyle={{ fontSize: 11, lineHeight: '1.5', paddingInlineStart: 8 }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -239,34 +261,43 @@ export function LibrarianDashboardPage() {
           <h2 className="m-0 mb-4 text-sm font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
             {t('librarian.chartActivityByCategory')}
           </h2>
-          <div className="min-h-[280px] w-full">
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={categoryActivity} margin={{ top: 8, right: 12, left: 4, bottom: 56 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
-                <XAxis
+          <div className="min-h-[300px] w-full" dir="ltr">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                layout="vertical"
+                data={categoryActivity}
+                margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} horizontal={false} />
+                <XAxis type="number" tick={chartTickStyle(tickFill)} allowDecimals={false} />
+                <YAxis
+                  type="category"
                   dataKey="name"
-                  tick={{ fill: tickFill, fontSize: 9 }}
+                  width={yAxisWidth}
+                  tick={chartTickStyle(tickFill, 11)}
                   interval={0}
-                  angle={-30}
-                  textAnchor="end"
-                  height={56}
                 />
-                <YAxis tick={{ fill: tickFill, fontSize: 11 }} allowDecimals={false} width={32} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Legend wrapperStyle={{ paddingTop: 4 }} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  labelFormatter={(_, payload) => {
+                    const row = payload?.[0]?.payload as { fullName?: string } | undefined;
+                    return row?.fullName ?? '';
+                  }}
+                />
+                <Legend wrapperStyle={{ paddingTop: 8 }} />
                 <Bar
                   dataKey="reads"
                   name={t('labels.reads')}
                   fill={isDark ? BRAND.dark : BRAND.primary}
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={36}
+                  radius={[0, 4, 4, 0]}
+                  maxBarSize={20}
                 />
                 <Bar
                   dataKey="downloads"
                   name={t('labels.downloads')}
                   fill={BRAND.secondary}
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={36}
+                  radius={[0, 4, 4, 0]}
+                  maxBarSize={20}
                 />
               </BarChart>
             </ResponsiveContainer>

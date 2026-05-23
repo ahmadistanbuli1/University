@@ -1,5 +1,12 @@
 import type { UserRole } from '@prisma/client';
 import { AppError } from '../../utils/AppError.js';
+import { prisma } from '../../lib/prisma.js';
+import { assignFacultyCourses } from '../../lib/faculty-courses.js';
+import {
+  normalizeRegistrationSemester,
+  syncStudentDepartmentEnrollments,
+} from '../../lib/student-enrollment.js';
+import { maxStudyYearsForDepartment } from '../../lib/dept-study-years.js';
 import { hashPassword } from '../../utils/password.js';
 import type { UsersRepository } from './users.repository.js';
 import type { ListUsersFilters } from './users.repository.js';
@@ -53,6 +60,7 @@ export class UsersService {
       role: UserRole;
       collegeId?: string | null;
       studentProfile?: StudentProfileInput;
+      facultyCourseIds?: string[];
     }
   ) {
     if (actorRole !== 'ADMIN') {
@@ -95,10 +103,30 @@ export class UsersService {
     });
 
     if (input.role === 'STUDENT' && input.studentProfile) {
+      const dept = await this.users.findDepartmentById(input.studentProfile.departmentId);
+      const currentSemester = dept
+        ? normalizeRegistrationSemester(
+            input.studentProfile.currentSemester,
+            maxStudyYearsForDepartment(dept.code)
+          )
+        : input.studentProfile.currentSemester;
       await this.users.createStudentProfile({
         userId: user.id,
         ...input.studentProfile,
+        currentSemester,
       });
+      const student = await prisma.student.findUnique({ where: { userId: user.id } });
+      if (student && dept) {
+        await syncStudentDepartmentEnrollments(prisma, {
+          studentId: student.id,
+          departmentId: dept.id,
+          academicYear: input.studentProfile.academicYear,
+        });
+      }
+    }
+
+    if (input.role === 'FACULTY' && input.facultyCourseIds?.length) {
+      await assignFacultyCourses(prisma, user.id, input.facultyCourseIds);
     }
 
     const refreshed = await this.users.findById(user.id);
@@ -118,6 +146,7 @@ export class UsersService {
       active?: boolean;
       password?: string;
       studentProfile?: Partial<StudentProfileInput>;
+      facultyCourseIds?: string[];
     }
   ) {
     if (actorRole !== 'ADMIN') {
@@ -174,13 +203,33 @@ export class UsersService {
     if (updates.studentProfile && target.studentProfile) {
       await this.users.updateStudentProfile(target.studentProfile.id, updates.studentProfile);
     } else if (updates.studentProfile && newRole === 'STUDENT' && !target.studentProfile) {
+      const dept = await this.users.findDepartmentById(updates.studentProfile.departmentId!);
+      const rawSemester = updates.studentProfile.currentSemester ?? 1;
+      const currentSemester = dept
+        ? normalizeRegistrationSemester(rawSemester, maxStudyYearsForDepartment(dept.code))
+        : rawSemester;
       await this.users.createStudentProfile({
         userId: targetUserId,
         departmentId: updates.studentProfile.departmentId!,
         academicNumber: updates.studentProfile.academicNumber!,
-        currentSemester: updates.studentProfile.currentSemester ?? 1,
+        currentSemester,
         academicYear: updates.studentProfile.academicYear ?? '2025-2026',
       });
+      const student = await prisma.student.findUnique({ where: { userId: targetUserId } });
+      if (student && dept) {
+        await syncStudentDepartmentEnrollments(prisma, {
+          studentId: student.id,
+          departmentId: dept.id,
+          academicYear: updates.studentProfile.academicYear ?? '2025-2026',
+        });
+      }
+    }
+
+    if (
+      updates.facultyCourseIds !== undefined &&
+      (newRole === 'FACULTY' || target.role === 'FACULTY')
+    ) {
+      await assignFacultyCourses(prisma, targetUserId, updates.facultyCourseIds);
     }
 
     const refreshed = await this.users.findById(targetUserId);

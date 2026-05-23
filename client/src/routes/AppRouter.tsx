@@ -24,8 +24,13 @@ import { LibrarianDashboardPage } from '../pages/LibrarianDashboardPage.js';
 import { LibraryPage } from '../pages/LibraryPage.js';
 import { LoginPage } from '../pages/LoginPage.js';
 import { RegisterPage } from '../pages/RegisterPage.js';
+import { AdminCurriculumPage } from '../pages/AdminCurriculumPage.js';
+import { AdminManagerRequestsPage } from '../pages/AdminManagerRequestsPage.js';
+import { ManagerCurriculumPage } from '../pages/ManagerCurriculumPage.js';
 import { ManagerDashboardPage } from '../pages/ManagerDashboardPage.js';
 import { ManagerNewsPage } from '../pages/ManagerNewsPage.js';
+import { ManagerRequestsPage } from '../pages/ManagerRequestsPage.js';
+import { ManagerStudentsPage } from '../pages/ManagerStudentsPage.js';
 import { NewsPage } from '../pages/NewsPage.js';
 import { StudentAppealsPage } from '../pages/StudentAppealsPage.js';
 import { StudentCoursesPage } from '../pages/StudentCoursesPage.js';
@@ -99,7 +104,10 @@ export function AppRouter() {
           <Route path="news" element={<AdminNewsPage />} />
           <Route path="appeals" element={<AdminAppealsPage />} />
           <Route path="discounts" element={<AdminDiscountsPage />} />
+          <Route path="transcripts" element={<AffairsTranscriptsPage />} />
           <Route path="logs" element={<AdminLogsPage />} />
+          <Route path="curriculum" element={<AdminCurriculumPage />} />
+          <Route path="manager-requests" element={<AdminManagerRequestsPage />} />
         </Route>
 
         <Route
@@ -125,6 +133,9 @@ export function AppRouter() {
         >
           <Route index element={<ManagerDashboardPage />} />
           <Route path="news" element={<ManagerNewsPage />} />
+          <Route path="curriculum" element={<ManagerCurriculumPage />} />
+          <Route path="students" element={<ManagerStudentsPage />} />
+          <Route path="requests" element={<ManagerRequestsPage />} />
         </Route>
 
         <Route

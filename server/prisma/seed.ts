@@ -107,9 +107,9 @@ async function main() {
     console.log('Staff seed skipped (users already exist).');
   }
 
-  const studentCreds = await seedStudentsAndAcademics(prisma, password);
-
   await seedCurriculum(prisma);
+
+  const studentCreds = await seedStudentsAndAcademics(prisma, password);
 
   await seedTuitionAndDiscounts(prisma);
   await seedLibraryBooks(prisma);

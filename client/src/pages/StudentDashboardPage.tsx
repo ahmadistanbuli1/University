@@ -60,7 +60,9 @@ export function StudentDashboardPage() {
   const name = me.name ?? '—';
   const email = me.email ?? '—';
   const role = me.role ?? '—';
-  const courseCount = Array.isArray(enrollments.data) ? enrollments.data.length : 0;
+  const courseCount = enrollments.data?.terms
+    ? enrollments.data.terms.reduce((n, block) => n + block.courses.length, 0)
+    : 0;
   const gradeCount = Array.isArray(results.data?.results) ? results.data.results.length : 0;
   const gpa = results.data?.gpa ?? '—';
 

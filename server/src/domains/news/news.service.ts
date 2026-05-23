@@ -2,11 +2,13 @@ import type { UserRole } from '@prisma/client';
 import { AppError } from '../../utils/AppError.js';
 import type { NewsRepository } from './news.repository.js';
 import type { AuditService } from '../audit/audit.service.js';
+import type { NotificationDispatchService } from '../notifications/notification.service.js';
 
 export class NewsService {
   constructor(
     private readonly repo: NewsRepository,
-    private readonly audit: AuditService | null
+    private readonly audit: AuditService | null,
+    private readonly notify: NotificationDispatchService | null
   ) {}
 
   async listPublic(page: number, pageSize: number) {
@@ -49,6 +51,12 @@ export class NewsService {
         entity: 'news',
         entityId: news.id,
       });
+      await this.notify?.notifyNewsPublished({
+        authorId: input.authorId,
+        title: input.title,
+        collegeId: input.collegeId ?? null,
+        category: input.category ?? 'GENERAL',
+      });
       return news;
     }
     if (input.role === 'MANAGER') {
@@ -73,6 +81,12 @@ export class NewsService {
         action: 'CREATE_NEWS',
         entity: 'news',
         entityId: news.id,
+      });
+      await this.notify?.notifyNewsPublished({
+        authorId: input.authorId,
+        title: input.title,
+        collegeId,
+        category: input.category ?? 'GENERAL',
       });
       return news;
     }

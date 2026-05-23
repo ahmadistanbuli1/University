@@ -3,8 +3,8 @@ import { paramId } from '../../utils/paramId.js';
 import {
   affairsUpdateStudentSchema,
   createAppealSchema,
-  fulfillTranscriptSchema,
   listStudentsQuerySchema,
+  processTranscriptSchema,
   updateAppealSchema,
 } from './studentServices.schemas.js';
 import type { StudentServicesService } from './studentServices.service.js';
@@ -40,14 +40,25 @@ export class StudentServicesController {
   };
 
   patchTranscript = async (req: Request, res: Response) => {
-    const body = fulfillTranscriptSchema.parse(req.body);
-    const updated = await this.svc.fulfillTranscript(
+    const body = processTranscriptSchema.parse(req.body);
+    const updated = await this.svc.processTranscript(
       req.authUser!.id,
       req.authUser!.role,
       paramId(req),
       body
     );
     res.json(updated);
+  };
+
+  downloadTranscript = async (req: Request, res: Response) => {
+    const { absolutePath, fileName } = await this.svc.getTranscriptFile(
+      req.authUser!.id,
+      req.authUser!.role,
+      paramId(req)
+    );
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+    res.sendFile(absolutePath);
   };
 
   myTranscripts = async (req: Request, res: Response) => {
@@ -62,13 +73,22 @@ export class StudentServicesController {
 
   listStudents = async (req: Request, res: Response) => {
     const q = listStudentsQuerySchema.parse(req.query);
-    const result = await this.svc.listStudents(req.authUser!.role, q);
+    const result = await this.svc.listStudents(
+      req.authUser!.role,
+      req.authUser!.collegeId,
+      q
+    );
     res.json(result);
   };
 
   patchStudent = async (req: Request, res: Response) => {
     const body = affairsUpdateStudentSchema.parse(req.body);
-    const updated = await this.svc.updateStudentProfile(req.authUser!.role, paramId(req), body);
+    const updated = await this.svc.updateStudentProfile(
+      req.authUser!.role,
+      req.authUser!.collegeId,
+      paramId(req),
+      body
+    );
     res.json(updated);
   };
 }

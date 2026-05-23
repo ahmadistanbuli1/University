@@ -110,6 +110,21 @@ const COURSE_MAP: Record<string, Record<string, string[]>> = {
   ENGLISH_LIT: ENGLISH_LIT_COURSES,
 };
 
+/** Faculty `Course` rows aligned with study-plan slots (same codes & names). */
+export function facultyCoursesForStudyTerm(
+  departmentCode: string,
+  studyYear: number,
+  term: StudyTerm
+): { code: string; name: string }[] {
+  return buildCurriculumForDepartment(departmentCode)
+    .filter((c) => c.studyYear === studyYear && c.term === term)
+    .map((c) => ({ code: c.code, name: c.name }));
+}
+
+export function facultyCoursesYear1Term1(departmentCode: string) {
+  return facultyCoursesForStudyTerm(departmentCode, 1, 'FIRST');
+}
+
 export function buildCurriculumForDepartment(departmentCode: string): CurriculumCourseSeed[] {
   const maxYears = DEPT_MAX_STUDY_YEARS[departmentCode] ?? 4;
   const map = COURSE_MAP[departmentCode];

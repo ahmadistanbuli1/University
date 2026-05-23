@@ -44,7 +44,14 @@ export class UsersRepository {
             id: true,
             semester: true,
             academicYear: true,
-            course: { select: { id: true, name: true, code: true } },
+            course: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                department: { select: { id: true, name: true, code: true } },
+              },
+            },
           },
         },
       },

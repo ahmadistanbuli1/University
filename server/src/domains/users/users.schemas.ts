@@ -37,6 +37,7 @@ export const adminCreateUserSchema = z
     role: userRoleEnum,
     collegeId: z.string().uuid().nullable().optional(),
     studentProfile: studentProfileFields.optional(),
+    facultyCourseIds: z.array(z.string().uuid()).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.role === 'MANAGER' && !data.collegeId) {
@@ -49,6 +50,13 @@ export const adminCreateUserSchema = z
         path: ['studentProfile'],
       });
     }
+    if (data.role === 'FACULTY' && data.facultyCourseIds && data.facultyCourseIds.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Select at least one course for faculty',
+        path: ['facultyCourseIds'],
+      });
+    }
   });
 
 export const adminUpdateUserSchema = z.object({
@@ -59,4 +67,5 @@ export const adminUpdateUserSchema = z.object({
   active: z.boolean().optional(),
   password: z.string().min(6).max(128).optional(),
   studentProfile: studentProfileFields.partial().optional(),
+  facultyCourseIds: z.array(z.string().uuid()).optional(),
 });

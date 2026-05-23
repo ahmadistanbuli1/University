@@ -19,6 +19,76 @@
     "discounts": "Discount requests",
     "studyPlan": "Study plan"
   },
+  "notifications": {
+    "bellLabel": "Notifications",
+    "title": "Notifications",
+    "empty": "No notifications yet.",
+    "loading": "Loading…",
+    "markAllRead": "Mark all read",
+    "kinds": {
+      "NEWS": {
+        "title": "New announcement",
+        "body": "{{newsTitle}}"
+      },
+      "TRANSCRIPT_REQUEST": {
+        "title": "Transcript request",
+        "body": "{{studentName}} requested a transcript"
+      },
+      "TRANSCRIPT_READY": {
+        "title": "Transcript ready",
+        "body": "Your request was approved — download your PDF"
+      },
+      "TRANSCRIPT_REJECTED": {
+        "title": "Transcript rejected",
+        "body": "{{reason}}"
+      },
+      "APPEAL_SUBMITTED": {
+        "title": "New grade appeal",
+        "body": "{{studentName}} submitted an appeal"
+      },
+      "APPEAL_RESOLVED": {
+        "title": "Appeal resolved",
+        "body": "See the appeals page for details"
+      },
+      "DISCOUNT_REQUEST": {
+        "title": "Discount request",
+        "body": "{{studentName}} submitted a discount request"
+      },
+      "DISCOUNT_RESOLVED": {
+        "title": "Discount reviewed",
+        "body": "See your discount requests page"
+      },
+      "GRADE_PUBLISHED": {
+        "title": "New grade",
+        "body": "A grade was posted for {{courseName}}"
+      },
+      "MANAGER_REQUEST": {
+        "title": "College manager request",
+        "body": "{{subject}}"
+      },
+      "MANAGER_REQUEST_RESOLVED": {
+        "title": "Request update",
+        "body": "{{subject}}"
+      }
+    }
+  },
+  "transcripts": {
+    "studentLead": "Request an official grade transcript. After student affairs approval, a PDF is generated from your academic record.",
+    "affairsLead": "Review pending requests: approve to auto-generate a PDF, or reject with a reason shown to the student.",
+    "approve": "Approve & generate PDF",
+    "reject": "Reject",
+    "rejectTitle": "Reject transcript request",
+    "rejectHint": "Provide a clear reason — the student will see it.",
+    "rejectPlaceholder": "e.g. Incomplete records; please visit student affairs.",
+    "confirmReject": "Confirm rejection",
+    "rejectionReason": "Rejection reason",
+    "download": "Download PDF",
+    "preview": "Preview"
+  },
+  "studentCourses": {
+    "lead": "Courses for {{year}} — first and second term.",
+    "empty": "No courses are listed for your current study year yet."
+  },
   "studyPlan": {
     "lead": "View courses per study year split into two terms, with practical and theory scores and year GPA.",
     "yearGpa": "Year GPA:",
@@ -44,20 +114,43 @@
     "noStudentRecord": "No student profile linked to this account. Contact student affairs."
   },
   "faculty": {
+    "profile": "Profile",
+    "courses": "My courses",
     "dashboard": "Dashboard",
     "classes": "My sections",
     "grades": "Enter grades",
     "analytics": "Analytics",
-    "studentPortalSection": "Student access (shared)"
+    "studentPortalSection": "Student access (shared)",
+    "profileLead": "Your account and teaching assignments.",
+    "teachingSummary": "Teaching",
+    "assignedCoursesCount": "Assigned courses",
+    "collegesTaught": "Departments / colleges",
+    "coursesLead": "Courses you are assigned to teach this term.",
+    "noCoursesAssigned": "No courses assigned yet. Contact the administrator.",
+    "academicNumberPlaceholder": "e.g. STU-2025-INFO-01",
+    "gradeTermHint": "Term and academic year are taken from the selected course automatically."
   },
   "admin": {
+    "facultyCoursesTitle": "Assign courses to teach",
+    "selectCollege": "Select college",
+    "selectCollegeFirst": "Select a college first",
+    "studyYear": "Study year",
+    "studyTerm": "Term",
+    "addCourse": "Add course",
+    "selectedCourses": "Selected courses ({{count}})",
+    "removeCourse": "Remove course",
+    "noCoursesSelected": "No courses added yet. Pick college, year, and term, then add courses.",
+    "noCoursesInSlot": "No courses in this slot",
     "dashboard": "Dashboard",
     "users": "Users",
     "studentRecords": "Student records",
     "news": "News",
     "appeals": "Appeals",
     "logs": "Audit log",
-    "discounts": "Discount requests"
+    "discounts": "Discount requests",
+    "transcripts": "Transcript requests",
+    "curriculum": "Study plan",
+    "managerRequests": "Manager requests"
   },
   "affairs": {
     "dashboard": "Dashboard",
@@ -66,7 +159,19 @@
   },
   "manager": {
     "dashboard": "Dashboard",
-    "news": "College news"
+    "news": "College news",
+    "curriculum": "College courses",
+    "students": "College students",
+    "requests": "Requests to admin",
+    "myRequests": "My requests",
+    "noRequests": "No requests yet."
+  },
+  "managerRequest": {
+    "status": {
+      "PENDING": "Pending",
+      "RESOLVED": "Resolved",
+      "REJECTED": "Rejected"
+    }
   },
   "librarian": {
     "dashboard": "Dashboard",
@@ -92,7 +197,7 @@
   "headings": {
     "studentDashboard": "Student overview",
     "studentProfile": "Profile",
-    "studentCourses": "Enrollments",
+    "studentCourses": "My courses",
     "studentGrades": "Results",
     "studentStudyPlan": "Study plan",
     "studentAppeals": "Submit an appeal",
@@ -102,6 +207,8 @@
     "studentDiscounts": "Discount requests",
     "adminDiscounts": "Review discount requests",
     "facultyDashboard": "Faculty overview",
+    "facultyProfile": "Profile",
+    "facultyCourses": "My courses",
     "facultyClasses": "Assigned sections",
     "facultyGrades": "Post exam result",
     "facultyAnalytics": "Section analytics",
@@ -113,8 +220,13 @@
     "affairsDashboard": "Affairs overview",
     "affairsTranscripts": "Process transcripts",
     "affairsStudents": "Student records",
+    "adminCurriculum": "Study plan management",
+    "adminManagerRequests": "Manager requests",
     "managerDashboard": "Manager overview",
     "managerNews": "Create news",
+    "managerCurriculum": "College courses (view)",
+    "managerStudents": "Manage college students",
+    "managerRequests": "Request to administration",
     "librarianDashboard": "Library overview",
     "librarianBooks": "Add PDF book",
     "publicNews": "News",
@@ -185,6 +297,11 @@
     "allRoles": "All roles",
     "allColleges": "All colleges",
     "allDepartments": "All departments",
+    "allYears": "All years",
+    "requestSubject": "Subject",
+    "requestBody": "Details",
+    "submitRequest": "Submit request",
+    "respond": "Respond",
     "allStatuses": "All statuses",
     "active": "Active",
     "inactive": "Inactive",
@@ -199,8 +316,11 @@
     "newPassword": "New password",
     "passwordOptional": "Leave blank to keep current",
     "selectSection": "Select section",
+    "selectCourse": "Select course",
+    "courseName": "Course",
     "selectStudent": "Select student",
     "courseSection": "Course section",
+    "facultyCoursesAssign": "Assigned courses (hold Ctrl to select multiple)",
     "enrolledCourses": "Enrollments",
     "searchStudentHint": "Name, email, or university ID",
     "readBook": "Read",
@@ -216,6 +336,8 @@
     "bookUploaded": "Book added.",
     "appealUpdated": "Appeal updated.",
     "transcriptUpdated": "Transcript updated.",
+    "transcriptApproved": "Approved and PDF generated.",
+    "transcriptRejected": "Request rejected.",
     "gradePosted": "Grade saved.",
     "loadError": "Could not load data.",
     "noNews": "No announcements published yet.",
@@ -224,7 +346,19 @@
     "sectionsCount": "Assigned sections: {{count}}",
     "adminWelcome": "Manage users, news, appeals, and the audit trail from here.",
     "affairsWelcome": "Track and fulfill official transcript requests.",
-    "managerWelcome": "Publish college news for students and visitors.",
+    "managerWelcome": "Manage your college: courses, students, news, and requests to administration.",
+    "adminCurriculumLead": "View and edit study-plan courses by department, year, and term. Changes apply for all students and faculty.",
+    "managerCurriculumLead": "Browse your college courses by department, year, and term (read-only).",
+    "managerStudentsLead": "View and edit your college students with filtering by study year.",
+    "managerRequestsLead": "Submit a request to central administration (e.g. new course, plan change, or policy action).",
+    "adminManagerRequestsLead": "Review and respond to college manager requests.",
+    "curriculumUpdated": "Course name updated.",
+    "curriculumDeleted": "Course removed from the study plan.",
+    "confirmDeleteCurriculum": "Delete «{{name}}» from the study plan? Related enrollments and grades will be removed.",
+    "noCurriculumCourses": "No courses match this filter.",
+    "selectDepartmentFirst": "Select a department to view courses.",
+    "managerRequestSent": "Request sent to administration.",
+    "managerRequestResolved": "Request updated.",
     "librarianWelcome": "Curate the library’s digital collection.",
     "adminUsersLead": "Create accounts, assign roles and colleges, reset passwords, and deactivate users.",
     "affairsStudentsLead": "Update student departments, university IDs, and academic years.",

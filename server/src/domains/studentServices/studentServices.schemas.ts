@@ -10,19 +10,24 @@ export const updateAppealSchema = z.object({
   adminResponse: z.string().optional(),
 });
 
-export const fulfillTranscriptSchema = z.object({
-  filePath: z.string().min(1),
-  status: z.enum(['DELIVERED', 'PROCESSED']).default('DELIVERED'),
-});
+export const processTranscriptSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('approve') }),
+  z.object({
+    action: z.literal('reject'),
+    rejectionReason: z.string().min(3).max(500),
+  }),
+]);
 
 export const listStudentsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().max(120).optional(),
   departmentId: z.string().uuid().optional(),
+  studyYear: z.coerce.number().int().min(1).max(6).optional(),
 });
 
 export const affairsUpdateStudentSchema = z.object({
+  name: z.string().min(2).max(120).optional(),
   departmentId: z.string().uuid().optional(),
   academicNumber: z
     .string()

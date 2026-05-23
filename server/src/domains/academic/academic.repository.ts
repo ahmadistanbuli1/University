@@ -7,6 +7,13 @@ export class AcademicRepository {
     return this.db.student.findUnique({ where: { userId } });
   }
 
+  findStudentUserId(studentId: string) {
+    return this.db.student.findUnique({
+      where: { id: studentId },
+      select: { userId: true },
+    });
+  }
+
   listEnrollments(studentId: string) {
     return this.db.enrollment.findMany({
       where: { studentId },
@@ -36,20 +43,74 @@ export class AcademicRepository {
     });
   }
 
-  createExamResult(data: {
+  findStudentByAcademicNumber(academicNumber: string) {
+    return this.db.student.findUnique({
+      where: { academicNumber },
+      include: { user: { select: { id: true, name: true } } },
+    });
+  }
+
+  findCurriculumCourseByCode(code: string) {
+    return this.db.curriculumCourse.findUnique({ where: { code } });
+  }
+
+  upsertCurriculumGrade(data: {
+    studentId: string;
+    curriculumCourseId: string;
+    practicalScore: number;
+    theoryScore: number;
+  }) {
+    return this.db.studentCurriculumGrade.upsert({
+      where: {
+        studentId_curriculumCourseId: {
+          studentId: data.studentId,
+          curriculumCourseId: data.curriculumCourseId,
+        },
+      },
+      create: {
+        studentId: data.studentId,
+        curriculumCourseId: data.curriculumCourseId,
+        practicalScore: data.practicalScore,
+        theoryScore: data.theoryScore,
+      },
+      update: {
+        practicalScore: data.practicalScore,
+        theoryScore: data.theoryScore,
+      },
+    });
+  }
+
+  upsertExamResult(data: {
     studentId: string;
     facultyCourseId: string;
     score: number;
-    attemptNumber: number;
+    practicalScore: number;
+    theoryScore: number;
     semester: string;
     academicYear: string;
   }) {
-    return this.db.examResult.create({
-      data: {
-        student: { connect: { id: data.studentId } },
-        facultyCourse: { connect: { id: data.facultyCourseId } },
+    return this.db.examResult.upsert({
+      where: {
+        studentId_facultyCourseId_attemptNumber: {
+          studentId: data.studentId,
+          facultyCourseId: data.facultyCourseId,
+          attemptNumber: 1,
+        },
+      },
+      create: {
+        studentId: data.studentId,
+        facultyCourseId: data.facultyCourseId,
         score: data.score,
-        attemptNumber: data.attemptNumber,
+        practicalScore: data.practicalScore,
+        theoryScore: data.theoryScore,
+        attemptNumber: 1,
+        semester: data.semester,
+        academicYear: data.academicYear,
+      },
+      update: {
+        score: data.score,
+        practicalScore: data.practicalScore,
+        theoryScore: data.theoryScore,
         semester: data.semester,
         academicYear: data.academicYear,
       },

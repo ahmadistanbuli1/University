@@ -9,11 +9,17 @@ import { PageHeader } from '../components/ui/PageHeader.js';
 type ResultRow = {
   id: string;
   score: unknown;
+  practicalScore?: unknown;
+  theoryScore?: unknown;
   semester: string;
   academicYear: string;
-  attemptNumber: number;
   facultyCourse?: { course?: { name?: string; code?: string } };
 };
+
+function formatScore(value: unknown): string {
+  if (value == null) return '—';
+  return String(value);
+}
 
 export function StudentGradesPage() {
   const { t } = useTranslation('nav');
@@ -42,10 +48,19 @@ export function StudentGradesPage() {
             header: t('labels.title'),
             render: (r) => r.facultyCourse?.course?.name ?? '—',
           },
-          { key: 'score', header: t('labels.score'), render: (r) => String(r.score) },
+          {
+            key: 'practical',
+            header: t('studyPlan.practical', { max: 40 }),
+            render: (r) => formatScore(r.practicalScore),
+          },
+          {
+            key: 'theory',
+            header: t('studyPlan.theory', { max: 60 }),
+            render: (r) => formatScore(r.theoryScore),
+          },
+          { key: 'score', header: t('studyPlan.total'), render: (r) => formatScore(r.score) },
           { key: 'sem', header: t('labels.semester'), render: (r) => r.semester },
           { key: 'year', header: t('labels.academicYear'), render: (r) => r.academicYear },
-          { key: 'att', header: t('labels.attemptNumber'), render: (r) => String(r.attemptNumber) },
         ]}
         rows={rows}
       />

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance, postFormData } from './http.js';
 
 export function useMeQuery() {
@@ -11,11 +11,68 @@ export function useMeQuery() {
   });
 }
 
+export function useNotificationsQuery(enabled = true) {
+  return useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<unknown[]>('/api/notifications');
+      return data;
+    },
+    enabled,
+    refetchInterval: enabled ? 45_000 : false,
+  });
+}
+
+export function useUnreadNotificationsCountQuery() {
+  return useQuery({
+    queryKey: ['notifications', 'unread-count'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{ count: number }>(
+        '/api/notifications/unread-count'
+      );
+      return data.count;
+    },
+    refetchInterval: 30_000,
+  });
+}
+
+export function useMarkNotificationReadMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await axiosInstance.patch(`/api/notifications/${id}/read`);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export function useMarkAllNotificationsReadMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      await axiosInstance.patch('/api/notifications/read-all');
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export type MyEnrollmentsByTerm = {
+  studyYear: number;
+  terms: Array<{
+    term: 'FIRST' | 'SECOND';
+    courses: Array<{ id: string; name: string; code: string }>;
+  }>;
+};
+
 export function useMyEnrollmentsQuery() {
   return useQuery({
     queryKey: ['enrollments', 'me'],
     queryFn: async () => {
-      const { data } = await axiosInstance.get<unknown[]>('/api/academic/enrollments/me');
+      const { data } = await axiosInstance.get<MyEnrollmentsByTerm>('/api/academic/enrollments/me');
       return data;
     },
   });
@@ -125,47 +182,71 @@ export function useAllTranscriptsQuery() {
   });
 }
 
-export function usePatchTranscriptMutation() {
+export function useProcessTranscriptMutation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (args: {
-      id: string;
-      filePath: string;
-      status: 'DELIVERED' | 'PROCESSED';
-    }) => {
+    mutationFn: async (
+      args:
+        | { id: string; action: 'approve' }
+        | { id: string; action: 'reject'; rejectionReason: string }
+    ) => {
       const { data } = await axiosInstance.patch<unknown>(
         `/api/student-services/transcripts/${args.id}`,
-        {
-          filePath: args.filePath,
-          status: args.status,
-        }
+        args.action === 'approve'
+          ? { action: 'approve' }
+          : { action: 'reject', rejectionReason: args.rejectionReason }
       );
       return data;
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['transcripts', 'all'] });
+      void qc.invalidateQueries({ queryKey: ['transcripts', 'me'] });
       void qc.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
     },
   });
+}
+
+export async function fetchTranscriptPdfBlob(requestId: string): Promise<Blob> {
+  const { data } = await axiosInstance.get<Blob>(
+    `/api/student-services/transcripts/${requestId}/file`,
+    { responseType: 'blob' }
+  );
+  return data;
 }
 
 export function usePostResultMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (body: {
-      studentId: string;
       facultyCourseId: string;
-      score: number;
-      semester: string;
-      academicYear: string;
-      attemptNumber?: number;
+      academicNumber: string;
+      practicalScore: number;
+      theoryScore: number;
     }) => {
       const { data } = await axiosInstance.post<unknown>('/api/academic/results', body);
       return data;
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['results', 'me'] });
+      void qc.invalidateQueries({ queryKey: ['study-plan', 'me'] });
       void qc.invalidateQueries({ queryKey: ['analytics'] });
+    },
+  });
+}
+
+export type StructureCourse = {
+  id: string;
+  name: string;
+  code: string;
+  department?: { id: string; name: string; code: string; college?: { id: string; name: string } };
+};
+
+export function useStructureCoursesQuery() {
+  return useQuery({
+    queryKey: ['structure', 'courses'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<StructureCourse[]>('/api/structure/courses');
+      return data;
     },
   });
 }
@@ -236,6 +317,7 @@ export function useUsersListQuery(filters: UsersListFilters) {
       });
       return data;
     },
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -250,6 +332,20 @@ export function useCreateUserMutation() {
       void qc.invalidateQueries({ queryKey: ['users', 'list'] });
       void qc.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
     },
+  });
+}
+
+export function useAdminUserQuery(userId: string | null) {
+  return useQuery({
+    queryKey: ['admin', 'user', userId],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{
+        id: string;
+        facultyCourses?: Array<{ course?: { id: string } }>;
+      }>(`/api/users/${userId}`);
+      return data;
+    },
+    enabled: Boolean(userId),
   });
 }
 
@@ -317,6 +413,7 @@ export function useAffairsStudentsQuery(params: {
   page: number;
   search?: string;
   departmentId?: string;
+  studyYear?: number;
 }) {
   return useQuery({
     queryKey: ['affairs', 'students', params],
@@ -332,10 +429,41 @@ export function useAffairsStudentsQuery(params: {
           pageSize: 20,
           search: params.search || undefined,
           departmentId: params.departmentId || undefined,
+          studyYear: params.studyYear || undefined,
         },
       });
       return data;
     },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useManagerStudentsQuery(params: {
+  page: number;
+  search?: string;
+  departmentId?: string;
+  studyYear?: number;
+}) {
+  return useQuery({
+    queryKey: ['manager', 'students', params],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{
+        items: AffairsStudentRow[];
+        total: number;
+        page: number;
+        pageSize: number;
+      }>('/api/student-services/students', {
+        params: {
+          page: params.page,
+          pageSize: 20,
+          search: params.search || undefined,
+          departmentId: params.departmentId || undefined,
+          studyYear: params.studyYear || undefined,
+        },
+      });
+      return data;
+    },
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -351,6 +479,141 @@ export function usePatchAffairsStudentMutation() {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['affairs', 'students'] });
+      void qc.invalidateQueries({ queryKey: ['manager', 'students'] });
+    },
+  });
+}
+
+export type CurriculumCourseRow = {
+  id: string;
+  studyYear: number;
+  term: 'FIRST' | 'SECOND';
+  name: string;
+  code: string;
+  department: { id: string; name: string; college?: { id: string; name: string } };
+};
+
+export type CurriculumGrouped = {
+  studyYear: number;
+  terms: { term: 'FIRST' | 'SECOND'; courses: CurriculumCourseRow[] }[];
+};
+
+export function useCurriculumQuery(params: {
+  departmentId?: string;
+  studyYear?: number;
+  enabled?: boolean;
+}) {
+  return useQuery({
+    queryKey: ['curriculum', params],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{
+        grouped: CurriculumGrouped[];
+        flat: CurriculumCourseRow[];
+      }>('/api/curriculum', {
+        params: {
+          departmentId: params.departmentId || undefined,
+          studyYear: params.studyYear || undefined,
+        },
+      });
+      return data;
+    },
+    enabled: params.enabled !== false,
+  });
+}
+
+export function useUpdateCurriculumMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { id: string; name: string }) => {
+      const { data } = await axiosInstance.patch<CurriculumCourseRow>(
+        `/api/curriculum/${args.id}`,
+        { name: args.name }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['curriculum'] });
+    },
+  });
+}
+
+export function useDeleteCurriculumMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await axiosInstance.delete(`/api/curriculum/${id}`);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['curriculum'] });
+    },
+  });
+}
+
+export type ManagerRequestRow = {
+  id: string;
+  subject: string;
+  body: string;
+  status: 'PENDING' | 'RESOLVED' | 'REJECTED';
+  adminResponse: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
+  manager?: { id: string; name: string; email: string; college?: { name: string } };
+  resolvedBy?: { name: string } | null;
+};
+
+export function useManagerRequestsQuery() {
+  return useQuery({
+    queryKey: ['manager', 'requests'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<ManagerRequestRow[]>('/api/manager/requests');
+      return data;
+    },
+  });
+}
+
+export function useCreateManagerRequestMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { subject: string; body: string }) => {
+      const { data } = await axiosInstance.post<ManagerRequestRow>('/api/manager/requests', body);
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['manager', 'requests'] });
+      void qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export function useAdminManagerRequestsQuery() {
+  return useQuery({
+    queryKey: ['admin', 'manager-requests'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<ManagerRequestRow[]>(
+        '/api/admin/manager-requests'
+      );
+      return data;
+    },
+  });
+}
+
+export function useResolveManagerRequestMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: {
+      id: string;
+      status: 'RESOLVED' | 'REJECTED';
+      adminResponse: string;
+    }) => {
+      const { data } = await axiosInstance.patch<ManagerRequestRow>(
+        `/api/admin/manager-requests/${args.id}`,
+        { status: args.status, adminResponse: args.adminResponse }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin', 'manager-requests'] });
+      void qc.invalidateQueries({ queryKey: ['manager', 'requests'] });
     },
   });
 }
@@ -517,6 +780,7 @@ export function useBooksQuery(page: number, category: string, keyword?: string) 
       );
       return data;
     },
+    staleTime: 10 * 60 * 1000,
   });
 }
 
@@ -571,6 +835,7 @@ export function useCreateNewsMutation() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['news'] });
       void qc.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
+      void qc.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 }

@@ -13,7 +13,7 @@ export function PublicLayout() {
       )}
     >
       <PublicNavbar />
-      <main className="relative mt-7 z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:px-6">
+      <main className="relative mt-9 z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6 sm:pt-6">
         <Outlet />
       </main>
       <footer className="relative z-10 border-t border-zinc-200/60 bg-white/60 py-6 text-center text-xs font-medium text-zinc-500 backdrop-blur dark:border-white/5 dark:bg-zinc-950/60 dark:text-zinc-400">

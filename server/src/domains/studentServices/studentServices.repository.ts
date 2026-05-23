@@ -7,6 +7,20 @@ export class StudentServicesRepository {
     return this.db.student.findUnique({ where: { userId } });
   }
 
+  findStudentWithUser(studentId: string) {
+    return this.db.student.findUnique({
+      where: { id: studentId },
+      include: { user: { select: { id: true, name: true } } },
+    });
+  }
+
+  findStudentByUserIdWithUser(userId: string) {
+    return this.db.student.findUnique({
+      where: { userId },
+      include: { user: { select: { id: true, name: true } } },
+    });
+  }
+
   findExamResult(id: string) {
     return this.db.examResult.findUnique({ where: { id }, include: { student: true } });
   }
@@ -41,7 +55,10 @@ export class StudentServicesRepository {
   }
 
   findAppeal(id: string) {
-    return this.db.gradeAppeal.findUnique({ where: { id } });
+    return this.db.gradeAppeal.findUnique({
+      where: { id },
+      include: { student: { include: { user: { select: { id: true, name: true } } } } },
+    });
   }
 
   listAppealsForStudent(studentId: string) {
@@ -67,13 +84,52 @@ export class StudentServicesRepository {
     });
   }
 
+  findPendingTranscriptForStudent(studentId: string) {
+    return this.db.transcriptRequest.findFirst({
+      where: { studentId, status: 'PENDING' },
+    });
+  }
+
   findTranscript(id: string) {
     return this.db.transcriptRequest.findUnique({ where: { id }, include: { student: true } });
   }
 
+  findTranscriptWithStudent(id: string) {
+    return this.db.transcriptRequest.findUnique({
+      where: { id },
+      include: {
+        student: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+            department: { include: { college: true } },
+            curriculumGrades: {
+              where: {
+                practicalScore: { not: null },
+                theoryScore: { not: null },
+              },
+              include: { curriculumCourse: true },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  findTranscriptForDownload(id: string) {
+    return this.db.transcriptRequest.findUnique({
+      where: { id },
+      include: { student: { select: { userId: true } } },
+    });
+  }
+
   updateTranscript(
     id: string,
-    data: { status?: TranscriptRequestStatus; filePath?: string | null; processedAt?: Date | null }
+    data: {
+      status?: TranscriptRequestStatus;
+      filePath?: string | null;
+      rejectionReason?: string | null;
+      processedAt?: Date | null;
+    }
   ) {
     return this.db.transcriptRequest.update({
       where: { id },
@@ -102,16 +158,26 @@ export class StudentServicesRepository {
     pageSize: number;
     search?: string;
     departmentId?: string;
+    collegeId?: string;
+    studyYear?: number;
   }) {
     const skip = (params.page - 1) * params.pageSize;
     const where: {
       departmentId?: string;
+      currentSemester?: { gte: number; lte: number };
+      department?: { collegeId: string };
       OR?: Array<{
         academicNumber?: { contains: string; mode: 'insensitive' };
         user?: { name?: { contains: string; mode: 'insensitive' }; email?: { contains: string; mode: 'insensitive' } };
       }>;
     } = {};
     if (params.departmentId) where.departmentId = params.departmentId;
+    if (params.collegeId) where.department = { collegeId: params.collegeId };
+    if (params.studyYear) {
+      const minSem = (params.studyYear - 1) * 2 + 1;
+      const maxSem = params.studyYear * 2;
+      where.currentSemester = { gte: minSem, lte: maxSem };
+    }
     if (params.search?.trim()) {
       const q = params.search.trim();
       where.OR = [
@@ -149,23 +215,40 @@ export class StudentServicesRepository {
     });
   }
 
-  updateStudent(
+  async updateStudent(
     id: string,
     data: Partial<{
       departmentId: string;
       academicNumber: string;
       currentSemester: number;
       academicYear: string;
+      userName: string;
     }>
   ) {
+    const { userName, ...studentData } = data;
+    if (userName) {
+      const row = await this.db.student.findUnique({
+        where: { id },
+        select: { userId: true },
+      });
+      if (row) {
+        await this.db.user.update({ where: { id: row.userId }, data: { name: userName } });
+      }
+    }
     return this.db.student.update({
       where: { id },
-      data,
+      data: studentData,
       include: {
         user: { select: { id: true, name: true, email: true, active: true } },
         department: { include: { college: true } },
         enrollments: { include: { course: { select: { id: true, name: true, code: true } } } },
       },
+    });
+  }
+
+  findDepartmentInCollege(departmentId: string, collegeId: string) {
+    return this.db.department.findFirst({
+      where: { id: departmentId, collegeId },
     });
   }
 

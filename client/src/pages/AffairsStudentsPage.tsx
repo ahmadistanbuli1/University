@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { isAxiosError } from 'axios';
@@ -24,6 +25,7 @@ export function AffairsStudentsPage() {
   const { t } = useTranslation('nav');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search.trim(), 400);
   const [departmentId, setDepartmentId] = useState('');
   const [editing, setEditing] = useState<AffairsStudentRow | null>(null);
   const [form, setForm] = useState({
@@ -34,9 +36,9 @@ export function AffairsStudentsPage() {
   });
 
   const { data: departments } = useDepartmentsQuery();
-  const { data, isLoading, isError } = useAffairsStudentsQuery({
+  const { data, isLoading, isError, isFetching } = useAffairsStudentsQuery({
     page,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     departmentId: departmentId || undefined,
   });
   const patch = usePatchAffairsStudentMutation();
@@ -80,7 +82,9 @@ export function AffairsStudentsPage() {
   };
 
   if (isLoading && !data) return <LoadingState />;
-  if (isError || !data) return <Alert variant="error">{t('messages.loadError')}</Alert>;
+  if (isError && !data) return <Alert variant="error">{t('messages.loadError')}</Alert>;
+
+  const rows = data?.items ?? [];
 
   return (
     <section className="flex flex-col gap-6">
@@ -178,6 +182,7 @@ export function AffairsStudentsPage() {
         </Card>
       ) : null}
 
+      <div className={isFetching ? 'opacity-60 transition-opacity' : undefined}>
       <DataTable<AffairsStudentRow>
         rowKey={(r) => r.id}
         emptyMessage="—"
@@ -202,8 +207,10 @@ export function AffairsStudentsPage() {
             ),
           },
         ]}
-        rows={data.items}
+        rows={rows}
       />
+      </div>
+      {data ? (
       <Pagination
         page={page}
         pageSize={data.pageSize}
@@ -215,6 +222,7 @@ export function AffairsStudentsPage() {
           </>
         }
       />
+      ) : null}
     </section>
   );
 }

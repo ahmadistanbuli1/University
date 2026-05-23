@@ -2,6 +2,7 @@ import type { StudyTerm, UserRole } from '@prisma/client';
 import { AppError } from '../../utils/AppError.js';
 import type { AcademicRepository } from './academic.repository.js';
 import type { AuditService } from '../audit/audit.service.js';
+import type { NotificationDispatchService } from '../notifications/notification.service.js';
 import { computeGpaFromLatestAttempts } from './gpa.js';
 import {
   averageCourseTotals,
@@ -11,31 +12,26 @@ import {
   termFromSemester,
 } from './study-plan.js';
 
-const DEPT_MAX_STUDY_YEARS: Record<string, number> = {
-  INFO_ENG: 5,
-  MED_ENG: 5,
-  ALT_ENERGY_ENG: 5,
-  ANESTHESIA: 4,
-  ADMIN_SCI: 4,
-  PHARMACY: 4,
-  ENGLISH_LIT: 4,
-};
+import { groupEnrollmentsForCurrentYear } from '../../lib/student-enrollment.js';
+import { DEPT_MAX_STUDY_YEARS } from '../../lib/dept-study-years.js';
 
 export class AcademicService {
   constructor(
     private readonly repo: AcademicRepository,
-    private readonly audit: AuditService | null
+    private readonly audit: AuditService | null,
+    private readonly notify: NotificationDispatchService | null
   ) {}
 
   async getMyEnrollments(userId: string, role: UserRole) {
     if (role !== 'STUDENT' && role !== 'FACULTY') {
       throw new AppError(403, 'Forbidden');
     }
-    const student = await this.repo.findStudentByUserId(userId);
+    const student = await this.repo.findStudentWithDepartment(userId);
     if (!student) {
-      return [];
+      return { studyYear: 1, terms: [] };
     }
-    return this.repo.listEnrollments(student.id);
+    const enrollments = await this.repo.listEnrollments(student.id);
+    return groupEnrollmentsForCurrentYear(enrollments, student.currentSemester);
   }
 
   async getMyResults(userId: string, role: UserRole) {
@@ -81,37 +77,61 @@ export class AcademicService {
 
   async submitResult(input: {
     facultyUserId: string;
-    studentId: string;
     facultyCourseId: string;
-    score: number;
-    semester: string;
-    academicYear: string;
-    attemptNumber?: number;
+    academicNumber: string;
+    practicalScore: number;
+    theoryScore: number;
   }) {
     const fc = await this.repo.findFacultyCourse(input.facultyCourseId);
     if (!fc || fc.facultyId !== input.facultyUserId) {
-      throw new AppError(403, 'Not assigned to this course section');
+      throw new AppError(403, 'Not assigned to this course');
     }
+
+    const student = await this.repo.findStudentByAcademicNumber(input.academicNumber.trim());
+    if (!student) {
+      throw new AppError(404, 'Student not found');
+    }
+
     const roster = await this.repo.listStudentsEnrolledInCourse(fc.courseId);
-    if (!roster.some((e) => e.student.id === input.studentId)) {
+    if (!roster.some((e) => e.student.id === student.id)) {
       throw new AppError(400, 'Student is not enrolled in this course');
     }
-    const attempt = input.attemptNumber ?? 1;
-    const created = await this.repo.createExamResult({
-      studentId: input.studentId,
+
+    const total =
+      Math.round((input.practicalScore + input.theoryScore) * 100) / 100;
+
+    const created = await this.repo.upsertExamResult({
+      studentId: student.id,
       facultyCourseId: input.facultyCourseId,
-      score: input.score,
-      attemptNumber: attempt,
-      semester: input.semester,
-      academicYear: input.academicYear,
+      score: total,
+      practicalScore: input.practicalScore,
+      theoryScore: input.theoryScore,
+      semester: fc.semester,
+      academicYear: fc.academicYear,
     });
+
+    const curriculum = await this.repo.findCurriculumCourseByCode(fc.course.code);
+    if (curriculum) {
+      await this.repo.upsertCurriculumGrade({
+        studentId: student.id,
+        curriculumCourseId: curriculum.id,
+        practicalScore: input.practicalScore,
+        theoryScore: input.theoryScore,
+      });
+    }
+
     await this.audit?.log({
       userId: input.facultyUserId,
       action: 'CREATE_GRADE',
       entity: 'exam_results',
       entityId: created.id,
-      details: { score: input.score, studentId: input.studentId },
+      details: {
+        score: total,
+        studentId: student.id,
+        academicNumber: input.academicNumber,
+      },
     });
+    await this.notify?.notifyGradePublished(student.userId, fc.course.name);
     return created;
   }
 

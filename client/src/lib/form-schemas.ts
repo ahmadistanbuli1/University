@@ -27,12 +27,14 @@ export const appealFormSchema = z.object({
 });
 
 export const facultyGradeFormSchema = z.object({
-  facultyCourseId: z.string().uuid({ message: 'Select a section' }),
-  studentId: z.string().uuid({ message: 'Select a student' }),
-  score: z.coerce.number().min(0).max(100),
-  semester: z.string().max(64).optional(),
-  academicYear: z.string().max(64).optional(),
-  attemptNumber: z.string().optional(),
+  facultyCourseId: z.string().uuid({ message: 'Select a course' }),
+  academicNumber: z
+    .string()
+    .min(3, { message: 'Required' })
+    .max(32)
+    .regex(/^[A-Za-z0-9-]+$/, { message: 'Invalid academic number' }),
+  practicalScore: z.coerce.number().min(0).max(40),
+  theoryScore: z.coerce.number().min(0).max(60),
 });
 
 export const managerNewsFormSchema = z.object({

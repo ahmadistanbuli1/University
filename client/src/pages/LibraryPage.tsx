@@ -9,7 +9,7 @@ import { Alert } from '../components/ui/Alert.js';
 import { Button } from '../components/ui/Button.js';
 import { Card } from '../components/ui/Card.js';
 import { DataTable } from '../components/ui/DataTable.js';
-import { LoadingState } from '../components/ui/LoadingState.js';
+import { LibraryTableSkeleton } from '../components/ui/Skeleton.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
 import { Pagination } from '../components/ui/Pagination.js';
 import {
@@ -42,7 +42,10 @@ export function LibraryPage() {
     setPage(1);
   }, [category]);
 
-  const { data, isLoading, isError, isFetching } = useBooksQuery(page, category);
+  const { data, isError, isPending, isFetching } = useBooksQuery(page, category);
+
+  /** Skeleton only while this category/page has no cached data yet. */
+  const showTableSkeleton = isPending && data === undefined;
 
   async function trackRead(book: Book) {
     const url = resolveMediaUrl(book.filePath);
@@ -82,12 +85,11 @@ export function LibraryPage() {
     }
   }
 
-  if (isLoading && !data) return <LoadingState />;
   if (isError) return <Alert variant="error">{t('nav:messages.loadError')}</Alert>;
 
   const rows = (data?.items ?? []) as Book[];
   const total = data?.total ?? 0;
-  const isEmpty = !isFetching && rows.length === 0;
+  const isEmpty = !showTableSkeleton && !isFetching && rows.length === 0;
 
   return (
     <section className="flex flex-col gap-6">
@@ -124,7 +126,9 @@ export function LibraryPage() {
         })}
       </div>
 
-      {isEmpty ? (
+      {showTableSkeleton ? (
+        <LibraryTableSkeleton rows={2} />
+      ) : isEmpty ? (
         <Card className="flex flex-col items-center gap-4 border-dashed border-violet-300/50 bg-violet-50/30 py-14 text-center dark:border-violet-500/25 dark:bg-violet-950/20">
           <span className="grid size-16 place-items-center rounded-2xl bg-gradient-to-br from-violet-100 to-violet-50 text-violet-600 dark:from-violet-500/20 dark:to-transparent dark:text-violet-300">
             <LibraryBig className="size-8" strokeWidth={1.5} aria-hidden />

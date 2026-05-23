@@ -1,12 +1,14 @@
 import { z } from 'zod';
 
 export const createResultSchema = z.object({
-  studentId: z.string().uuid(),
   facultyCourseId: z.string().uuid(),
-  score: z.coerce.number().min(0).max(100),
-  semester: z.string().min(1),
-  academicYear: z.string().min(1),
-  attemptNumber: z.coerce.number().int().min(1).optional(),
+  academicNumber: z
+    .string()
+    .min(3)
+    .max(32)
+    .regex(/^[A-Za-z0-9-]+$/),
+  practicalScore: z.coerce.number().min(0).max(40),
+  theoryScore: z.coerce.number().min(0).max(60),
 });
 
 export const analyticsQuerySchema = z.object({

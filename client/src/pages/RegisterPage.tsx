@@ -198,7 +198,7 @@ export function RegisterPage() {
                 {...register('currentSemester', { valueAsNumber: true })}
               >
                 {studyYears.map((level) => (
-                  <option key={level} value={level}>
+                  <option key={level} value={(level - 1) * 2 + 1}>
                     {getStudyYearLabel(level, lang)}
                   </option>
                 ))}

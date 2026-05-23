@@ -1,6 +1,7 @@
 import type { UserRole } from '@prisma/client';
 import { AppError } from '../../utils/AppError.js';
 import type { AuditService } from '../audit/audit.service.js';
+import type { NotificationDispatchService } from '../notifications/notification.service.js';
 import type { TuitionRepository } from './tuition.repository.js';
 
 function installmentStatus(amountDue: number, amountPaid: number): 'PENDING' | 'PARTIAL' | 'PAID' {
@@ -16,7 +17,8 @@ function genReference() {
 export class TuitionService {
   constructor(
     private readonly repo: TuitionRepository,
-    private readonly audit: AuditService | null
+    private readonly audit: AuditService | null,
+    private readonly notify: NotificationDispatchService | null
   ) {}
 
   async getMySummary(userId: string, role: UserRole) {
@@ -180,6 +182,7 @@ export class TuitionService {
       entity: 'discount_requests',
       entityId: req.id,
     });
+    await this.notify?.notifyDiscountRequested(student.user.name);
 
     return req;
   }
@@ -255,6 +258,7 @@ export class TuitionService {
       entityId: id,
       details: { status: input.status },
     });
+    await this.notify?.notifyDiscountResolved(existing.student.userId, input.status);
 
     return updated;
   }

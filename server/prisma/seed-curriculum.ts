@@ -4,6 +4,7 @@ import {
   DEPT_MAX_STUDY_YEARS,
   INFO_ENG_DEMO_GRADES,
 } from './seed-curriculum-data.js';
+import { ensureDepartmentCoursesFromCurriculum } from '../src/lib/student-enrollment.js';
 
 function randomGrade(minP: number, maxP: number, minT: number, maxT: number) {
   const practical = Math.round((minP + Math.random() * (maxP - minP)) * 10) / 10;
@@ -44,6 +45,8 @@ export async function seedCurriculum(prisma: PrismaClient) {
       });
       courseCount++;
     }
+
+    await ensureDepartmentCoursesFromCurriculum(prisma, dept.id);
   }
 
   const infoStudent = await prisma.student.findFirst({

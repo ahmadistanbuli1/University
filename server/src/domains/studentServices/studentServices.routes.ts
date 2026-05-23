@@ -47,13 +47,18 @@ export function createStudentServicesRouter(
     asyncHandler(controller.patchTranscript.bind(controller))
   );
   r.get(
+    '/transcripts/:id/file',
+    requireRoles('STUDENT', 'FACULTY', 'AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.downloadTranscript.bind(controller))
+  );
+  r.get(
     '/students',
-    requireRoles('AFFAIRS', 'ADMIN'),
+    requireRoles('AFFAIRS', 'ADMIN', 'MANAGER'),
     asyncHandler(controller.listStudents.bind(controller))
   );
   r.patch(
     '/students/:id',
-    requireRoles('AFFAIRS', 'ADMIN'),
+    requireRoles('AFFAIRS', 'ADMIN', 'MANAGER'),
     asyncHandler(controller.patchStudent.bind(controller))
   );
   return r;

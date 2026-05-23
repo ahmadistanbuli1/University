@@ -104,7 +104,7 @@ export class TuitionRepository {
   findDiscountRequest(id: string) {
     return this.db.discountRequest.findUnique({
       where: { id },
-      include: { student: true },
+      include: { student: { include: { user: { select: { id: true, name: true } } } } },
     });
   }
 

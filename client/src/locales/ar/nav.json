@@ -19,6 +19,76 @@
     "discounts": "طلبات الخصم",
     "studyPlan": "الخطة الدراسية"
   },
+  "notifications": {
+    "bellLabel": "الإشعارات",
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات.",
+    "loading": "جارٍ التحميل…",
+    "markAllRead": "تعليم الكل كمقروء",
+    "kinds": {
+      "NEWS": {
+        "title": "خبر جديد",
+        "body": "{{newsTitle}}"
+      },
+      "TRANSCRIPT_REQUEST": {
+        "title": "طلب كشف علامات",
+        "body": "{{studentName}} قدّم طلب كشف"
+      },
+      "TRANSCRIPT_READY": {
+        "title": "كشف العلامات جاهز",
+        "body": "تمت الموافقة على طلبك ويمكنك تحميل PDF"
+      },
+      "TRANSCRIPT_REJECTED": {
+        "title": "رفض طلب الكشف",
+        "body": "{{reason}}"
+      },
+      "APPEAL_SUBMITTED": {
+        "title": "تظلم جديد",
+        "body": "{{studentName}} قدّم تظلماً على درجة"
+      },
+      "APPEAL_RESOLVED": {
+        "title": "تم البت في التظلم",
+        "body": "راجع صفحة التظلمات للتفاصيل"
+      },
+      "DISCOUNT_REQUEST": {
+        "title": "طلب خصم",
+        "body": "{{studentName}} قدّم طلب خصم أقساط"
+      },
+      "DISCOUNT_RESOLVED": {
+        "title": "تم البت في طلب الخصم",
+        "body": "راجع صفحة طلبات الخصم"
+      },
+      "GRADE_PUBLISHED": {
+        "title": "درجة جديدة",
+        "body": "تم نشر درجة في {{courseName}}"
+      },
+      "MANAGER_REQUEST": {
+        "title": "طلب من مدير كلية",
+        "body": "{{subject}}"
+      },
+      "MANAGER_REQUEST_RESOLVED": {
+        "title": "رد على طلبك",
+        "body": "{{subject}}"
+      }
+    }
+  },
+  "transcripts": {
+    "studentLead": "اطلب كشف علامات رسمي. بعد موافقة شؤون الطلاب يُولَّد ملف PDF من سجلك الأكاديمي.",
+    "affairsLead": "راجع الطلبات المعلّقة: الموافقة تُنشئ كشف PDF تلقائياً، والرفض يتطلب سبباً يظهر للطالب.",
+    "approve": "موافقة وتوليد PDF",
+    "reject": "رفض",
+    "rejectTitle": "رفض طلب الكشف",
+    "rejectHint": "اكتب سبب الرفض بوضوح — سيظهر للطالب.",
+    "rejectPlaceholder": "مثال: بيانات غير مكتملة، يرجى مراجعة شؤون الطلاب.",
+    "confirmReject": "تأكيد الرفض",
+    "rejectionReason": "سبب الرفض",
+    "download": "تحميل PDF",
+    "preview": "معاينة"
+  },
+  "studentCourses": {
+    "lead": "مواد {{year}} — الفصل الأول والثاني.",
+    "empty": "لا توجد مواد معروضة لسنتك الدراسية الحالية بعد."
+  },
   "studyPlan": {
     "lead": "عرض مواد كل سنة حسب الفصل الأول والثاني، مع درجات العملي والنظري ومعدل السنة.",
     "yearGpa": "معدل السنة:",
@@ -44,20 +114,43 @@
     "noStudentRecord": "لا يوجد ملف طالب مرتبط بهذا الحساب. تواصل مع شؤون الطلاب."
   },
   "faculty": {
+    "profile": "الملف الشخصي",
+    "courses": "المواد",
     "dashboard": "لوحة التحكم",
     "classes": "شعبتي",
     "grades": "إدخال الدرجات",
     "analytics": "التحليلات",
-    "studentPortalSection": "بوابة الطالب (مشتركة)"
+    "studentPortalSection": "بوابة الطالب (مشتركة)",
+    "profileLead": "بيانات حسابك والمواد التي تدرّسها.",
+    "teachingSummary": "التدريس",
+    "assignedCoursesCount": "عدد المواد المعيّنة",
+    "collegesTaught": "الأقسام / الكليات",
+    "coursesLead": "المواد المعيّنة لك للفصل الحالي.",
+    "noCoursesAssigned": "لا توجد مواد معيّنة بعد. تواصل مع الإدارة.",
+    "academicNumberPlaceholder": "مثال: STU-2025-INFO-01",
+    "gradeTermHint": "يُؤخذ الفصل والعام الدراسي تلقائياً من المادة المختارة."
   },
   "admin": {
+    "facultyCoursesTitle": "تعيين المواد التي يدرّسها",
+    "selectCollege": "اختر الكلية",
+    "selectCollegeFirst": "اختر الكلية أولاً",
+    "studyYear": "السنة الدراسية",
+    "studyTerm": "الفصل",
+    "addCourse": "إضافة المادة",
+    "selectedCourses": "المواد المختارة ({{count}})",
+    "removeCourse": "إزالة المادة",
+    "noCoursesSelected": "لم تُضف مواد بعد. اختر الكلية والسنة والفصل ثم أضف المواد.",
+    "noCoursesInSlot": "لا توجد مواد في هذا الموضع",
     "dashboard": "لوحة التحكم",
     "users": "المستخدمون",
     "studentRecords": "سجلات الطلاب",
     "news": "الأخبار",
     "appeals": "التظلمات",
     "logs": "سجل التدقيق",
-    "discounts": "طلبات الخصم"
+    "discounts": "طلبات الخصم",
+    "transcripts": "طلبات الكشوفات",
+    "curriculum": "الخطة الدراسية",
+    "managerRequests": "طلبات المديرين"
   },
   "affairs": {
     "dashboard": "لوحة التحكم",
@@ -66,7 +159,19 @@
   },
   "manager": {
     "dashboard": "لوحة التحكم",
-    "news": "أخبار الكلية"
+    "news": "أخبار الكلية",
+    "curriculum": "مواد الكلية",
+    "students": "طلاب الكلية",
+    "requests": "طلبات للإدارة",
+    "myRequests": "طلباتي السابقة",
+    "noRequests": "لا توجد طلبات بعد."
+  },
+  "managerRequest": {
+    "status": {
+      "PENDING": "معلّق",
+      "RESOLVED": "تمت المعالجة",
+      "REJECTED": "مرفوض"
+    }
   },
   "librarian": {
     "dashboard": "لوحة التحكم",
@@ -92,7 +197,7 @@
   "headings": {
     "studentDashboard": "نظرة عامة للطالب",
     "studentProfile": "الملف الشخصي",
-    "studentCourses": "التسجيلات",
+    "studentCourses": "مقرراتي",
     "studentGrades": "النتائج",
     "studentStudyPlan": "الخطة الدراسية",
     "studentAppeals": "تقديم تظلم",
@@ -102,6 +207,8 @@
     "studentDiscounts": "طلبات الخصم",
     "adminDiscounts": "مراجعة طلبات الخصم",
     "facultyDashboard": "نظرة عامة للتدريس",
+    "facultyProfile": "الملف الشخصي",
+    "facultyCourses": "المواد",
     "facultyClasses": "الشعب المعينة",
     "facultyGrades": "إدخال نتيجة امتحان",
     "facultyAnalytics": "تحليلات الشعبة",
@@ -113,8 +220,13 @@
     "affairsDashboard": "نظرة عامة لشؤون الطلاب",
     "affairsTranscripts": "معالجة الكشوفات",
     "affairsStudents": "سجلات الطلاب",
+    "adminCurriculum": "إدارة الخطة الدراسية",
+    "adminManagerRequests": "طلبات مديري الكليات",
     "managerDashboard": "نظرة عامة للمدير",
     "managerNews": "إنشاء خبر",
+    "managerCurriculum": "مواد الكلية (عرض)",
+    "managerStudents": "إدارة طلاب الكلية",
+    "managerRequests": "طلب إلى الإدارة",
     "librarianDashboard": "نظرة عامة للمكتبة",
     "librarianBooks": "إضافة كتاب PDF",
     "publicNews": "الأخبار",
@@ -185,6 +297,11 @@
     "allRoles": "كل الأدوار",
     "allColleges": "كل الكليات",
     "allDepartments": "كل الأقسام",
+    "allYears": "كل السنوات",
+    "requestSubject": "موضوع الطلب",
+    "requestBody": "تفاصيل الطلب",
+    "submitRequest": "إرسال الطلب",
+    "respond": "الرد على الطلب",
     "allStatuses": "كل الحالات",
     "active": "نشط",
     "inactive": "معطّل",
@@ -199,6 +316,9 @@
     "newPassword": "كلمة مرور جديدة",
     "passwordOptional": "اتركه فارغاً للإبقاء على الحالية",
     "selectSection": "اختر الشعبة",
+    "selectCourse": "اختر المادة",
+    "courseName": "المادة",
+    "facultyCoursesAssign": "المواد المعيّنة (Ctrl للاختيار المتعدد)",
     "selectStudent": "اختر الطالب",
     "courseSection": "شعبة المقرر",
     "enrolledCourses": "التسجيلات",
@@ -216,6 +336,10 @@
     "bookUploaded": "تمت إضافة الكتاب.",
     "appealUpdated": "تم تحديث التظلم.",
     "transcriptUpdated": "تم تحديث الكشف.",
+    "transcriptApproved": "تمت الموافقة وتوليد ملف PDF.",
+    "transcriptRejected": "تم رفض الطلب.",
+    "transcriptApproved": "تمت الموافقة وإنشاء ملف PDF.",
+    "transcriptRejected": "تم رفض الطلب.",
     "gradePosted": "تم حفظ الدرجة.",
     "loadError": "تعذر تحميل البيانات.",
     "noNews": "لا توجد إعلانات منشورة بعد.",
@@ -224,7 +348,19 @@
     "sectionsCount": "عدد الشُعب المعينة: {{count}}",
     "adminWelcome": "من هنا يمكنك إدارة المستخدمين والأخبار والتظلمات وسجل التدقيق.",
     "affairsWelcome": "متابعة طلبات الكشوفات الرسمية.",
-    "managerWelcome": "نشر أخبار الكلية للطلبة والزوار.",
+    "managerWelcome": "إدارة كليةك: مواد، طلاب، أخبار، وطلبات للإدارة.",
+    "adminCurriculumLead": "عرض وتعديل مواد الخطة الدراسية لكل قسم وسنة وفصل. التعديل يظهر لجميع الطلاب والدكاترة.",
+    "managerCurriculumLead": "تصفح مواد كليتك حسب القسم والسنة والفصل (قراءة فقط).",
+    "managerStudentsLead": "عرض وتعديل بيانات طلاب كليتك مع التصفية حسب السنة الدراسية.",
+    "managerRequestsLead": "قدّم طلباً للإدارة العامة (مثلاً فتح مقرر، تعديل خطة، أو إجراء إداري).",
+    "adminManagerRequestsLead": "راجع طلبات مديري الكليات وردّ عليها.",
+    "curriculumUpdated": "تم تحديث اسم المادة.",
+    "curriculumDeleted": "تم حذف المادة من الخطة.",
+    "confirmDeleteCurriculum": "حذف «{{name}}» من الخطة الدراسية؟ سيُزال من التسجيلات والدرجات المرتبطة.",
+    "noCurriculumCourses": "لا توجد مواد في هذا التصفية.",
+    "selectDepartmentFirst": "اختر قسماً لعرض المواد.",
+    "managerRequestSent": "تم إرسال الطلب للإدارة.",
+    "managerRequestResolved": "تم تحديث الطلب.",
     "librarianWelcome": "إدارة المحتوى الرقمي للمكتبة.",
     "adminUsersLead": "إنشاء الحسابات، تعيين الأدوار والكليات، إعادة تعيين كلمات المرور، وتعطيل المستخدمين.",
     "affairsStudentsLead": "تحديث أقسام الطلاب، الأرقام الجامعية، والسنوات الدراسية.",

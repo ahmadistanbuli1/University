@@ -34,7 +34,8 @@ function readPersisted(): AuthState {
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState: { token: null, user: null } as AuthState,
+  /** Read localStorage synchronously so refresh does not flash redirect to /login. */
+  initialState: readPersisted(),
   reducers: {
     hydrateFromStorage(state) {
       const next = readPersisted();

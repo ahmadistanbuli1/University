@@ -15,7 +15,7 @@ export { NewsCard, type NewsCardItem } from './NewsCard.js';
 export { PageHeader } from './PageHeader.js';
 export { Pagination } from './Pagination.js';
 export { Select } from './Select.js';
-export { Skeleton, NewsCardSkeleton } from './Skeleton.js';
+export { Skeleton, NewsCardSkeleton, LibraryTableSkeleton } from './Skeleton.js';
 export { Spinner } from './Spinner.js';
 export { StatCard } from './StatCard.js';
 export { StatusBadge } from './StatusBadge.js';

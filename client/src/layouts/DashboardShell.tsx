@@ -13,6 +13,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux.js';
 import { useSidebarCollapsed } from '../hooks/useSidebarCollapsed.js';
 import { cn } from '../lib/cn.js';
 import { springSnappy } from '../lib/motion.js';
+import { NotificationBell } from '../components/NotificationBell.js';
 import { clearCredentials } from '../store/authSlice.js';
 
 export type NavItem = {
@@ -58,7 +59,7 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
         'dark:after:bg-[radial-gradient(ellipse_60%_35%_at_100%_100%,rgba(139,92,246,0.15),transparent_45%)]'
       )}
     >
-      <header className="relative z-30 flex flex-wrap items-center gap-2 border-b border-zinc-200/60 bg-white/70 px-3 py-2.5 shadow-sm backdrop-blur-xl dark:border-white/5 dark:bg-zinc-950/60 sm:gap-3 sm:px-5">
+      <header className="fixed inset-x-0 top-0 z-50 flex flex-wrap items-center gap-2 border-b border-zinc-200/50 bg-white/75 px-3 py-2.5 shadow-sm backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-zinc-950/75 supports-[backdrop-filter]:bg-white/65 dark:supports-[backdrop-filter]:bg-zinc-950/65 sm:gap-3 sm:px-5">
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           <Button
             type="button"
@@ -93,6 +94,7 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ThemeToggle />
           <LanguageSwitcher />
+          {user ? <NotificationBell /> : null}
           {user ? (
             <div className="flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/90 py-1 pe-1 ps-2.5 dark:border-white/10 dark:bg-white/5">
               <span
@@ -121,8 +123,10 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
         </div>
       </header>
 
+      <div className="h-[var(--dashboard-nav-h,4.25rem)] shrink-0" aria-hidden />
+
       <nav
-        className="relative z-20 flex gap-1.5 overflow-x-auto border-b border-zinc-200/50 bg-white/40 px-2 py-2.5 backdrop-blur-md dark:border-white/5 dark:bg-zinc-950/40 md:hidden"
+        className="sticky top-[var(--dashboard-nav-h,4.25rem)] z-40 flex gap-1.5 overflow-x-auto border-b border-zinc-200/50 bg-white/70 px-2 py-2.5 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-zinc-950/70 md:hidden"
         aria-label="Sidebar mobile"
       >
         {navItems.map((item) => {

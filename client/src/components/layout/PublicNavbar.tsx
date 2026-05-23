@@ -43,7 +43,8 @@ export function PublicNavbar() {
   }, [open]);
 
   return (
-    <header className="relative z-50 border-b border-zinc-200/60 bg-white/80 shadow-sm backdrop-blur-2xl dark:border-white/5 dark:bg-zinc-950/80">
+    <>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-zinc-200/50 bg-white/75 shadow-sm backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-zinc-950/75 supports-[backdrop-filter]:bg-white/65 dark:supports-[backdrop-filter]:bg-zinc-950/65">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
         <Link
           to="/"
@@ -97,7 +98,7 @@ export function PublicNavbar() {
       <div
         id="public-mobile-menu"
         className={cn(
-          'fixed inset-0 top-[4.25rem] z-40 md:hidden',
+          'fixed inset-0 top-[var(--public-nav-h,4.25rem)] z-40 md:hidden',
           'transition-opacity duration-300 ease-out',
           open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
         )}
@@ -136,5 +137,7 @@ export function PublicNavbar() {
         </nav>
       </div>
     </header>
+    <div className="h-[var(--public-nav-h,4.25rem)] shrink-0" aria-hidden />
+    </>
   );
 }

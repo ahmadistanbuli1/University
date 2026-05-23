@@ -23,6 +23,11 @@
 }
 
 @layer base {
+  :root {
+    --public-nav-h: 4.25rem;
+    --dashboard-nav-h: 4.25rem;
+  }
+
   html {
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

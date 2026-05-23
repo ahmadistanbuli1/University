@@ -44,6 +44,24 @@ import { TuitionRepository } from './domains/tuition/tuition.repository.js';
 import { TuitionService } from './domains/tuition/tuition.service.js';
 import { TuitionController } from './domains/tuition/tuition.controller.js';
 import { createTuitionRouter } from './domains/tuition/tuition.routes.js';
+import { NotificationRepository } from './domains/notifications/notification.repository.js';
+import {
+  NotificationDispatchService,
+  NotificationService,
+} from './domains/notifications/notification.service.js';
+import { NotificationController } from './domains/notifications/notification.controller.js';
+import { createNotificationRouter } from './domains/notifications/notification.routes.js';
+import { CurriculumRepository } from './domains/curriculum/curriculum.repository.js';
+import { CurriculumService } from './domains/curriculum/curriculum.service.js';
+import { CurriculumController } from './domains/curriculum/curriculum.controller.js';
+import { createCurriculumRouter } from './domains/curriculum/curriculum.routes.js';
+import { ManagerRepository } from './domains/manager/manager.repository.js';
+import { ManagerService } from './domains/manager/manager.service.js';
+import { ManagerController } from './domains/manager/manager.controller.js';
+import {
+  createAdminManagerRequestsRouter,
+  createManagerRouter,
+} from './domains/manager/manager.routes.js';
 
 export function createApp(env: Env) {
   const app = express();
@@ -68,12 +86,22 @@ export function createApp(env: Env) {
   const structureService = new StructureService(structureRepo);
   const structureController = new StructureController(structureService);
 
+  const notificationRepo = new NotificationRepository(prisma);
+  const notificationDispatch = new NotificationDispatchService(notificationRepo);
+  const notificationService = new NotificationService(notificationRepo);
+  const notificationController = new NotificationController(notificationService);
+
   const academicRepo = new AcademicRepository(prisma);
-  const academicService = new AcademicService(academicRepo, auditService);
+  const academicService = new AcademicService(academicRepo, auditService, notificationDispatch);
   const academicController = new AcademicController(academicService);
 
   const studentRepo = new StudentServicesRepository(prisma);
-  const studentService = new StudentServicesService(studentRepo, auditService);
+  const studentService = new StudentServicesService(
+    studentRepo,
+    auditService,
+    resolve(env.UPLOAD_DIR),
+    notificationDispatch
+  );
   const studentController = new StudentServicesController(studentService);
 
   const libraryRepo = new LibraryRepository(prisma);
@@ -81,7 +109,7 @@ export function createApp(env: Env) {
   const libraryController = new LibraryController(libraryService);
 
   const newsRepo = new NewsRepository(prisma);
-  const newsService = new NewsService(newsRepo, auditService);
+  const newsService = new NewsService(newsRepo, auditService, notificationDispatch);
   const newsController = new NewsController(newsService);
 
   const adminRepo = new AdminRepository(prisma);
@@ -89,8 +117,16 @@ export function createApp(env: Env) {
   const adminController = new AdminController(adminService);
 
   const tuitionRepo = new TuitionRepository(prisma);
-  const tuitionService = new TuitionService(tuitionRepo, auditService);
+  const tuitionService = new TuitionService(tuitionRepo, auditService, notificationDispatch);
   const tuitionController = new TuitionController(tuitionService);
+
+  const curriculumRepo = new CurriculumRepository(prisma);
+  const curriculumService = new CurriculumService(curriculumRepo, auditService);
+  const curriculumController = new CurriculumController(curriculumService);
+
+  const managerRepo = new ManagerRepository(prisma);
+  const managerService = new ManagerService(managerRepo, auditService, notificationDispatch);
+  const managerController = new ManagerController(managerService);
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
@@ -106,7 +142,14 @@ export function createApp(env: Env) {
   app.use('/api/library', createLibraryRouter(libraryController, authenticate, env));
   app.use('/api/news', createNewsRouter(newsController, authenticate));
   app.use('/api/admin', createAdminRouter(adminController, authenticate));
+  app.use(
+    '/api/admin',
+    createAdminManagerRequestsRouter(managerController, authenticate)
+  );
+  app.use('/api/curriculum', createCurriculumRouter(curriculumController, authenticate));
+  app.use('/api/manager', createManagerRouter(managerController, authenticate));
   app.use('/api/tuition', createTuitionRouter(tuitionController, authenticate, env));
+  app.use('/api/notifications', createNotificationRouter(notificationController, authenticate));
 
   app.use(errorHandler);
   return app;
