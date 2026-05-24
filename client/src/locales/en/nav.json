@@ -9,6 +9,7 @@
   "affairsTitle": "Student affairs",
   "managerTitle": "College manager",
   "librarianTitle": "Library",
+  "examOfficerTitle": "Exam records",
   "student": {
     "dashboard": "Profile",
     "courses": "My courses",
@@ -17,7 +18,9 @@
     "transcripts": "Transcripts",
     "tuition": "Tuition & fees",
     "discounts": "Discount requests",
-    "studyPlan": "Study plan"
+    "studyPlan": "Study plan",
+    "gradesPendingTerm": "Second-semester grades are not complete yet. Grades and GPA appear here after all current-term scores (practical + theory) are published.",
+    "gpaAfterTermComplete": "Cumulative GPA is calculated after all second-semester grades are complete."
   },
   "notifications": {
     "bellLabel": "Notifications",
@@ -62,6 +65,10 @@
         "title": "New grade",
         "body": "A grade was posted for {{courseName}}"
       },
+      "PRACTICAL_GRADE_PUBLISHED": {
+        "title": "Practical grade",
+        "body": "Your practical grade for {{courseName}} is available"
+      },
       "MANAGER_REQUEST": {
         "title": "College manager request",
         "body": "{{subject}}"
@@ -73,17 +80,99 @@
     }
   },
   "transcripts": {
-    "studentLead": "Request an official grade transcript. After student affairs approval, a PDF is generated from your academic record.",
-    "affairsLead": "Review pending requests: approve to auto-generate a PDF, or reject with a reason shown to the student.",
-    "approve": "Approve & generate PDF",
+    "studentLead": "Request an official transcript for $5 (simulated). After payment, student affairs reviews the request, then the exam officer generates and delivers your PDF.",
+    "affairsLead": "Review paid requests: approve to forward to the exam officer, or reject with a reason and automatic fee refund notice.",
+    "examOfficerLead": "Requests approved by student affairs — generate the PDF and deliver to the student.",
+    "examOfficerEmpty": "No requests waiting for PDF generation.",
+    "forwardToExamOfficer": "Approve & send to exam officer",
+    "generateAndDeliver": "Generate PDF & deliver",
     "reject": "Reject",
     "rejectTitle": "Reject transcript request",
-    "rejectHint": "Provide a clear reason — the student will see it.",
+    "rejectHint": "Provide a clear reason — the student will see it and a refund notice.",
     "rejectPlaceholder": "e.g. Incomplete records; please visit student affairs.",
     "confirmReject": "Confirm rejection",
     "rejectionReason": "Rejection reason",
+    "refundMessage": "${{amount}} has been refunded to your account (demo).",
     "download": "Download PDF",
-    "preview": "Preview"
+    "preview": "Preview",
+    "payTitle": "Transcript fee payment",
+    "payDescription": "Official grade transcript request fee. Payment is simulated for demonstration.",
+    "feeItem": "Item",
+    "officialTranscript": "Official grade transcript",
+    "scanToPay": "Scan to pay (demo)",
+    "confirmPayAndRequest": "Confirm payment & submit request",
+    "payment": "Payment",
+    "activeRequestHint": "You already have a request in progress.",
+    "awaitingAffairs": "Awaiting student affairs review",
+    "atExamOffice": "With exam officer — generating PDF",
+    "affairsApprovedAt": "Affairs approved",
+    "status": {
+      "PENDING": "Pending affairs",
+      "AFFAIRS_APPROVED": "With exam officer",
+      "DELIVERED": "Ready to download",
+      "REJECTED": "Rejected",
+      "PROCESSED": "Processing"
+    }
+  },
+  "examOfficer": {
+    "dashboard": "Dashboard",
+    "transcripts": "Generate transcripts",
+    "grades": "Publish grades",
+    "dashboardLead": "Manage transcripts and grade batches from faculty.",
+    "dashboardHint": "Use the sidebar to open each queue.",
+    "openTranscripts": "Transcript queue",
+    "openGrades": "Grade queue",
+    "openQueue": "Open queue",
+    "pendingGeneration": "Transcripts pending",
+    "pendingGrades": "Sections awaiting grade publication"
+  },
+  "gradeSubmissions": {
+    "facultyLead": "Choose a course (name — department — plan year). We are in term 2: enter practical grades, then theory after practical is published.",
+    "selectCourseOnly": "Select a course to load the section roster.",
+    "selectAcademicYear": "Select academic year",
+    "selectCourseAndYear": "Select a course to load the student roster.",
+    "rulesHint": "Practical pass: 16/40. Totals 58–59 are raised to 60. Term 1 grades are complete in records; entry is for term 2 only.",
+    "firstTermClosed": "This is a first-term course — grades are already complete and cannot be edited here.",
+    "phaseLabel": "Phase",
+    "phasePractical": "Practical grades",
+    "phaseTheory": "Theory grades",
+    "submitPractical": "Submit practical grades",
+    "submitTheory": "Submit theory grades",
+    "submittedPractical": "Practical grades sent to the exam officer.",
+    "submittedTheory": "Theory grades sent to the exam officer.",
+    "practicalPublishedEnterTheory": "Practical grades are published — you can now enter theory grades.",
+    "theoryLockedUntilPractical": "Theory grades are locked until the exam officer publishes practical grades.",
+    "secondTermClosed": "Second-semester grades are not available yet.",
+    "belowPracticalPass": "below pass threshold",
+    "publishPractical": "Publish practical grades to students",
+    "practicalPublished": "Practical grades published and students notified.",
+    "examOfficerLead": "Review batches: publish practical first, then theory (58–59 gets assistance to 60).",
+    "examOfficerEmpty": "No grade batches awaiting publication.",
+    "saveDraft": "Save draft",
+    "submitToExamOfficer": "Submit to exam officer",
+    "draftSaved": "Draft saved.",
+    "submitted": "Grades sent to the exam officer.",
+    "awaitingExamOfficer": "With the exam officer — editing locked until rejected or published.",
+    "publishedHint": "All grades for this section are published to students.",
+    "rejectedTitle": "Rejection reason",
+    "enterAtLeastOne": "Enter at least one student grade.",
+    "review": "Review",
+    "reviewTitle": "Review section grades",
+    "loadForEdit": "Enable editing",
+    "saveChanges": "Save changes",
+    "publishToStudents": "Publish to students",
+    "published": "Grades published and students notified.",
+    "reject": "Reject",
+    "rejectPlaceholder": "Reason for the instructor…",
+    "confirmReject": "Confirm rejection",
+    "rejected": "Submission rejected.",
+    "linesUpdated": "Grades updated.",
+    "status": {
+      "DRAFT": "Draft",
+      "SUBMITTED": "Sent to exam officer",
+      "PUBLISHED": "Published",
+      "REJECTED": "Rejected"
+    }
   },
   "studentCourses": {
     "lead": "Courses for {{year}} — first and second term.",
@@ -99,7 +188,10 @@
     "practical": "Practical ({{max}})",
     "theory": "Theory ({{max}})",
     "total": "Total",
-    "passLegend": "Passing marks: practical 40 — theory 60 (total 100)."
+    "passLegend": "Practical pass: 16/40. Below 16 is a fail and theory is blocked. Scores update automatically when published.",
+    "practicalFailed": "Fail — below 16",
+    "theoryAwaitingPractical": "Awaiting practical grade",
+    "theoryBlockedFailed": "Blocked — failed practical"
   },
   "profile": {
     "lead": "Your account and academic record at a glance.",
@@ -120,6 +212,7 @@
     "classes": "My sections",
     "grades": "Enter grades",
     "analytics": "Analytics",
+    "activity": "Activity log",
     "studentPortalSection": "Student access (shared)",
     "profileLead": "Your account and teaching assignments.",
     "teachingSummary": "Teaching",
@@ -155,7 +248,26 @@
   "affairs": {
     "dashboard": "Dashboard",
     "students": "Student records",
-    "transcripts": "Transcript requests"
+    "transcripts": "Transcript requests",
+    "activity": "Activity log"
+  },
+  "activityLog": {
+    "lead": "History of actions you sent, received, or stored.",
+    "empty": "No activity recorded yet.",
+    "actions": {
+      "LOGIN": "Sign in",
+      "SAVE_PRACTICAL_GRADE_DRAFT": "Save practical draft",
+      "SAVE_THEORY_GRADE_DRAFT": "Save theory draft",
+      "SUBMIT_PRACTICAL_GRADES": "Submit practical grades",
+      "SUBMIT_THEORY_GRADES": "Submit theory grades",
+      "PUBLISH_PRACTICAL_GRADES": "Publish practical grades",
+      "PUBLISH_THEORY_GRADES": "Publish theory grades",
+      "APPROVE_TRANSCRIPT_AFFAIRS": "Approve transcript",
+      "REJECT_TRANSCRIPT": "Reject transcript",
+      "UPDATE_STUDENT_RECORD": "Update student record",
+      "UPDATE_APPEAL": "Process appeal",
+      "REQUEST_TRANSCRIPT": "Review transcript queue"
+    }
   },
   "manager": {
     "dashboard": "Dashboard",
@@ -214,7 +326,7 @@
     "facultyAnalytics": "Section analytics",
     "adminDashboard": "Admin overview",
     "adminUsers": "User directory",
-    "adminNews": "News (read)",
+    "adminNews": "Manage news",
     "adminAppeals": "Pending appeals",
     "adminLogs": "Audit trail",
     "affairsDashboard": "Affairs overview",
@@ -231,9 +343,14 @@
     "librarianBooks": "Add PDF book",
     "publicNews": "News",
     "publicFaculty": "Faculty directory",
-    "publicLibrary": "Digital library"
+    "publicLibrary": "Digital library",
+    "examOfficerDashboard": "Exam officer overview",
+    "examOfficerTranscripts": "Generate & deliver transcripts",
+    "examOfficerGrades": "Publish section grades",
+    "activityLog": "Activity log"
   },
   "labels": {
+    "details": "Details",
     "notes": "Notes (optional)",
     "reason": "Reason",
     "examResult": "Exam result",
@@ -260,6 +377,8 @@
     "publishNews": "Publish",
     "department": "Department",
     "publishYear": "Publish year",
+    "author": "Author",
+    "publisher": "Publisher",
     "keywords": "Keywords (comma-separated)",
     "pdfFile": "PDF file",
     "uploadBook": "Upload",
@@ -302,6 +421,10 @@
     "requestBody": "Details",
     "submitRequest": "Submit request",
     "respond": "Respond",
+    "addCurriculumCourse": "Add course to plan",
+    "courseNamePlaceholder": "Course title",
+    "courseCodeOptional": "Course code (optional)",
+    "courseCodeAutoHint": "Leave empty to auto-generate — e.g. INFO_ENG-Y1-S1-C05",
     "allStatuses": "All statuses",
     "active": "Active",
     "inactive": "Inactive",
@@ -327,7 +450,9 @@
     "downloadBook": "Download",
     "reads": "Reads",
     "downloads": "Downloads",
-    "usage": "Usage"
+    "usage": "Usage",
+    "submittedAt": "Submitted at",
+    "facultyMember": "Instructor"
   },
   "messages": {
     "appealSent": "Appeal submitted.",
@@ -336,8 +461,9 @@
     "bookUploaded": "Book added.",
     "appealUpdated": "Appeal updated.",
     "transcriptUpdated": "Transcript updated.",
-    "transcriptApproved": "Approved and PDF generated.",
+    "transcriptForwarded": "Approved and sent to the exam officer.",
     "transcriptRejected": "Request rejected.",
+    "transcriptDelivered": "Transcript generated and delivered to the student.",
     "gradePosted": "Grade saved.",
     "loadError": "Could not load data.",
     "noNews": "No announcements published yet.",
@@ -352,6 +478,7 @@
     "managerStudentsLead": "View and edit your college students with filtering by study year.",
     "managerRequestsLead": "Submit a request to central administration (e.g. new course, plan change, or policy action).",
     "adminManagerRequestsLead": "Review and respond to college manager requests.",
+    "curriculumCreated": "Course added to the study plan.",
     "curriculumUpdated": "Course name updated.",
     "curriculumDeleted": "Course removed from the study plan.",
     "confirmDeleteCurriculum": "Delete «{{name}}» from the study plan? Related enrollments and grades will be removed.",
@@ -362,7 +489,7 @@
     "librarianWelcome": "Curate the library’s digital collection.",
     "adminUsersLead": "Create accounts, assign roles and colleges, reset passwords, and deactivate users.",
     "affairsStudentsLead": "Update student departments, university IDs, and academic years.",
-    "facultyGradesLead": "Pick your section, then choose a student from the class roster—no IDs to copy.",
+    "facultyGradesLead": "Select your section, fill the grade table, and submit to the exam officer.",
     "userCreated": "User created.",
     "userUpdated": "User updated.",
     "userDeactivated": "User deactivated.",
@@ -375,6 +502,27 @@
     "bookFileMissing": "PDF file is not available on the server.",
     "bookDownloadStarted": "Download started."
   },
+  "news": {
+    "filterCategory": "News type",
+    "allCategories": "All types",
+    "allCollegesAndUniversity": "All colleges & university-wide",
+    "collegeFilterHint": "Showing your college news plus university-wide announcements.",
+    "universityWide": "University-wide",
+    "targetCollege": "College (optional)",
+    "publishScope": "Publish scope",
+    "scopeCollege": "My college only",
+    "scopeUniversity": "University-wide",
+    "managerCollegeHint": "“My college only” posts are published for {{college}}.",
+    "confirmDelete": "Delete “{{title}}”?",
+    "deleted": "News item deleted.",
+    "delete": "Delete",
+    "categories": {
+      "ANNOUNCEMENT": "Announcement",
+      "WORKSHOP": "Workshop",
+      "TRAINING": "Training course",
+      "TUITION": "Tuition"
+    }
+  },
   "tuition": {
     "lead": "Annual tuition is $1,000 ($500 per semester). Payments are simulated for demonstration.",
     "totalDue": "Total tuition",
@@ -383,6 +531,16 @@
     "paid": "Paid",
     "installments": "Semester installments",
     "payNow": "Pay now",
+    "semesterFirstTitle": "First semester tuition",
+    "semesterSecondTitle": "Second semester tuition",
+    "payFirstSemesterFirst": "You must pay the first semester installment before the second.",
+    "semesterPaid": "This semester installment is fully paid.",
+    "paymentSection": "Tuition announcements",
+    "payFirstSemesterFees": "Pay first semester fees",
+    "paySecondSemesterFees": "Pay second semester fees",
+    "secondSemesterWaitingAdmin": "Second semester payment opens when administration publishes an announcement.",
+    "enablePaymentOnDashboard": "Enable pay button on student dashboard",
+    "tuitionSemesterTarget": "Opens payment for",
     "discountRequests": "Request a tuition discount",
     "paymentLead": "Simulated secure checkout — no real payment gateway.",
     "paymentDetails": "Payment summary",
@@ -427,8 +585,19 @@
   "library": {
     "categoriesLabel": "Book categories",
     "bookCategory": "Library section",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by title, author, publisher, or keywords…",
+    "allCategories": "All sections",
+    "allYears": "All years",
+    "allAuthors": "All authors",
+    "allPublishers": "All publishers",
+    "applyFilters": "Apply filters",
+    "resetFilters": "Reset",
+    "resultsSummary": "{{count}} results — {{category}}",
+    "emptyFilteredTitle": "No books match your filters",
+    "emptyFilteredDescription": "Try different criteria or reset filters to see more titles.",
     "emptyTitle": "No books in «{{category}}» yet",
-    "emptyDescription": "This section is ready for new titles. Check back soon or explore another category above.",
+    "emptyDescription": "This section is ready for new titles. Check back soon or try another section.",
     "categories": {
       "MEDICAL": "Medical books",
       "ADMINISTRATIVE": "Administrative",
@@ -436,7 +605,8 @@
       "PROGRAMMING": "Programming",
       "FRONTEND_WEB": "Front-end Web",
       "BACKEND_WEB": "Backend Web",
-      "ARTIFICIAL_INTELLIGENCE": "Artificial Intelligence"
+      "ARTIFICIAL_INTELLIGENCE": "Artificial Intelligence",
+      "GRADUATION_PROJECT": "Graduation projects"
     }
   },
   "appeals": {

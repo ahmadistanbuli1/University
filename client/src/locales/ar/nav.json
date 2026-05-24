@@ -9,6 +9,7 @@
   "affairsTitle": "شؤون الطلاب",
   "managerTitle": "مدير الكلية",
   "librarianTitle": "المكتبة",
+  "examOfficerTitle": "موظف الامتحانات",
   "student": {
     "dashboard": "الملف الشخصي",
     "courses": "مقرراتي",
@@ -17,7 +18,9 @@
     "transcripts": "الكشوفات",
     "tuition": "الأقساط والرسوم",
     "discounts": "طلبات الخصم",
-    "studyPlan": "الخطة الدراسية"
+    "studyPlan": "الخطة الدراسية",
+    "gradesPendingTerm": "علامات الفصل الثاني لم تكتمل بعد. ستظهر الدرجات والمعدل هنا بعد نشر جميع علامات الفصل الحالي (عملي + نظري).",
+    "gpaAfterTermComplete": "يُحسب المعدل التراكمي بعد اكتمال كل علامات الفصل الثاني."
   },
   "notifications": {
     "bellLabel": "الإشعارات",
@@ -62,6 +65,10 @@
         "title": "درجة جديدة",
         "body": "تم نشر درجة في {{courseName}}"
       },
+      "PRACTICAL_GRADE_PUBLISHED": {
+        "title": "علامة العملي",
+        "body": "وصلتك علامة العملي لمادة {{courseName}}"
+      },
       "MANAGER_REQUEST": {
         "title": "طلب من مدير كلية",
         "body": "{{subject}}"
@@ -73,17 +80,99 @@
     }
   },
   "transcripts": {
-    "studentLead": "اطلب كشف علامات رسمي. بعد موافقة شؤون الطلاب يُولَّد ملف PDF من سجلك الأكاديمي.",
-    "affairsLead": "راجع الطلبات المعلّقة: الموافقة تُنشئ كشف PDF تلقائياً، والرفض يتطلب سبباً يظهر للطالب.",
-    "approve": "موافقة وتوليد PDF",
+    "studentLead": "اطلب كشف علامات رسمي برسوم 5$. بعد الدفع يراجع الطلب شؤون الطلاب، ثم موظف الامتحانات يُولّد ملف PDF ويُسلّمه لك.",
+    "affairsLead": "راجع الطلبات المدفوعة: الموافقة تُحوّل الطلب لموظف الامتحانات، والرفض يتطلب سبباً مع إشعار بإرجاع الرسوم.",
+    "examOfficerLead": "الطلبات التي وافقت عليها شؤون الطلاب — ولّد ملف PDF وأرسله للطالب.",
+    "examOfficerEmpty": "لا توجد طلبات بانتظار التوليد حالياً.",
+    "forwardToExamOfficer": "موافقة وإرسال لموظف الامتحانات",
+    "generateAndDeliver": "توليد PDF وإرسال للطالب",
     "reject": "رفض",
     "rejectTitle": "رفض طلب الكشف",
-    "rejectHint": "اكتب سبب الرفض بوضوح — سيظهر للطالب.",
+    "rejectHint": "اكتب سبب الرفض بوضوح — سيظهر للطالب مع إشعار إرجاع المبلغ.",
     "rejectPlaceholder": "مثال: بيانات غير مكتملة، يرجى مراجعة شؤون الطلاب.",
     "confirmReject": "تأكيد الرفض",
     "rejectionReason": "سبب الرفض",
+    "refundMessage": "تم إرجاع مبلغ {{amount}}$ إلى حسابك (عرض تجريبي).",
     "download": "تحميل PDF",
-    "preview": "معاينة"
+    "preview": "معاينة",
+    "payTitle": "دفع رسوم الكشف",
+    "payDescription": "رسوم طلب كشف العلامات الرسمي. الدفع محاكى لأغراض العرض.",
+    "feeItem": "البند",
+    "officialTranscript": "كشف علامات رسمي",
+    "scanToPay": "امسح للدفع (تجريبي)",
+    "confirmPayAndRequest": "تأكيد الدفع وإرسال الطلب",
+    "payment": "الدفع",
+    "activeRequestHint": "لديك طلب قيد المعالجة — انتظر اكتماله قبل طلب جديد.",
+    "awaitingAffairs": "بانتظار مراجعة شؤون الطلاب",
+    "atExamOffice": "لدى موظف الامتحانات — جارٍ التوليد",
+    "affairsApprovedAt": "موافقة الشؤون",
+    "status": {
+      "PENDING": "بانتظار الشؤون",
+      "AFFAIRS_APPROVED": "لدى موظف الامتحانات",
+      "DELIVERED": "جاهز للتحميل",
+      "REJECTED": "مرفوض",
+      "PROCESSED": "قيد المعالجة"
+    }
+  },
+  "examOfficer": {
+    "dashboard": "لوحة التحكم",
+    "transcripts": "توليد الكشوفات",
+    "grades": "اعتماد العلامات",
+    "dashboardLead": "إدارة الكشوفات واعتماد علامات الشعب المرسلة من الأساتذة.",
+    "dashboardHint": "راجع قوائم الانتظار من القائمة الجانبية.",
+    "openTranscripts": "قائمة الكشوفات",
+    "openGrades": "قائمة العلامات",
+    "openQueue": "فتح قائمة الانتظار",
+    "pendingGeneration": "كشوف بانتظار التوليد",
+    "pendingGrades": "شعب بانتظار نشر العلامات"
+  },
+  "gradeSubmissions": {
+    "facultyLead": "اختر المادة من القائمة (الاسم — القسم — سنة الخطة). نحن في الفصل الثاني: أدخل علامات العملي ثم النظري بعد نشر العملي.",
+    "selectCourseOnly": "اختر المادة لعرض طلاب الشعبة.",
+    "selectAcademicYear": "اختر السنة الدراسية",
+    "selectCourseAndYear": "اختر المادة لعرض قائمة الطلاب.",
+    "rulesHint": "حد نجاح العملي 16/40. المجموع 58–59 يُرفع تلقائياً إلى 60. علامات الفصل الأول مكتملة في السجل؛ الإدخال الآن للفصل الثاني فقط.",
+    "firstTermClosed": "هذه مادة من الفصل الأول — العلامات مكتملة ولا يمكن تعديلها من هنا.",
+    "phaseLabel": "المرحلة",
+    "phasePractical": "علامات العملي",
+    "phaseTheory": "علامات النظري",
+    "submitPractical": "إرسال علامات العملي",
+    "submitTheory": "إرسال علامات النظري",
+    "submittedPractical": "تم إرسال علامات العملي لموظف الامتحانات.",
+    "submittedTheory": "تم إرسال علامات النظري لموظف الامتحانات.",
+    "practicalPublishedEnterTheory": "نُشرت علامات العملي — يمكنك الآن إدخال علامات النظري.",
+    "theoryLockedUntilPractical": "علامات النظري مقفلة حتى ينشر موظف الامتحانات علامات العملي.",
+    "secondTermClosed": "علامات الفصل الثاني غير متاحة في الوقت الحالي.",
+    "belowPracticalPass": "أقل من حد النجاح",
+    "publishPractical": "نشر علامات العملي للطلاب",
+    "practicalPublished": "تم نشر علامات العملي وإشعار الطلاب.",
+    "examOfficerLead": "راجع دفعات العلامات: انشر العملي أولاً ثم النظري مع العلامة المساعدة عند 58–59.",
+    "examOfficerEmpty": "لا توجد شعب بانتظار اعتماد العلامات.",
+    "saveDraft": "حفظ المسودة",
+    "submitToExamOfficer": "إرسال لموظف الامتحانات",
+    "draftSaved": "تم حفظ المسودة.",
+    "submitted": "تم إرسال العلامات لموظف الامتحانات.",
+    "awaitingExamOfficer": "العلامات لدى موظف الامتحانات — لا يمكن التعديل حتى الرفض أو النشر.",
+    "publishedHint": "تم نشر جميع علامات هذه الشعبة للطلاب.",
+    "rejectedTitle": "سبب الرفض",
+    "enterAtLeastOne": "أدخل علامة لطالب واحد على الأقل.",
+    "review": "مراجعة",
+    "reviewTitle": "مراجعة علامات الشعبة",
+    "loadForEdit": "تفعيل التعديل",
+    "saveChanges": "حفظ التعديلات",
+    "publishToStudents": "نشر للطلاب",
+    "published": "تم نشر العلامات وإشعار الطلاب.",
+    "reject": "رفض",
+    "rejectPlaceholder": "سبب الرفض للأستاذ…",
+    "confirmReject": "تأكيد الرفض",
+    "rejected": "تم رفض الإرسال.",
+    "linesUpdated": "تم تحديث العلامات.",
+    "status": {
+      "DRAFT": "مسودة",
+      "SUBMITTED": "مُرسل لموظف الامتحانات",
+      "PUBLISHED": "منشور للطلاب",
+      "REJECTED": "مرفوض"
+    }
   },
   "studentCourses": {
     "lead": "مواد {{year}} — الفصل الأول والثاني.",
@@ -99,7 +188,10 @@
     "practical": "عملي ({{max}})",
     "theory": "نظري ({{max}})",
     "total": "المجموع",
-    "passLegend": "درجة النجاح: العملي 40 — النظري 60 (المجموع 100)."
+    "passLegend": "حد نجاح العملي 16/40. إذا أقل من 16 تُعتبر راسباً ولا يُقبل النظري. العلامات تُحدَّث تلقائياً عند النشر.",
+    "practicalFailed": "راسب — أقل من 16",
+    "theoryAwaitingPractical": "بانتظار علامة العملي",
+    "theoryBlockedFailed": "مقفل — راسب في العملي"
   },
   "profile": {
     "lead": "بيانات حسابك وسجلك الأكاديمي في مكان واحد.",
@@ -120,6 +212,7 @@
     "classes": "شعبتي",
     "grades": "إدخال الدرجات",
     "analytics": "التحليلات",
+    "activity": "سجل النشاط",
     "studentPortalSection": "بوابة الطالب (مشتركة)",
     "profileLead": "بيانات حسابك والمواد التي تدرّسها.",
     "teachingSummary": "التدريس",
@@ -155,7 +248,26 @@
   "affairs": {
     "dashboard": "لوحة التحكم",
     "students": "سجلات الطلاب",
-    "transcripts": "طلبات الكشوفات"
+    "transcripts": "طلبات الكشوفات",
+    "activity": "سجل النشاط"
+  },
+  "activityLog": {
+    "lead": "سجل بما تم إرساله أو استلامه أو تخزينه من حسابك.",
+    "empty": "لا توجد عمليات مسجّلة بعد.",
+    "actions": {
+      "LOGIN": "تسجيل دخول",
+      "SAVE_PRACTICAL_GRADE_DRAFT": "حفظ مسودة علامات عملي",
+      "SAVE_THEORY_GRADE_DRAFT": "حفظ مسودة علامات نظري",
+      "SUBMIT_PRACTICAL_GRADES": "إرسال علامات العملي",
+      "SUBMIT_THEORY_GRADES": "إرسال علامات النظري",
+      "PUBLISH_PRACTICAL_GRADES": "نشر علامات العملي",
+      "PUBLISH_THEORY_GRADES": "نشر علامات النظري",
+      "APPROVE_TRANSCRIPT_AFFAIRS": "اعتماد طلب كشف",
+      "REJECT_TRANSCRIPT": "رفض طلب كشف",
+      "UPDATE_STUDENT_RECORD": "تحديث سجل طالب",
+      "UPDATE_APPEAL": "معالجة تظلم",
+      "REQUEST_TRANSCRIPT": "مراجعة طلبات الكشوفات"
+    }
   },
   "manager": {
     "dashboard": "لوحة التحكم",
@@ -214,7 +326,7 @@
     "facultyAnalytics": "تحليلات الشعبة",
     "adminDashboard": "نظرة عامة للإدارة",
     "adminUsers": "دليل المستخدمين",
-    "adminNews": "الأخبار (عرض)",
+    "adminNews": "إدارة الأخبار",
     "adminAppeals": "التظلمات المعلقة",
     "adminLogs": "سجل العمليات",
     "affairsDashboard": "نظرة عامة لشؤون الطلاب",
@@ -231,9 +343,14 @@
     "librarianBooks": "إضافة كتاب PDF",
     "publicNews": "الأخبار",
     "publicFaculty": "هيئة التدريس",
-    "publicLibrary": "المكتبة الرقمية"
+    "publicLibrary": "المكتبة الرقمية",
+    "examOfficerDashboard": "لوحة موظف الامتحانات",
+    "examOfficerTranscripts": "توليد وإرسال الكشوفات",
+    "examOfficerGrades": "اعتماد ونشر العلامات",
+    "activityLog": "سجل النشاط"
   },
   "labels": {
+    "details": "التفاصيل",
     "notes": "ملاحظات (اختياري)",
     "reason": "السبب",
     "examResult": "نتيجة الامتحان",
@@ -260,6 +377,8 @@
     "publishNews": "نشر",
     "department": "القسم",
     "publishYear": "سنة النشر",
+    "author": "المؤلف",
+    "publisher": "الناشر",
     "keywords": "كلمات مفتاحية (مفصولة بفواصل)",
     "pdfFile": "ملف PDF",
     "uploadBook": "رفع",
@@ -302,6 +421,10 @@
     "requestBody": "تفاصيل الطلب",
     "submitRequest": "إرسال الطلب",
     "respond": "الرد على الطلب",
+    "addCurriculumCourse": "إضافة مادة للخطة",
+    "courseNamePlaceholder": "اسم المادة بالعربية أو الإنجليزية",
+    "courseCodeOptional": "رمز المادة (اختياري)",
+    "courseCodeAutoHint": "يُولَّد تلقائياً إن تُرك فارغاً — مثل INFO_ENG-Y1-S1-C05",
     "allStatuses": "كل الحالات",
     "active": "نشط",
     "inactive": "معطّل",
@@ -327,7 +450,9 @@
     "downloadBook": "تنزيل",
     "reads": "قراءات",
     "downloads": "تنزيلات",
-    "usage": "الاستخدام"
+    "usage": "الاستخدام",
+    "submittedAt": "تاريخ الإرسال",
+    "facultyMember": "عضو هيئة التدريس"
   },
   "messages": {
     "appealSent": "تم إرسال التظلم.",
@@ -336,10 +461,9 @@
     "bookUploaded": "تمت إضافة الكتاب.",
     "appealUpdated": "تم تحديث التظلم.",
     "transcriptUpdated": "تم تحديث الكشف.",
-    "transcriptApproved": "تمت الموافقة وتوليد ملف PDF.",
+    "transcriptForwarded": "تمت الموافقة وإرسال الطلب لموظف الامتحانات.",
     "transcriptRejected": "تم رفض الطلب.",
-    "transcriptApproved": "تمت الموافقة وإنشاء ملف PDF.",
-    "transcriptRejected": "تم رفض الطلب.",
+    "transcriptDelivered": "تم توليد الكشف وإتاحته للطالب.",
     "gradePosted": "تم حفظ الدرجة.",
     "loadError": "تعذر تحميل البيانات.",
     "noNews": "لا توجد إعلانات منشورة بعد.",
@@ -354,6 +478,7 @@
     "managerStudentsLead": "عرض وتعديل بيانات طلاب كليتك مع التصفية حسب السنة الدراسية.",
     "managerRequestsLead": "قدّم طلباً للإدارة العامة (مثلاً فتح مقرر، تعديل خطة، أو إجراء إداري).",
     "adminManagerRequestsLead": "راجع طلبات مديري الكليات وردّ عليها.",
+    "curriculumCreated": "تمت إضافة المادة إلى الخطة الدراسية.",
     "curriculumUpdated": "تم تحديث اسم المادة.",
     "curriculumDeleted": "تم حذف المادة من الخطة.",
     "confirmDeleteCurriculum": "حذف «{{name}}» من الخطة الدراسية؟ سيُزال من التسجيلات والدرجات المرتبطة.",
@@ -364,7 +489,7 @@
     "librarianWelcome": "إدارة المحتوى الرقمي للمكتبة.",
     "adminUsersLead": "إنشاء الحسابات، تعيين الأدوار والكليات، إعادة تعيين كلمات المرور، وتعطيل المستخدمين.",
     "affairsStudentsLead": "تحديث أقسام الطلاب، الأرقام الجامعية، والسنوات الدراسية.",
-    "facultyGradesLead": "اختر شعبتك ثم الطالب من قائمة الصف—بدون نسخ معرفات.",
+    "facultyGradesLead": "اختر الشعبة وعبّئ جدول العلامات ثم أرسلها لموظف الامتحانات.",
     "userCreated": "تم إنشاء المستخدم.",
     "userUpdated": "تم تحديث المستخدم.",
     "userDeactivated": "تم تعطيل المستخدم.",
@@ -377,6 +502,27 @@
     "bookFileMissing": "ملف PDF غير متوفر على الخادم.",
     "bookDownloadStarted": "بدأ التنزيل."
   },
+  "news": {
+    "filterCategory": "نوع الخبر",
+    "allCategories": "كل الأنواع",
+    "allCollegesAndUniversity": "كل الكليات والأخبار العامة",
+    "collegeFilterHint": "تعرض أخبار كليتك مع الإعلانات العامة للجامعة.",
+    "universityWide": "عام — كل الجامعة",
+    "targetCollege": "الكلية (اختياري)",
+    "publishScope": "نطاق النشر",
+    "scopeCollege": "خاص بكليتي",
+    "scopeUniversity": "عام للجامعة",
+    "managerCollegeHint": "أخبار «خاص بكليتي» تُنشر تلقائياً لـ {{college}}.",
+    "confirmDelete": "حذف الخبر «{{title}}»؟",
+    "deleted": "تم حذف الخبر.",
+    "delete": "حذف",
+    "categories": {
+      "ANNOUNCEMENT": "إعلان",
+      "WORKSHOP": "ورشة عمل",
+      "TRAINING": "دورة تدريبية",
+      "TUITION": "أقساط"
+    }
+  },
   "tuition": {
     "lead": "القسط السنوي 1000 دولار (500 دولار لكل فصل). الدفع محاكى لأغراض العرض.",
     "totalDue": "إجمالي القسط",
@@ -385,6 +531,16 @@
     "paid": "مدفوع",
     "installments": "أقساط الفصول",
     "payNow": "ادفع الآن",
+    "semesterFirstTitle": "قسط الفصل الدراسي الأول",
+    "semesterSecondTitle": "قسط الفصل الدراسي الثاني",
+    "payFirstSemesterFirst": "يجب إتمام دفع قسط الفصل الأول قبل دفع قسط الفصل الثاني.",
+    "semesterPaid": "تم دفع هذا القسط بالكامل.",
+    "paymentSection": "إعلان الأقساط",
+    "payFirstSemesterFees": "دفع رسوم الفصل الأول",
+    "paySecondSemesterFees": "دفع رسوم الفصل الثاني",
+    "secondSemesterWaitingAdmin": "يُفعَّل دفع الفصل الثاني عند نشر إعلان من الإدارة.",
+    "enablePaymentOnDashboard": "تفعيل زر الدفع في لوحة الطالب",
+    "tuitionSemesterTarget": "يفتح دفع",
     "discountRequests": "طلب خصم على الأقساط",
     "paymentLead": "دفع تجريبي آمن — بدون بوابة دفع حقيقية.",
     "paymentDetails": "ملخص الدفع",
@@ -429,8 +585,19 @@
   "library": {
     "categoriesLabel": "أقسام الكتب",
     "bookCategory": "قسم المكتبة",
+    "searchLabel": "بحث",
+    "searchPlaceholder": "ابحث بالعنوان أو المؤلف أو الناشر أو الكلمات المفتاحية…",
+    "allCategories": "كل الأقسام",
+    "allYears": "كل السنوات",
+    "allAuthors": "كل المؤلفين",
+    "allPublishers": "كل الناشرين",
+    "applyFilters": "تطبيق الفلاتر",
+    "resetFilters": "إعادة ضبط",
+    "resultsSummary": "{{count}} نتيجة — {{category}}",
+    "emptyFilteredTitle": "لا توجد نتائج لهذا البحث",
+    "emptyFilteredDescription": "غيّر معايير البحث أو أعد ضبط الفلاتر لعرض المزيد من الكتب.",
     "emptyTitle": "لا توجد كتب في قسم «{{category}}» حالياً",
-    "emptyDescription": "هذا القسم جاهز لاستقبال عناوين جديدة. عد لاحقاً أو جرّب قسماً آخر من الأزرار أعلاه.",
+    "emptyDescription": "هذا القسم جاهز لاستقبال عناوين جديدة. عد لاحقاً أو جرّب قسماً آخر.",
     "categories": {
       "MEDICAL": "كتب طبية",
       "ADMINISTRATIVE": "إدارية",
@@ -438,7 +605,8 @@
       "PROGRAMMING": "برمجة",
       "FRONTEND_WEB": "Front-end Web",
       "BACKEND_WEB": "Backend Web",
-      "ARTIFICIAL_INTELLIGENCE": "ذكاء صناعي"
+      "ARTIFICIAL_INTELLIGENCE": "ذكاء صناعي",
+      "GRADUATION_PROJECT": "مشاريع تخرج"
     }
   },
   "appeals": {

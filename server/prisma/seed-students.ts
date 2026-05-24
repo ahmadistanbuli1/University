@@ -1,22 +1,17 @@
 import type { PrismaClient } from '@prisma/client';
 import { UserRole } from '@prisma/client';
-import { INFO_ENG_DEMO_EMAIL } from './seed-courses-data.js';
-import { facultyCoursesForStudyTerm } from './seed-curriculum-data.js';
+import { writeStudentAccountsMarkdown, type StudentCredential } from './seed-accounts-md.js';
+import { seedDemoAuditHistory } from './seed-audit-history.js';
+import { seedCompletedFirstTermGrades } from './seed-s1-completed-grades.js';
+import {
+  CURRENT_STUDENT_TERM,
+  normalizeAllStudentsAcademicState,
+} from './seed-student-academic-state.js';
 import { SEED_STUDENTS, type StudentSeed } from './seed-students-data.js';
-import { syncStudentDepartmentEnrollments } from '../src/lib/student-enrollment.js';
 import {
   ensureDemoFacultyUser,
-  FACULTY_OFFERING_TERM,
   seedFacultyCourseAssignments,
 } from './seed-faculty.js';
-const SEED_ACADEMIC_TERM = {
-  semester: 'Fall 2025',
-  academicYear: '2025-2026',
-} as const;
-
-function randomScore(min = 55, max = 98): number {
-  return Math.round((min + Math.random() * (max - min)) * 10) / 10;
-}
 
 async function upsertStudentUser(
   prisma: PrismaClient,
@@ -69,59 +64,20 @@ async function upsertStudentUser(
   return { user, student };
 }
 
-/** Demo exam results for Omar (year 4, term 1) only. */
-async function seedOmarExamResults(
-  prisma: PrismaClient,
-  studentId: string,
-  departmentCode: string,
-  facultyId: string
-) {
-  const courseSeeds = facultyCoursesForStudyTerm(departmentCode, 4, 'FIRST');
-  for (const seed of courseSeeds) {
-    const course = await prisma.course.findUnique({ where: { code: seed.code } });
-    if (!course) continue;
-
-    let fc = await prisma.facultyCourse.findFirst({
-      where: {
-        facultyId,
-        courseId: course.id,
-        semester: FACULTY_OFFERING_TERM.semester,
-        academicYear: FACULTY_OFFERING_TERM.academicYear,
-      },
-    });
-    if (!fc) continue;
-
-    const existing = await prisma.examResult.findFirst({
-      where: { studentId, facultyCourseId: fc.id },
-    });
-    if (!existing) {
-      const total = randomScore();
-      await prisma.examResult.create({
-        data: {
-          studentId,
-          facultyCourseId: fc.id,
-          score: total,
-          practicalScore: Math.round(total * 0.4 * 10) / 10,
-          theoryScore: Math.round(total * 0.6 * 10) / 10,
-          attemptNumber: 1,
-          semester: FACULTY_OFFERING_TERM.semester,
-          academicYear: FACULTY_OFFERING_TERM.academicYear,
-        },
-      });
-    }
-  }
-}
-
-/** Upsert demo students with full department enrollments (study-plan courses). */
+/** Upsert demo students, normalize all accounts, seed S1 grades and activity history. */
 export async function seedStudentsAndAcademics(prisma: PrismaClient, password: string) {
   const faculty = await ensureDemoFacultyUser(prisma, password);
   await seedFacultyCourseAssignments(prisma);
 
   const departments = await prisma.department.findMany({ include: { college: true } });
-  const deptByCode = new Map(departments.map((d) => [d.code, d]));
+  const deptByCode = new Map(
+    departments.map((d) => [
+      d.code,
+      { id: d.id, name: d.name, collegeId: d.collegeId, collegeName: d.college.name },
+    ])
+  );
 
-  const credentials: { name: string; email: string; department: string; academicNumber: string }[] =
-    [];
+  const credentials: StudentCredential[] = [];
 
   for (const seed of SEED_STUDENTS) {
     const dept = deptByCode.get(seed.departmentCode);
@@ -138,48 +94,27 @@ export async function seedStudentsAndAcademics(prisma: PrismaClient, password: s
       dept.collegeId
     );
 
-    await syncStudentDepartmentEnrollments(prisma, {
-      studentId: student.id,
-      departmentId: dept.id,
-      academicYear: seed.academicYear,
-      semesterLabel: SEED_ACADEMIC_TERM.semester,
-    });
-
-    if (seed.email === INFO_ENG_DEMO_EMAIL) {
-      await prisma.gradeAppeal.deleteMany({ where: { studentId: student.id } });
-      await prisma.examResult.deleteMany({ where: { studentId: student.id } });
-      await seedOmarExamResults(prisma, student.id, seed.departmentCode, faculty.id);
-    } else {
-      await prisma.gradeAppeal.deleteMany({ where: { studentId: student.id } });
-      await prisma.examResult.deleteMany({ where: { studentId: student.id } });
-    }
-
     credentials.push({
-      name: user.name,
-      email: user.email,
-      department: dept.name,
-      academicNumber: seed.academicNumber,
+      ...seed,
+      collegeName: dept.collegeName,
+      departmentName: dept.name,
     });
+
+    void user;
+    void student;
   }
 
-  const extraStudents = await prisma.student.findMany({
-    where: {
-      user: {
-        email: { notIn: SEED_STUDENTS.map((s) => s.email) },
-        role: UserRole.STUDENT,
-      },
-    },
-    include: { department: true },
-  });
+  const allGradeTargets = await normalizeAllStudentsAcademicState(prisma);
 
-  for (const student of extraStudents) {
-    await syncStudentDepartmentEnrollments(prisma, {
-      studentId: student.id,
-      departmentId: student.departmentId,
-      academicYear: student.academicYear,
-      semesterLabel: SEED_ACADEMIC_TERM.semester,
-    });
-  }
+  await seedCompletedFirstTermGrades(prisma, faculty.id, allGradeTargets);
+
+  await seedDemoAuditHistory(prisma);
+
+  const mdPath = await writeStudentAccountsMarkdown(credentials);
+  console.log(`Student accounts written to ${mdPath}`);
+  console.log(
+    `Academic calendar: term 2 (${CURRENT_STUDENT_TERM.semester}), S1 grades complete for ${allGradeTargets.length} students.`
+  );
 
   return credentials;
 }

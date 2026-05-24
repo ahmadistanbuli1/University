@@ -23,4 +23,8 @@ export class AuditService {
   async listAuditLogs(params: { page: number; pageSize: number }) {
     return this.repo.list(params);
   }
+
+  listMyActivity(userId: string, params: { page: number; pageSize: number }) {
+    return this.repo.listForUser(userId, params);
+  }
 }

@@ -18,6 +18,10 @@ type StudyPlanCourse = {
   theoryDisplay: string;
   totalScore: number | null;
   hasGrade: boolean;
+  practicalPublished?: boolean;
+  theoryPublished?: boolean;
+  practicalFailed?: boolean;
+  theoryBlocked?: boolean;
 };
 
 type StudyPlanTerm = {
@@ -113,9 +117,19 @@ export function StudentStudyPlanPage() {
                 key: 'practical',
                 header: t('studyPlan.practical', { max: 40 }),
                 render: (r) => (
-                  <span>
+                  <span
+                    className={cn(
+                      r.practicalFailed &&
+                        'font-semibold text-red-600 dark:text-red-400'
+                    )}
+                  >
                     {r.practicalDisplay}
                     <span className="ms-1 text-xs text-zinc-400">/ {r.practicalPass}</span>
+                    {r.practicalFailed ? (
+                      <span className="ms-2 text-xs text-red-600 dark:text-red-400">
+                        ({t('studyPlan.practicalFailed')})
+                      </span>
+                    ) : null}
                   </span>
                 ),
               },
@@ -124,8 +138,18 @@ export function StudentStudyPlanPage() {
                 header: t('studyPlan.theory', { max: 60 }),
                 render: (r) => (
                   <span>
-                    {r.theoryDisplay}
-                    <span className="ms-1 text-xs text-zinc-400">/ {r.theoryPass}</span>
+                    {r.theoryBlocked && !r.theoryPublished ? (
+                      <span className="text-xs text-zinc-500">
+                        {r.practicalFailed
+                          ? t('studyPlan.theoryBlockedFailed')
+                          : t('studyPlan.theoryAwaitingPractical')}
+                      </span>
+                    ) : (
+                      <>
+                        {r.theoryDisplay}
+                        <span className="ms-1 text-xs text-zinc-400">/ {r.theoryPass}</span>
+                      </>
+                    )}
                   </span>
                 ),
               },

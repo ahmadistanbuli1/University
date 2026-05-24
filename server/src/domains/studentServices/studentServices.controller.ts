@@ -5,6 +5,7 @@ import {
   createAppealSchema,
   listStudentsQuerySchema,
   processTranscriptSchema,
+  requestTranscriptSchema,
   updateAppealSchema,
 } from './studentServices.schemas.js';
 import type { StudentServicesService } from './studentServices.service.js';
@@ -35,7 +36,12 @@ export class StudentServicesController {
   };
 
   requestTranscript = async (req: Request, res: Response) => {
-    const created = await this.svc.requestTranscript(req.authUser!.id, req.authUser!.role);
+    const body = requestTranscriptSchema.parse(req.body);
+    const created = await this.svc.requestTranscript(
+      req.authUser!.id,
+      req.authUser!.role,
+      body
+    );
     res.status(201).json(created);
   };
 
@@ -71,6 +77,20 @@ export class StudentServicesController {
     res.json(list);
   };
 
+  listExamOfficerTranscripts = async (req: Request, res: Response) => {
+    const list = await this.svc.listExamOfficerTranscripts(req.authUser!.role);
+    res.json(list);
+  };
+
+  fulfillTranscript = async (req: Request, res: Response) => {
+    const updated = await this.svc.fulfillTranscript(
+      req.authUser!.id,
+      req.authUser!.role,
+      paramId(req)
+    );
+    res.json(updated);
+  };
+
   listStudents = async (req: Request, res: Response) => {
     const q = listStudentsQuerySchema.parse(req.query);
     const result = await this.svc.listStudents(
@@ -84,6 +104,7 @@ export class StudentServicesController {
   patchStudent = async (req: Request, res: Response) => {
     const body = affairsUpdateStudentSchema.parse(req.body);
     const updated = await this.svc.updateStudentProfile(
+      req.authUser!.id,
       req.authUser!.role,
       req.authUser!.collegeId,
       paramId(req),

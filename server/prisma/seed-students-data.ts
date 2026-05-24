@@ -1,4 +1,6 @@
-/** Demo student accounts — one per department. Password for all: Password123! */
+/** Demo student accounts. Password for all: Password123! */
+import { DEPT_MAX_STUDY_YEARS } from './seed-curriculum-data.js';
+
 export type StudentSeed = {
   name: string;
   email: string;
@@ -6,65 +8,54 @@ export type StudentSeed = {
   academicNumber: string;
   currentSemester: number;
   academicYear: string;
+  studyYear: number;
 };
 
-export const SEED_STUDENTS: StudentSeed[] = [
-  {
-    name: 'Omar Al-Hassan',
-    email: 'student.infoeng@university.edu',
-    departmentCode: 'INFO_ENG',
-    academicNumber: 'STU-2025-INFO-01',
-    currentSemester: 7,
-    academicYear: '2025-2026',
-  },
-  {
-    name: 'Karim Saleh',
-    email: 'student.medeng@university.edu',
-    departmentCode: 'MED_ENG',
-    academicNumber: 'STU-2025-MED-01',
-    currentSemester: 1,
-    academicYear: '2025-2026',
-  },
-  {
-    name: 'Layla Mansour',
-    email: 'student.altenergy@university.edu',
-    departmentCode: 'ALT_ENERGY_ENG',
-    academicNumber: 'STU-2025-ALT-01',
-    currentSemester: 1,
-    academicYear: '2025-2026',
-  },
-  {
-    name: 'Sara Mahmoud',
-    email: 'student.anesthesia@university.edu',
-    departmentCode: 'ANESTHESIA',
-    academicNumber: 'STU-2025-ANES-01',
-    currentSemester: 1,
-    academicYear: '2025-2026',
-  },
-  {
-    name: 'Fatima Al-Khatib',
-    email: 'student.admin@university.edu',
-    departmentCode: 'ADMIN_SCI',
-    academicNumber: 'STU-2025-ADMN-01',
-    currentSemester: 1,
-    academicYear: '2025-2026',
-  },
-  {
-    name: 'Nour Ibrahim',
-    email: 'student.pharmacy@university.edu',
-    departmentCode: 'PHARMACY',
-    academicNumber: 'STU-2025-PHRM-01',
-    currentSemester: 1,
-    academicYear: '2025-2026',
-  },
-  {
-    name: 'James Walker',
-    email: 'student.english@university.edu',
-    departmentCode: 'ENGLISH_LIT',
-    academicNumber: 'STU-2025-ENGL-01',
-    currentSemester: 1,
-    academicYear: '2025-2026',
-  },
-];
-
 export const SEED_STUDENT_PASSWORD = 'Password123!';
+
+const DEPT_EMAIL_SLUG: Record<string, string> = {
+  INFO_ENG: 'infoeng',
+  MED_ENG: 'medeng',
+  ALT_ENERGY_ENG: 'altenergy',
+  ANESTHESIA: 'anesthesia',
+  ADMIN_SCI: 'adminsci',
+  PHARMACY: 'pharmacy',
+  ENGLISH_LIT: 'english',
+};
+
+const ARABIC_FIRST = ['أحمد', 'سارة', 'محمد', 'ليلى', 'كريم'];
+const ARABIC_LAST = ['الحسن', 'منصور', 'صالح', 'محمود', 'الخطيب'];
+
+function studentName(deptCode: string, studyYear: number, index: number): string {
+  const first = ARABIC_FIRST[index - 1] ?? `Student${index}`;
+  const last = ARABIC_LAST[index - 1] ?? 'Demo';
+  return `${first} ${last} (${deptCode} Y${studyYear})`;
+}
+
+/** Five students per study year — currently in the second semester of that year. */
+export function buildSeedStudents(): StudentSeed[] {
+  const students: StudentSeed[] = [];
+
+  for (const [departmentCode, maxYears] of Object.entries(DEPT_MAX_STUDY_YEARS)) {
+    const slug = DEPT_EMAIL_SLUG[departmentCode] ?? departmentCode.toLowerCase();
+    for (let studyYear = 1; studyYear <= maxYears; studyYear++) {
+      const currentSemester = (studyYear - 1) * 2 + 2;
+      for (let n = 1; n <= 5; n++) {
+        const nn = String(n).padStart(2, '0');
+        students.push({
+          name: studentName(departmentCode, studyYear, n),
+          email: `student.${slug}.y${studyYear}.${nn}@university.edu`,
+          departmentCode,
+          academicNumber: `STU-2025-${departmentCode}-Y${studyYear}-${nn}`,
+          currentSemester,
+          academicYear: '2025-2026',
+          studyYear,
+        });
+      }
+    }
+  }
+
+  return students;
+}
+
+export const SEED_STUDENTS: StudentSeed[] = buildSeedStudents();

@@ -54,8 +54,11 @@ export const librarianBookFieldsSchema = z.object({
     'FRONTEND_WEB',
     'BACKEND_WEB',
     'ARTIFICIAL_INTELLIGENCE',
+    'GRADUATION_PROJECT',
   ]),
   publishYear: z.coerce.number().int().min(1900).max(2100),
+  author: z.string().optional(),
+  publisher: z.string().optional(),
   keywords: z.string().optional(),
 });
 
@@ -68,7 +71,15 @@ export type LibrarianBookFormValues = z.infer<typeof librarianBookFieldsSchema>;
 
 export type LibrarianEditBookFormValues = LibrarianBookFormValues;
 
-const userRoleEnum = z.enum(['ADMIN', 'STUDENT', 'FACULTY', 'LIBRARIAN', 'AFFAIRS', 'MANAGER']);
+const userRoleEnum = z.enum([
+  'ADMIN',
+  'STUDENT',
+  'FACULTY',
+  'LIBRARIAN',
+  'AFFAIRS',
+  'MANAGER',
+  'EXAM_OFFICER',
+]);
 
 export const adminCreateUserFormSchema = z
   .object({

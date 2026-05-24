@@ -37,7 +37,7 @@ export class NotificationDispatchService {
     authorId: string;
     title: string;
     collegeId: string | null;
-    category: 'GENERAL' | 'TUITION';
+    category: 'ANNOUNCEMENT' | 'WORKSHOP' | 'TRAINING' | 'TUITION';
   }) {
     const linkPath = input.category === 'TUITION' ? '/student/tuition' : '/news';
     const payload = {
@@ -95,14 +95,44 @@ export class NotificationDispatchService {
     });
   }
 
-  async notifyTranscriptRejected(userId: string, reason: string) {
+  async notifyTranscriptRejected(userId: string, reason: string, feeAmount: number) {
     await this.notifyUser(userId, {
       kind: 'TRANSCRIPT_REJECTED',
       title: 'Transcript request rejected',
-      body: reason,
+      body: `${reason} Your payment of $${feeAmount.toFixed(2)} has been refunded (demo).`,
       linkPath: '/student/transcripts',
-      meta: { reason },
+      meta: { reason, feeRefunded: true, feeAmount },
     });
+  }
+
+  async notifyTranscriptAffairsApproved(userId: string) {
+    await this.notifyUser(userId, {
+      kind: 'TRANSCRIPT_REQUEST',
+      title: 'Transcript approved by student affairs',
+      body: 'Your request was forwarded to the exam office to generate your PDF.',
+      linkPath: '/student/transcripts',
+    });
+  }
+
+  async notifyExamOfficerTranscriptQueued(studentName: string, studentEmail: string) {
+    const payload = {
+      kind: 'TRANSCRIPT_REQUEST' as NotificationKind,
+      title: 'Generate transcript PDF',
+      body: `${studentName} (${studentEmail}) — affairs approved, ready for PDF.`,
+      meta: { studentName, studentEmail },
+    };
+    const officers = await this.repo.findUserIdsByRoles(['EXAM_OFFICER']);
+    const admins = await this.repo.findUserIdsByRoles(['ADMIN']);
+    await this.push([
+      ...this.itemsForUserIds(
+        officers.map((u) => u.id),
+        { ...payload, linkPath: '/exam-officer/transcripts' }
+      ),
+      ...this.itemsForUserIds(
+        admins.map((u) => u.id),
+        { ...payload, linkPath: '/exam-officer/transcripts' }
+      ),
+    ]);
   }
 
   async notifyAppealSubmitted(studentName: string) {
@@ -155,9 +185,62 @@ export class NotificationDispatchService {
     await this.notifyUser(userId, {
       kind: 'GRADE_PUBLISHED',
       title: 'New grade',
-      body: `A grade was posted for ${courseName}`,
+      body: `Your grade for ${courseName} is now available. View your result.`,
       linkPath: '/student/grades',
       meta: { courseName },
+    });
+  }
+
+  async notifyPracticalGradePublished(userId: string, courseName: string) {
+    await this.notifyUser(userId, {
+      kind: 'PRACTICAL_GRADE_PUBLISHED',
+      title: 'Practical grade available',
+      body: `Your practical grade for ${courseName} is now available.`,
+      linkPath: '/student/grades',
+      meta: { courseName },
+    });
+  }
+
+  async notifyExamOfficerGradeSubmission(
+    courseName: string,
+    facultyName: string,
+    submissionId: string,
+    phase: 'PRACTICAL' | 'THEORY' = 'PRACTICAL'
+  ) {
+    const phaseLabel = phase === 'PRACTICAL' ? 'practical' : 'theory';
+    const payload = {
+      kind: 'GRADE_SUBMISSION' as NotificationKind,
+      title: 'Grades awaiting publication',
+      body: `${facultyName} submitted ${phaseLabel} grades for ${courseName}`,
+      meta: { courseName, facultyName, submissionId, phase },
+    };
+    const officers = await this.repo.findUserIdsByRoles(['EXAM_OFFICER']);
+    const admins = await this.repo.findUserIdsByRoles(['ADMIN']);
+    await this.push([
+      ...this.itemsForUserIds(
+        officers.map((u) => u.id),
+        { ...payload, linkPath: '/exam-officer/grades' }
+      ),
+      ...this.itemsForUserIds(
+        admins.map((u) => u.id),
+        { ...payload, linkPath: '/exam-officer/grades' }
+      ),
+    ]);
+  }
+
+  async notifyFacultyGradeSubmissionRejected(
+    facultyUserId: string,
+    courseName: string,
+    reason: string,
+    phase: 'PRACTICAL' | 'THEORY' = 'PRACTICAL'
+  ) {
+    const phaseLabel = phase === 'PRACTICAL' ? 'practical' : 'theory';
+    await this.notifyUser(facultyUserId, {
+      kind: 'GRADE_SUBMISSION_REJECTED',
+      title: 'Grade submission rejected',
+      body: `${courseName} (${phaseLabel}): ${reason}. You can edit and resubmit.`,
+      linkPath: '/faculty/grades',
+      meta: { courseName, reason, phase },
     });
   }
 }

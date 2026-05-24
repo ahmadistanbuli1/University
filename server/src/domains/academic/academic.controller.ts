@@ -30,6 +30,7 @@ export class AcademicController {
     const body = createResultSchema.parse(req.body);
     const created = await this.academic.submitResult({
       facultyUserId: req.authUser!.id,
+      role: req.authUser!.role,
       ...body,
     });
     res.status(201).json(created);

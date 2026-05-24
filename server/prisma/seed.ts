@@ -7,6 +7,8 @@ import { seedStudentsAndAcademics } from './seed-students.js';
 import { seedTuitionAndDiscounts } from './seed-tuition.js';
 import { seedLibraryBooks } from './seed-library.js';
 import { seedCurriculum } from './seed-curriculum.js';
+import { seedNewsDemo } from './seed-news.js';
+import { seedExamOfficer } from './seed-exam-officer.js';
 
 const prisma = new PrismaClient();
 
@@ -61,6 +63,7 @@ async function seedStaffAndContent(password: string) {
     data: {
       title: 'Welcome to the new portal',
       content: 'The university web system is now live.',
+      category: 'ANNOUNCEMENT',
       authorId: admin.id,
     },
   });
@@ -74,6 +77,7 @@ async function seedStaffAndContent(password: string) {
       data: {
         title: 'Information Engineering town hall',
         content: 'Join us this Friday.',
+        category: 'ANNOUNCEMENT',
         authorId: infoEngManager.id,
         collegeId: collegeInfoEng.id,
       },
@@ -112,12 +116,14 @@ async function main() {
   const studentCreds = await seedStudentsAndAcademics(prisma, password);
 
   await seedTuitionAndDiscounts(prisma);
+  await seedNewsDemo(prisma);
   await seedLibraryBooks(prisma);
 
-  console.log('\nStudent accounts (password: Password123!):');
-  for (const s of studentCreds) {
-    console.log(`  ${s.email} — ${s.name} (${s.department}) · ${s.academicNumber}`);
-  }
+  const examOfficer = await seedExamOfficer(prisma, password);
+  console.log('\nExam officer (password: Password123!):');
+  console.log(`  ${examOfficer.email}`);
+
+  console.log(`\n${studentCreds.length} student accounts seeded (see docs/accounts/md/student-accounts.md).`);
 }
 
 main()

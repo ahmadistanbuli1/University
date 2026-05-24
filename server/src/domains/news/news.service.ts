@@ -1,8 +1,10 @@
-import type { UserRole } from '@prisma/client';
+import type { NewsCategory, UserRole } from '@prisma/client';
 import { AppError } from '../../utils/AppError.js';
 import type { NewsRepository } from './news.repository.js';
 import type { AuditService } from '../audit/audit.service.js';
 import type { NotificationDispatchService } from '../notifications/notification.service.js';
+
+type NewsCategoryInput = NewsCategory;
 
 export class NewsService {
   constructor(
@@ -11,8 +13,17 @@ export class NewsService {
     private readonly notify: NotificationDispatchService | null
   ) {}
 
-  async listPublic(page: number, pageSize: number) {
-    const [items, total] = await this.repo.listPublic({ page, pageSize });
+  async listPublic(
+    page: number,
+    pageSize: number,
+    filters?: { collegeId?: string; category?: NewsCategory }
+  ) {
+    const [items, total] = await this.repo.listPublic({
+      page,
+      pageSize,
+      collegeId: filters?.collegeId,
+      category: filters?.category,
+    });
     return { items, total, page, pageSize };
   }
 
@@ -32,16 +43,24 @@ export class NewsService {
     content: string;
     imageUrl?: string | null;
     authorCollegeId: string | null;
-    category?: 'GENERAL' | 'TUITION';
+    category?: NewsCategoryInput;
     enablePayNow?: boolean;
+    tuitionSemesterKey?: 'semester-1' | 'semester-2' | null;
+    scope?: 'COLLEGE' | 'UNIVERSITY';
   }) {
     if (input.role === 'ADMIN') {
+      const category = input.category ?? 'ANNOUNCEMENT';
+      const enablePayNow = category === 'TUITION' ? Boolean(input.enablePayNow) : false;
+      const tuitionSemesterKey =
+        enablePayNow && input.tuitionSemesterKey ? input.tuitionSemesterKey : null;
+
       const news = await this.repo.create({
         title: input.title,
         content: input.content,
         imageUrl: input.imageUrl ?? undefined,
-        category: input.category ?? 'GENERAL',
-        enablePayNow: input.enablePayNow ?? false,
+        category,
+        enablePayNow,
+        tuitionSemesterKey,
         author: { connect: { id: input.authorId } },
         college: input.collegeId ? { connect: { id: input.collegeId } } : undefined,
       });
@@ -55,26 +74,40 @@ export class NewsService {
         authorId: input.authorId,
         title: input.title,
         collegeId: input.collegeId ?? null,
-        category: input.category ?? 'GENERAL',
+        category,
       });
       return news;
     }
+
     if (input.role === 'MANAGER') {
       if (!input.authorCollegeId) {
         throw new AppError(403, 'Manager must belong to a college');
       }
-      const collegeId = input.collegeId ?? input.authorCollegeId;
-      if (collegeId !== input.authorCollegeId) {
-        throw new AppError(403, 'Managers can only post for their college');
+
+      const scope = input.scope ?? 'COLLEGE';
+      let collegeId: string | null;
+      let category: NewsCategoryInput;
+
+      if (scope === 'COLLEGE') {
+        collegeId = input.authorCollegeId;
+        category = input.category ?? 'ANNOUNCEMENT';
+      } else {
+        collegeId = null;
+        category = input.category ?? 'ANNOUNCEMENT';
+        if (category === 'TUITION') {
+          throw new AppError(400, 'Managers cannot publish tuition payment announcements');
+        }
       }
+
       const news = await this.repo.create({
         title: input.title,
         content: input.content,
         imageUrl: input.imageUrl ?? undefined,
-        category: input.category ?? 'GENERAL',
-        enablePayNow: input.enablePayNow ?? false,
+        category,
+        enablePayNow: false,
+        tuitionSemesterKey: null,
         author: { connect: { id: input.authorId } },
-        college: { connect: { id: collegeId } },
+        college: collegeId ? { connect: { id: collegeId } } : undefined,
       });
       await this.audit?.log({
         userId: input.authorId,
@@ -86,10 +119,11 @@ export class NewsService {
         authorId: input.authorId,
         title: input.title,
         collegeId,
-        category: input.category ?? 'GENERAL',
+        category,
       });
       return news;
     }
+
     throw new AppError(403, 'Forbidden');
   }
 
@@ -101,8 +135,9 @@ export class NewsService {
       content?: string;
       imageUrl?: string | null;
       collegeId?: string | null;
-      category?: 'GENERAL' | 'TUITION';
+      category?: NewsCategoryInput;
       enablePayNow?: boolean;
+      tuitionSemesterKey?: 'semester-1' | 'semester-2' | null;
     }
   ) {
     const existing = await this.repo.findById(id);
@@ -110,12 +145,19 @@ export class NewsService {
       throw new AppError(404, 'News not found');
     }
     if (actor.role === 'ADMIN') {
+      const category = data.category ?? existing.category;
+      const enablePayNow =
+        category === 'TUITION'
+          ? data.enablePayNow ?? existing.enablePayNow
+          : false;
       const updated = await this.repo.update(id, {
         title: data.title,
         content: data.content,
         imageUrl: data.imageUrl,
         category: data.category,
-        enablePayNow: data.enablePayNow,
+        enablePayNow: data.enablePayNow !== undefined ? enablePayNow : undefined,
+        tuitionSemesterKey:
+          data.tuitionSemesterKey !== undefined ? data.tuitionSemesterKey : undefined,
         ...(data.collegeId !== undefined
           ? data.collegeId
             ? { college: { connect: { id: data.collegeId } } }
@@ -138,8 +180,7 @@ export class NewsService {
         title: data.title,
         content: data.content,
         imageUrl: data.imageUrl,
-        category: data.category,
-        enablePayNow: data.enablePayNow,
+        category: data.category === 'TUITION' ? undefined : data.category,
       });
       await this.audit?.log({
         userId: actor.id,

@@ -10,6 +10,10 @@ export const updateAppealSchema = z.object({
   adminResponse: z.string().optional(),
 });
 
+export const requestTranscriptSchema = z.object({
+  confirmPayment: z.literal(true),
+});
+
 export const processTranscriptSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('approve') }),
   z.object({

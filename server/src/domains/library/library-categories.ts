@@ -8,6 +8,7 @@ export const LIBRARY_BOOK_CATEGORIES = [
   'FRONTEND_WEB',
   'BACKEND_WEB',
   'ARTIFICIAL_INTELLIGENCE',
+  'GRADUATION_PROJECT',
 ] as const satisfies readonly LibraryBookCategory[];
 
 export type LibraryCategorySlug = (typeof LIBRARY_BOOK_CATEGORIES)[number];

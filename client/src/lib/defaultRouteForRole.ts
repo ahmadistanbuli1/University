@@ -11,6 +11,8 @@ export function defaultRouteForRole(role: string): string {
       return '/manager';
     case 'AFFAIRS':
       return '/affairs';
+    case 'EXAM_OFFICER':
+      return '/exam-officer';
     case 'ADMIN':
       return '/admin';
     default:

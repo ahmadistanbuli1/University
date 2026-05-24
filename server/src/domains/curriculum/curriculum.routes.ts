@@ -15,6 +15,11 @@ export function createCurriculumRouter(
     requireRoles('ADMIN', 'MANAGER'),
     asyncHandler(controller.list.bind(controller))
   );
+  r.post(
+    '/',
+    requireRoles('ADMIN'),
+    asyncHandler(controller.create.bind(controller))
+  );
   r.patch(
     '/:id',
     requireRoles('ADMIN'),

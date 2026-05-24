@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { isAxiosError } from 'axios';
 import {
   usePayInstallmentQuery,
   useSimulatePaymentMutation,
   useTuitionSummaryQuery,
 } from '../api/hooks.js';
 import { PaymentQr } from '../components/PaymentQr.js';
+import { installmentDisplayLabel } from '../lib/tuition-utils.js';
 import { Alert } from '../components/ui/Alert.js';
 import { Button } from '../components/ui/Button.js';
 import { Card } from '../components/ui/Card.js';
@@ -52,7 +54,9 @@ export function StudentPaymentPage() {
           <dl className="mt-4 flex flex-col gap-2 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-zinc-500">{t('tuition.item')}</dt>
-              <dd className="m-0 font-medium">{data.installment.label}</dd>
+              <dd className="m-0 font-medium">
+                {installmentDisplayLabel(data.installment, t)}
+              </dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-zinc-500">{t('labels.academicYear')}</dt>
@@ -84,7 +88,12 @@ export function StudentPaymentPage() {
                       toast.success(t('tuition.paymentSuccess'));
                       void summary.refetch();
                     },
-                    onError: () => toast.error(t('messages.loadError')),
+                    onError: (err) => {
+                      const msg = isAxiosError(err)
+                        ? (err.response?.data as { error?: string })?.error
+                        : undefined;
+                      toast.error(msg ?? t('messages.loadError'));
+                    },
                   });
                 }}
               >

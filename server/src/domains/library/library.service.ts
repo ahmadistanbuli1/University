@@ -17,6 +17,9 @@ export class LibraryService {
     pageSize: number;
     keyword?: string;
     category?: LibraryBookCategory;
+    publishYear?: number;
+    author?: string;
+    publisher?: string;
   }) {
     return this.repo.listBooks(params);
   }
@@ -32,6 +35,8 @@ export class LibraryService {
     category: LibraryBookCategory;
     departmentId?: string;
     publishYear: number;
+    author?: string;
+    publisher?: string;
     keywords: string[];
   }) {
     const book = await this.repo.createBook({
@@ -41,6 +46,8 @@ export class LibraryService {
       departmentId: input.departmentId,
       addedById: input.librarianId,
       publishYear: input.publishYear,
+      author: input.author,
+      publisher: input.publisher,
       keywords: input.keywords,
     });
     await this.audit?.log({
@@ -76,6 +83,8 @@ export class LibraryService {
       title?: string;
       category?: LibraryBookCategory;
       publishYear?: number;
+      author?: string | null;
+      publisher?: string | null;
       keywords?: string;
     }
   ) {
@@ -93,6 +102,8 @@ export class LibraryService {
       title: input.title,
       category: input.category,
       publishYear: input.publishYear,
+      author: input.author !== undefined ? input.author?.trim() || null : undefined,
+      publisher: input.publisher !== undefined ? input.publisher?.trim() || null : undefined,
       keywords,
     });
 

@@ -25,19 +25,28 @@ export async function seedTuitionAndDiscounts(prisma: PrismaClient) {
     const inst1 = await prisma.studentTuitionInstallment.findFirst({
       where: { studentId: firstStudent.id, semesterKey: 'semester-1' },
     });
-    if (inst1 && Number(inst1.amountPaid) === 0) {
-      await prisma.tuitionPayment.create({
-        data: {
+    const demoRef = 'SPU-PAY-DEMO-SEM1-PARTIAL';
+    if (inst1) {
+      await prisma.tuitionPayment.upsert({
+        where: { referenceCode: demoRef },
+        create: {
           studentId: firstStudent.id,
           installmentId: inst1.id,
           amount: 250,
-          referenceCode: 'SPU-PAY-DEMO-SEM1-PARTIAL',
+          referenceCode: demoRef,
+        },
+        update: {
+          studentId: firstStudent.id,
+          installmentId: inst1.id,
+          amount: 250,
         },
       });
-      await prisma.studentTuitionInstallment.update({
-        where: { id: inst1.id },
-        data: { amountPaid: 250, status: 'PARTIAL' },
-      });
+      if (Number(inst1.amountPaid) < 250) {
+        await prisma.studentTuitionInstallment.update({
+          where: { id: inst1.id },
+          data: { amountPaid: 250, status: 'PARTIAL' },
+        });
+      }
     }
 
     const existingDiscount = await prisma.discountRequest.findFirst({
@@ -95,6 +104,7 @@ export async function seedTuitionAndDiscounts(prisma: PrismaClient) {
             'Tuition for the second semester ($500) is now due. Please complete payment through the student portal.',
           category: 'TUITION',
           enablePayNow: true,
+          tuitionSemesterKey: 'semester-2',
           authorId: admin.id,
         },
       });
@@ -105,6 +115,7 @@ export async function seedTuitionAndDiscounts(prisma: PrismaClient) {
             'يسر الجامعة إعلام الطلبة ببدء فترة تسديد أقساط الفصل الدراسي الثاني. يمكنكم الدفع عبر بوابة الطالب.',
           category: 'TUITION',
           enablePayNow: true,
+          tuitionSemesterKey: 'semester-2',
           authorId: admin.id,
         },
       });

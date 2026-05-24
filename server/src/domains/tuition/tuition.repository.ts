@@ -38,6 +38,18 @@ export class TuitionRepository {
     });
   }
 
+  findInstallmentBySemesterKey(studentId: string, academicYear: string, semesterKey: string) {
+    return this.db.studentTuitionInstallment.findUnique({
+      where: {
+        studentId_academicYear_semesterKey: {
+          studentId,
+          academicYear,
+          semesterKey,
+        },
+      },
+    });
+  }
+
   listPayments(studentId: string) {
     return this.db.tuitionPayment.findMany({
       where: { studentId },

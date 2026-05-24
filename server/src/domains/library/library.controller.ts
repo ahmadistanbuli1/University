@@ -17,6 +17,9 @@ export class LibraryController {
       pageSize: q.pageSize,
       keyword: q.keyword,
       category: q.category,
+      publishYear: q.publishYear,
+      author: q.author,
+      publisher: q.publisher,
     });
     res.json(result);
   };
@@ -42,6 +45,8 @@ export class LibraryController {
       category: body.category,
       departmentId: body.departmentId,
       publishYear: body.publishYear,
+      author: body.author,
+      publisher: body.publisher,
       keywords,
     });
     res.status(201).json(book);

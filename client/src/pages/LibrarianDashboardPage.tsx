@@ -55,6 +55,8 @@ type BookRow = {
   filePath: string;
   category: LibraryCategory;
   publishYear: number;
+  author?: string | null;
+  publisher?: string | null;
   readsCount: number;
   downloadsCount: number;
   keywords?: Array<{ keyword: string }>;
@@ -68,7 +70,7 @@ export function LibrarianDashboardPage() {
   const [filterCategory, setFilterCategory] = useState<string>('');
   const { data: booksData, isLoading: booksLoading } = useLibrarianBooksQuery(
     page,
-    filterCategory || undefined
+    filterCategory ? { category: filterCategory } : undefined
   );
   const updateBook = useUpdateBookMutation();
   const deleteBook = useDeleteBookMutation();
@@ -140,6 +142,8 @@ export function LibrarianDashboardPage() {
       title: book.title,
       category: book.category,
       publishYear: book.publishYear,
+      author: book.author ?? '',
+      publisher: book.publisher ?? '',
       keywords: book.keywords?.map((k) => k.keyword).join(', ') ?? '',
     });
   }
@@ -342,6 +346,8 @@ export function LibrarianDashboardPage() {
                   header: t('library.bookCategory'),
                   render: (r) => t(`library.categories.${r.category}`),
                 },
+                { key: 'auth', header: t('labels.author'), render: (r) => r.author ?? '—' },
+                { key: 'pub', header: t('labels.publisher'), render: (r) => r.publisher ?? '—' },
                 { key: 'y', header: t('labels.publishYear'), render: (r) => r.publishYear },
                 {
                   key: 'u',
@@ -409,6 +415,8 @@ export function LibrarianDashboardPage() {
                   title: vals.title,
                   category: vals.category,
                   publishYear: vals.publishYear,
+                  author: vals.author?.trim() || null,
+                  publisher: vals.publisher?.trim() || null,
                   keywords: vals.keywords,
                 },
               },
@@ -436,6 +444,12 @@ export function LibrarianDashboardPage() {
           </Field>
           <Field label={t('labels.publishYear')} error={errors.publishYear?.message}>
             <Input type="number" {...register('publishYear', { valueAsNumber: true })} />
+          </Field>
+          <Field label={t('labels.author')} error={errors.author?.message}>
+            <Input {...register('author')} />
+          </Field>
+          <Field label={t('labels.publisher')} error={errors.publisher?.message}>
+            <Input {...register('publisher')} />
           </Field>
           <Field label={t('labels.keywords')} error={errors.keywords?.message}>
             <Input {...register('keywords')} />

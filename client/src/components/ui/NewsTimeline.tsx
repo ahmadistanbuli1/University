@@ -1,5 +1,7 @@
 import { Calendar, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card } from './Card.js';
+import { newsCategoryLabel } from '../../lib/news-categories.js';
 import { cn } from '../../lib/cn.js';
 import type { NewsCardItem } from './NewsCard.js';
 
@@ -21,6 +23,7 @@ type NewsTimelineProps = {
 };
 
 export function NewsTimeline({ items, className }: NewsTimelineProps) {
+  const { t } = useTranslation('nav');
   return (
     <ol className={cn('relative m-0 list-none space-y-0 p-0', className)}>
       {items.map((item, index) => (
@@ -45,6 +48,20 @@ export function NewsTimeline({ items, className }: NewsTimelineProps) {
                   <Calendar className="size-3.5 shrink-0" aria-hidden />
                   <time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time>
                 </span>
+                {item.category ? (
+                  <span className="inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-200">
+                    {newsCategoryLabel(item.category, t)}
+                  </span>
+                ) : null}
+                {item.college?.name ? (
+                  <span className="rounded-full bg-amber-50 px-2.5 py-1 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100">
+                    {item.college.name}
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-white/10">
+                    {t('news.universityWide')}
+                  </span>
+                )}
                 {item.author?.name ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-white/10">
                     <User className="size-3.5 shrink-0" aria-hidden />

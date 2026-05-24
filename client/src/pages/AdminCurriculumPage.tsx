@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { isAxiosError } from 'axios';
 import {
   useCollegesQuery,
+  useCreateCurriculumMutation,
   useCurriculumQuery,
   useDeleteCurriculumMutation,
   useDepartmentsQuery,
   useUpdateCurriculumMutation,
   type CurriculumCourseRow,
 } from '../api/hooks.js';
+import { apiErrorToast } from '../lib/api-error.js';
 import { Alert } from '../components/ui/Alert.js';
 import { Button } from '../components/ui/Button.js';
 import { Card } from '../components/ui/Card.js';
@@ -29,6 +30,10 @@ export function AdminCurriculumPage() {
   const [studyYear, setStudyYear] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [addYear, setAddYear] = useState('1');
+  const [addTerm, setAddTerm] = useState<'FIRST' | 'SECOND'>('FIRST');
+  const [addName, setAddName] = useState('');
+  const [addCode, setAddCode] = useState('');
 
   const { data: colleges } = useCollegesQuery();
   const { data: departments } = useDepartmentsQuery(collegeId || undefined);
@@ -37,6 +42,7 @@ export function AdminCurriculumPage() {
     studyYear: studyYear ? Number(studyYear) : undefined,
     enabled: !!departmentId,
   });
+  const create = useCreateCurriculumMutation();
   const update = useUpdateCurriculumMutation();
   const remove = useDeleteCurriculumMutation();
 
@@ -55,12 +61,28 @@ export function AdminCurriculumPage() {
           toast.success(t('messages.curriculumUpdated'));
           setEditingId(null);
         },
-        onError: (err) => {
-          const msg = isAxiosError(err)
-            ? (err.response?.data as { error?: string })?.error
-            : undefined;
-          toast.error(msg ?? t('messages.loadError'));
+        onError: (err) => apiErrorToast(err, t('messages.loadError')),
+      }
+    );
+  };
+
+  const submitAdd = () => {
+    if (!departmentId || addName.trim().length < 2) return;
+    create.mutate(
+      {
+        departmentId,
+        studyYear: Number(addYear),
+        term: addTerm,
+        name: addName.trim(),
+        code: addCode.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success(t('messages.curriculumCreated'));
+          setAddName('');
+          setAddCode('');
         },
+        onError: (err) => apiErrorToast(err, t('messages.loadError')),
       }
     );
   };
@@ -69,12 +91,7 @@ export function AdminCurriculumPage() {
     if (!window.confirm(t('messages.confirmDeleteCurriculum', { name: row.name }))) return;
     remove.mutate(row.id, {
       onSuccess: () => toast.success(t('messages.curriculumDeleted')),
-      onError: (err) => {
-        const msg = isAxiosError(err)
-          ? (err.response?.data as { error?: string })?.error
-          : undefined;
-        toast.error(msg ?? t('messages.loadError'));
-      },
+      onError: (err) => apiErrorToast(err, t('messages.loadError')),
     });
   };
 
@@ -130,6 +147,54 @@ export function AdminCurriculumPage() {
           </Select>
         </Field>
       </Card>
+
+      {departmentId ? (
+        <Card>
+          <h2 className="m-0 mb-3 text-base font-semibold">{t('labels.addCurriculumCourse')}</h2>
+          <div className="grid max-w-2xl gap-3 sm:grid-cols-2">
+            <Field label={t('admin.studyYear')}>
+              <Select value={addYear} onChange={(e) => setAddYear(e.target.value)}>
+                {[1, 2, 3, 4, 5, 6].map((y) => (
+                  <option key={y} value={String(y)}>
+                    {getStudyYearLabel(y, lang)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t('admin.studyTerm')}>
+              <Select
+                value={addTerm}
+                onChange={(e) => setAddTerm(e.target.value as 'FIRST' | 'SECOND')}
+              >
+                <option value="FIRST">{t('studyPlan.termFirst')}</option>
+                <option value="SECOND">{t('studyPlan.termSecond')}</option>
+              </Select>
+            </Field>
+            <Field label={t('studyPlan.courseName')} className="sm:col-span-2">
+              <Input
+                value={addName}
+                onChange={(e) => setAddName(e.target.value)}
+                placeholder={t('labels.courseNamePlaceholder')}
+              />
+            </Field>
+            <Field label={t('labels.courseCodeOptional')} className="sm:col-span-2">
+              <Input
+                value={addCode}
+                onChange={(e) => setAddCode(e.target.value)}
+                placeholder={t('labels.courseCodeAutoHint')}
+              />
+            </Field>
+          </div>
+          <Button
+            type="button"
+            className="mt-3"
+            disabled={create.isPending || addName.trim().length < 2}
+            onClick={submitAdd}
+          >
+            {t('labels.addCurriculumCourse')}
+          </Button>
+        </Card>
+      ) : null}
 
       {!departmentId ? (
         <Alert variant="info">{t('admin.selectCollegeFirst')}</Alert>

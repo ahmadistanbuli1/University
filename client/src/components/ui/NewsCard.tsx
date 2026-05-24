@@ -7,6 +7,8 @@ export type NewsCardItem = {
   title: string;
   content: string;
   createdAt: string;
+  category?: string;
+  college?: { id: string; name: string } | null;
   author?: { name?: string };
 };
 

@@ -8,12 +8,17 @@ export const listBooksQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(50).default(10),
   keyword: z.string().optional(),
   category: categoryEnum.optional(),
+  publishYear: z.coerce.number().int().min(1900).max(2100).optional(),
+  author: z.string().optional(),
+  publisher: z.string().optional(),
 });
 
 export const updateBookSchema = z.object({
   title: z.string().min(1).optional(),
   category: categoryEnum.optional(),
   publishYear: z.coerce.number().int().min(1900).max(2100).optional(),
+  author: z.string().optional().nullable(),
+  publisher: z.string().optional().nullable(),
   keywords: z.string().optional(),
 });
 
@@ -22,5 +27,7 @@ export const createBookFieldsSchema = z.object({
   category: categoryEnum,
   departmentId: z.string().uuid().optional(),
   publishYear: z.coerce.number().int().min(1900).max(2100),
+  author: z.string().optional(),
+  publisher: z.string().optional(),
   keywords: z.string().optional(),
 });

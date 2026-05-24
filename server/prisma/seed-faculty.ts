@@ -1,20 +1,30 @@
 import type { PrismaClient } from '@prisma/client';
 import { UserRole } from '@prisma/client';
+import { DEPT_MAX_STUDY_YEARS } from './seed-curriculum-data.js';
 
 export const FACULTY_EMAIL = 'faculty@university.edu';
 
-/** Seven demo courses across colleges for the default faculty account. */
-export const FACULTY_DEMO_COURSE_CODES = [
-  'INFO_ENG-Y4-S1-C01',
-  'INFO_ENG-Y4-S1-C02',
-  'ALT_ENERGY_ENG-Y3-S1-C01',
-  'ALT_ENERGY_ENG-Y3-S1-C02',
-  'MED_ENG-Y2-S1-C01',
-  'PHARMACY-Y2-S2-C01',
-  'ANESTHESIA-Y3-S1-C01',
-] as const;
+/** Second-semester course C01 for every study year in every department (current term). */
+export function buildFacultyDemoCourseCodes(): string[] {
+  const codes: string[] = [];
+  for (const deptCode of Object.keys(DEPT_MAX_STUDY_YEARS)) {
+    const maxYears = DEPT_MAX_STUDY_YEARS[deptCode]!;
+    for (let year = 1; year <= maxYears; year++) {
+      codes.push(`${deptCode}-Y${year}-S2-C01`);
+    }
+  }
+  return codes;
+}
+
+export const FACULTY_DEMO_COURSE_CODES = buildFacultyDemoCourseCodes();
 
 export const FACULTY_OFFERING_TERM = {
+  semester: 'Spring 2026',
+  academicYear: '2025-2026',
+} as const;
+
+/** Historical first-semester offering label for completed demo grades. */
+export const FACULTY_S1_COMPLETED_TERM = {
   semester: 'Fall 2025',
   academicYear: '2025-2026',
 } as const;
@@ -32,7 +42,7 @@ export async function ensureDemoFacultyUser(prisma: PrismaClient, password: stri
   });
 }
 
-/** Replace demo faculty assignments with exactly the seven configured courses. */
+/** Replace demo faculty assignments with second-semester courses across all years. */
 export async function seedFacultyCourseAssignments(prisma: PrismaClient) {
   const faculty = await prisma.user.findUnique({ where: { email: FACULTY_EMAIL } });
   if (!faculty) return;
@@ -43,6 +53,12 @@ export async function seedFacultyCourseAssignments(prisma: PrismaClient) {
   });
   const fcIds = existingFc.map((r) => r.id);
   if (fcIds.length > 0) {
+    await prisma.gradeSubmissionLine.deleteMany({
+      where: { submission: { facultyCourseId: { in: fcIds } } },
+    });
+    await prisma.gradeSubmission.deleteMany({
+      where: { facultyCourseId: { in: fcIds } },
+    });
     await prisma.gradeAppeal.deleteMany({
       where: { examResult: { facultyCourseId: { in: fcIds } } },
     });

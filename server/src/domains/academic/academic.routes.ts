@@ -27,7 +27,7 @@ export function createAcademicRouter(controller: AcademicController, authenticat
     requireRoles('FACULTY'),
     asyncHandler(controller.sectionRoster.bind(controller))
   );
-  r.post('/results', requireRoles('FACULTY'), asyncHandler(controller.createResult.bind(controller)));
+  r.post('/results', requireRoles('ADMIN'), asyncHandler(controller.createResult.bind(controller)));
   r.get(
     '/results/analytics',
     requireRoles('FACULTY', 'ADMIN'),

@@ -7,7 +7,10 @@ import { computeGpaFromLatestAttempts } from './gpa.js';
 import {
   averageCourseTotals,
   courseTotalScore,
+  examScoresByCourseCode,
   isCourseReachable,
+  isCurrentTermFullyGraded,
+  isPracticalPass,
   studyYearFromSemester,
   termFromSemester,
 } from './study-plan.js';
@@ -38,19 +41,48 @@ export class AcademicService {
     if (role !== 'STUDENT' && role !== 'FACULTY') {
       throw new AppError(403, 'Forbidden');
     }
-    const student = await this.repo.findStudentByUserId(userId);
+    const student = await this.repo.findStudentWithDepartment(userId);
     if (!student) {
-      return { results: [], gpa: 0 };
+      return { results: [], gpa: null, pendingCurrentTerm: true };
     }
-    const results = await this.repo.listExamResults(student.id);
+
+    const studyYear = studyYearFromSemester(student.currentSemester);
+    const currentTerm = termFromSemester(student.currentSemester);
+    const curriculum = await this.repo.listCurriculumCourses(student.departmentId, studyYear);
+    const currentTermCodes = curriculum
+      .filter((c) => c.term === currentTerm)
+      .map((c) => c.code);
+
+    const allResults = await this.repo.listExamResults(student.id);
+    const examRows = allResults.map((r) => ({
+      courseCode: r.facultyCourse.course.code,
+      practicalScore:
+        r.practicalScore != null ? Number(r.practicalScore) : null,
+      theoryScore: r.theoryScore != null ? Number(r.theoryScore) : null,
+    }));
+
+    const termComplete = isCurrentTermFullyGraded(
+      currentTermCodes,
+      examRows,
+      studyYear,
+      currentTerm
+    );
+
+    if (!termComplete) {
+      return { results: [], gpa: null, pendingCurrentTerm: true };
+    }
+
+    const completeResults = allResults.filter(
+      (r) => r.practicalScore != null && r.theoryScore != null
+    );
     const gpa = computeGpaFromLatestAttempts(
-      results.map((r) => ({
+      completeResults.map((r) => ({
         facultyCourseId: r.facultyCourseId,
         attemptNumber: r.attemptNumber,
         score: r.score,
       }))
     );
-    return { results, gpa };
+    return { results: completeResults, gpa, pendingCurrentTerm: false };
   }
 
   async getSectionRoster(facultyUserId: string, role: UserRole, facultyCourseId: string) {
@@ -81,7 +113,14 @@ export class AcademicService {
     academicNumber: string;
     practicalScore: number;
     theoryScore: number;
+    role?: UserRole;
   }) {
+    if (input.role === 'FACULTY') {
+      throw new AppError(
+        403,
+        'Faculty must submit grades via the grade submission workflow for exam officer review'
+      );
+    }
     const fc = await this.repo.findFacultyCourse(input.facultyCourseId);
     if (!fc || fc.facultyId !== input.facultyUserId) {
       throw new AppError(403, 'Not assigned to this course');
@@ -196,6 +235,16 @@ export class AcademicService {
     const grades = await this.repo.listCurriculumGradesForYear(student.id, studyYear);
     const gradeByCourseId = new Map(grades.map((g) => [g.curriculumCourseId, g]));
 
+    const allExam = await this.repo.listExamResults(student.id);
+    const examByCode = examScoresByCourseCode(
+      allExam.map((r) => ({
+        courseCode: r.facultyCourse.course.code,
+        practicalScore:
+          r.practicalScore != null ? Number(r.practicalScore) : null,
+        theoryScore: r.theoryScore != null ? Number(r.theoryScore) : null,
+      }))
+    );
+
     const terms: StudyTerm[] = ['FIRST', 'SECOND'];
     const termBlocks = terms.map((term) => {
       const termCourses = courses.filter((c) => c.term === term);
@@ -206,14 +255,28 @@ export class AcademicService {
           course.studyYear,
           course.term
         );
-        const hasGrade =
-          reachable &&
-          grade?.practicalScore != null &&
-          grade?.theoryScore != null;
-        const practicalNum = hasGrade ? Number(grade!.practicalScore!.toString()) : null;
-        const theoryNum = hasGrade ? Number(grade!.theoryScore!.toString()) : null;
+
+        let practicalNum =
+          grade?.practicalScore != null ? Number(grade.practicalScore) : null;
+        let theoryNum = grade?.theoryScore != null ? Number(grade.theoryScore) : null;
+        const fromExam = examByCode.get(course.code);
+        if (practicalNum == null && fromExam?.practical != null) {
+          practicalNum = fromExam.practical;
+        }
+        if (theoryNum == null && fromExam?.theory != null) {
+          theoryNum = fromExam.theory;
+        }
+
+        const practicalPublished = reachable && practicalNum != null;
+        const theoryPublished = reachable && theoryNum != null;
+        const practicalFailed =
+          practicalPublished && !isPracticalPass(practicalNum!);
+        const theoryBlocked =
+          practicalPublished && (practicalFailed || !theoryPublished);
+        const hasFullGrade = practicalPublished && theoryPublished;
+
         const total =
-          practicalNum != null && theoryNum != null
+          hasFullGrade && practicalNum != null && theoryNum != null
             ? courseTotalScore(practicalNum, theoryNum)
             : null;
 
@@ -226,14 +289,22 @@ export class AcademicService {
           practicalScore: practicalNum,
           theoryScore: theoryNum,
           totalScore: total,
-          practicalDisplay: hasGrade ? String(practicalNum) : '—',
-          theoryDisplay: hasGrade ? String(theoryNum) : '—',
-          hasGrade,
+          practicalDisplay: practicalPublished ? String(practicalNum) : '—',
+          theoryDisplay: theoryPublished
+            ? String(theoryNum)
+            : practicalFailed
+              ? '—'
+              : '—',
+          hasGrade: hasFullGrade,
+          practicalPublished,
+          theoryPublished,
+          practicalFailed,
+          theoryBlocked,
         };
       });
 
       const termTotals = courseRows
-        .filter((r) => r.totalScore != null)
+        .filter((r) => r.hasGrade && r.totalScore != null)
         .map((r) => r.totalScore as number);
       const termGpa = averageCourseTotals(termTotals);
 
@@ -242,7 +313,7 @@ export class AcademicService {
 
     const yearTotals = termBlocks
       .flatMap((t) => t.courses)
-      .filter((c) => c.totalScore != null)
+      .filter((c) => c.hasGrade && c.totalScore != null)
       .map((c) => c.totalScore as number);
     const yearGpa = averageCourseTotals(yearTotals);
 

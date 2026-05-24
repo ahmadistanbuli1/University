@@ -6,6 +6,8 @@ import type { Env } from './config.js';
 import { prisma } from './lib/prisma.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { createAuthenticateMiddleware } from './middleware/authenticate.js';
+import { ActivityLogController } from './domains/audit/activity-log.controller.js';
+import { createActivityLogRouter } from './domains/audit/activity-log.routes.js';
 import { AuditRepository } from './domains/audit/audit.repository.js';
 import { AuditService } from './domains/audit/audit.service.js';
 import { AuthRepository } from './domains/auth/auth.repository.js';
@@ -62,6 +64,10 @@ import {
   createAdminManagerRequestsRouter,
   createManagerRouter,
 } from './domains/manager/manager.routes.js';
+import { GradeSubmissionsRepository } from './domains/gradeSubmissions/grade-submissions.repository.js';
+import { GradeSubmissionsService } from './domains/gradeSubmissions/grade-submissions.service.js';
+import { GradeSubmissionsController } from './domains/gradeSubmissions/grade-submissions.controller.js';
+import { createGradeSubmissionsRouter } from './domains/gradeSubmissions/grade-submissions.routes.js';
 
 export function createApp(env: Env) {
   const app = express();
@@ -128,6 +134,16 @@ export function createApp(env: Env) {
   const managerService = new ManagerService(managerRepo, auditService, notificationDispatch);
   const managerController = new ManagerController(managerService);
 
+  const gradeSubmissionsRepo = new GradeSubmissionsRepository(prisma);
+  const gradeSubmissionsService = new GradeSubmissionsService(
+    gradeSubmissionsRepo,
+    auditService,
+    notificationDispatch
+  );
+  const gradeSubmissionsController = new GradeSubmissionsController(gradeSubmissionsService);
+
+  const activityLogController = new ActivityLogController(auditService);
+
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
@@ -138,6 +154,10 @@ export function createApp(env: Env) {
   app.use('/api/users', createUsersRouter(usersController, authenticate));
   app.use('/api/structure', createStructureRouter(structureController));
   app.use('/api/academic', createAcademicRouter(academicController, authenticate));
+  app.use(
+    '/api/grade-submissions',
+    createGradeSubmissionsRouter(gradeSubmissionsController, authenticate)
+  );
   app.use('/api/student-services', createStudentServicesRouter(studentController, authenticate));
   app.use('/api/library', createLibraryRouter(libraryController, authenticate, env));
   app.use('/api/news', createNewsRouter(newsController, authenticate));
@@ -150,6 +170,7 @@ export function createApp(env: Env) {
   app.use('/api/manager', createManagerRouter(managerController, authenticate));
   app.use('/api/tuition', createTuitionRouter(tuitionController, authenticate, env));
   app.use('/api/notifications', createNotificationRouter(notificationController, authenticate));
+  app.use('/api/activity-log', createActivityLogRouter(activityLogController, authenticate));
 
   app.use(errorHandler);
   return app;

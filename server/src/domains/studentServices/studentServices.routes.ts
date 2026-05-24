@@ -47,8 +47,18 @@ export function createStudentServicesRouter(
     asyncHandler(controller.patchTranscript.bind(controller))
   );
   r.get(
+    '/transcripts/exam-queue',
+    requireRoles('EXAM_OFFICER', 'ADMIN'),
+    asyncHandler(controller.listExamOfficerTranscripts.bind(controller))
+  );
+  r.post(
+    '/transcripts/:id/fulfill',
+    requireRoles('EXAM_OFFICER', 'ADMIN'),
+    asyncHandler(controller.fulfillTranscript.bind(controller))
+  );
+  r.get(
     '/transcripts/:id/file',
-    requireRoles('STUDENT', 'FACULTY', 'AFFAIRS', 'ADMIN'),
+    requireRoles('STUDENT', 'FACULTY', 'AFFAIRS', 'ADMIN', 'EXAM_OFFICER'),
     asyncHandler(controller.downloadTranscript.bind(controller))
   );
   r.get(

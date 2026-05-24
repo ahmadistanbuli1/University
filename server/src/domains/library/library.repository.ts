@@ -8,20 +8,36 @@ export class LibraryRepository {
     pageSize: number;
     keyword?: string;
     category?: LibraryBookCategory;
+    publishYear?: number;
+    author?: string;
+    publisher?: string;
   }) {
-    const { page, pageSize, keyword, category } = params;
+    const { page, pageSize, keyword, category, publishYear, author, publisher } = params;
     const skip = (page - 1) * pageSize;
-    const where: Prisma.BookWhereInput = category ? { category } : {};
-    if (keyword) {
-      where.AND = [
-        {
-          OR: [
-            { title: { contains: keyword, mode: 'insensitive' } },
-            { keywords: { some: { keyword: { contains: keyword, mode: 'insensitive' } } } },
-          ],
-        },
-      ];
+    const conditions: Prisma.BookWhereInput[] = [];
+
+    if (category) conditions.push({ category });
+    if (publishYear) conditions.push({ publishYear });
+    if (author?.trim()) {
+      conditions.push({ author: { contains: author.trim(), mode: 'insensitive' } });
     }
+    if (publisher?.trim()) {
+      conditions.push({ publisher: { contains: publisher.trim(), mode: 'insensitive' } });
+    }
+    if (keyword?.trim()) {
+      const q = keyword.trim();
+      conditions.push({
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { author: { contains: q, mode: 'insensitive' } },
+          { publisher: { contains: q, mode: 'insensitive' } },
+          { keywords: { some: { keyword: { contains: q, mode: 'insensitive' } } } },
+        ],
+      });
+    }
+
+    const where: Prisma.BookWhereInput = conditions.length ? { AND: conditions } : {};
+
     const [items, total] = await Promise.all([
       this.db.book.findMany({
         where,
@@ -46,6 +62,8 @@ export class LibraryRepository {
     departmentId?: string;
     addedById: string;
     publishYear: number;
+    author?: string | null;
+    publisher?: string | null;
     keywords: string[];
   }) {
     return this.db.book.create({
@@ -56,6 +74,8 @@ export class LibraryRepository {
         departmentId: data.departmentId,
         addedById: data.addedById,
         publishYear: data.publishYear,
+        author: data.author?.trim() || null,
+        publisher: data.publisher?.trim() || null,
         keywords: {
           create: data.keywords.map((keyword) => ({ keyword })),
         },
@@ -101,6 +121,8 @@ export class LibraryRepository {
           readsCount: true,
           downloadsCount: true,
           publishYear: true,
+          author: true,
+          publisher: true,
         },
       }),
     ]);
@@ -125,6 +147,8 @@ export class LibraryRepository {
       title?: string;
       category?: LibraryBookCategory;
       publishYear?: number;
+      author?: string | null;
+      publisher?: string | null;
       keywords?: string[];
     }
   ) {
@@ -138,6 +162,8 @@ export class LibraryRepository {
           title: data.title,
           category: data.category,
           publishYear: data.publishYear,
+          author: data.author !== undefined ? data.author : undefined,
+          publisher: data.publisher !== undefined ? data.publisher : undefined,
           ...(data.keywords
             ? { keywords: { create: data.keywords.map((keyword) => ({ keyword })) } }
             : {}),

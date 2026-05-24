@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import type { UserRole } from '@prisma/client';
 import { AppError } from '../../utils/AppError.js';
 import { buildTranscriptPdfData } from '../../lib/transcript-data.js';
+import { TRANSCRIPT_FEE_USD } from '../../lib/transcript-fee.js';
 import { generateTranscriptPdf } from '../../lib/transcript-pdf.js';
 import type { StudentServicesRepository } from './studentServices.repository.js';
 import type { AuditService } from '../audit/audit.service.js';
@@ -83,24 +84,40 @@ export class StudentServicesService {
     return updated;
   }
 
-  async requestTranscript(userId: string, role: UserRole) {
+  async requestTranscript(
+    userId: string,
+    role: UserRole,
+    input: { confirmPayment: true }
+  ) {
     if (role !== 'STUDENT' && role !== 'FACULTY') {
       throw new AppError(403, 'Forbidden');
+    }
+    if (!input.confirmPayment) {
+      throw new AppError(400, 'Payment confirmation required');
     }
     const student = await this.repo.findStudentByUserIdWithUser(userId);
     if (!student) {
       throw new AppError(403, 'Student profile required');
     }
-    const pending = await this.repo.findPendingTranscriptForStudent(student.id);
-    if (pending) {
-      throw new AppError(409, 'You already have a pending transcript request');
+    const active = await this.repo.findActiveTranscriptForStudent(student.id);
+    if (active) {
+      throw new AppError(409, 'You already have an active transcript request');
     }
-    const req = await this.repo.createTranscriptRequest(student.id);
+    const paymentReference = `TR-${Date.now().toString(36).toUpperCase()}`;
+    const paidAt = new Date();
+    const req = await this.repo.createTranscriptRequest({
+      studentId: student.id,
+      feeAmount: TRANSCRIPT_FEE_USD,
+      feePaid: true,
+      paymentReference,
+      paidAt,
+    });
     await this.audit?.log({
       userId,
       action: 'REQUEST_TRANSCRIPT',
       entity: 'transcript_requests',
       entityId: req.id,
+      details: { feeAmount: TRANSCRIPT_FEE_USD, paymentReference },
     });
     await this.notify?.notifyTranscriptRequested(student.user.name);
     return req;
@@ -123,6 +140,9 @@ export class StudentServicesService {
     if (tr.status !== 'PENDING') {
       throw new AppError(400, 'Request already processed');
     }
+    if (!tr.feePaid) {
+      throw new AppError(400, 'Transcript fee not paid');
+    }
 
     if (input.action === 'reject') {
       const reason = input.rejectionReason?.trim();
@@ -132,8 +152,10 @@ export class StudentServicesService {
       const updated = await this.repo.updateTranscript(id, {
         status: 'REJECTED',
         rejectionReason: reason,
+        affairsReviewedAt: new Date(),
         processedAt: new Date(),
         filePath: null,
+        feeRefunded: true,
       });
       await this.audit?.log({
         userId: processorUserId,
@@ -141,7 +163,11 @@ export class StudentServicesService {
         entity: 'transcript_requests',
         entityId: id,
       });
-      await this.notify?.notifyTranscriptRejected(tr.student.userId, reason);
+      await this.notify?.notifyTranscriptRejected(
+        tr.student.userId,
+        reason,
+        tr.feeAmount
+      );
       return updated;
     }
 
@@ -150,6 +176,44 @@ export class StudentServicesService {
         400,
         'No graded courses on record. Student must have curriculum grades before approval.'
       );
+    }
+
+    const updated = await this.repo.updateTranscript(id, {
+      status: 'AFFAIRS_APPROVED',
+      rejectionReason: null,
+      affairsReviewedAt: new Date(),
+    });
+
+    await this.audit?.log({
+      userId: processorUserId,
+      action: 'APPROVE_TRANSCRIPT_AFFAIRS',
+      entity: 'transcript_requests',
+      entityId: id,
+    });
+    await this.notify?.notifyTranscriptAffairsApproved(tr.student.userId);
+    await this.notify?.notifyExamOfficerTranscriptQueued(
+      tr.student.user.name,
+      tr.student.user.email
+    );
+
+    return updated;
+  }
+
+  async fulfillTranscript(processorUserId: string, role: UserRole, id: string) {
+    if (role !== 'EXAM_OFFICER' && role !== 'ADMIN') {
+      throw new AppError(403, 'Forbidden');
+    }
+
+    const tr = await this.repo.findTranscriptWithStudent(id);
+    if (!tr) {
+      throw new AppError(404, 'Transcript request not found');
+    }
+    if (tr.status !== 'AFFAIRS_APPROVED') {
+      throw new AppError(400, 'Request is not ready for transcript generation');
+    }
+
+    if (tr.student.curriculumGrades.length === 0) {
+      throw new AppError(400, 'No graded courses on record for this student');
     }
 
     const pdfData = buildTranscriptPdfData({
@@ -168,20 +232,23 @@ export class StudentServicesService {
       })),
     });
     const fileName = `transcript-${id}.pdf`;
-    const absolutePath = path.join(this.uploadDir, 'transcripts', fileName);
+    const transcriptsDir = path.join(this.uploadDir, 'transcripts');
+    if (!fs.existsSync(transcriptsDir)) {
+      fs.mkdirSync(transcriptsDir, { recursive: true });
+    }
+    const absolutePath = path.join(transcriptsDir, fileName);
     await generateTranscriptPdf(pdfData, absolutePath);
 
     const filePath = `/uploads/transcripts/${fileName}`;
     const updated = await this.repo.updateTranscript(id, {
       status: 'DELIVERED',
       filePath,
-      rejectionReason: null,
       processedAt: new Date(),
     });
 
     await this.audit?.log({
       userId: processorUserId,
-      action: 'APPROVE_TRANSCRIPT',
+      action: 'DELIVER_TRANSCRIPT',
       entity: 'transcript_requests',
       entityId: id,
       details: { filePath },
@@ -205,7 +272,8 @@ export class StudentServicesService {
     }
 
     const isOwner = tr.student.userId === userId;
-    const isStaff = role === 'AFFAIRS' || role === 'ADMIN';
+    const isStaff =
+      role === 'AFFAIRS' || role === 'ADMIN' || role === 'EXAM_OFFICER';
     if (!isOwner && !isStaff) {
       throw new AppError(403, 'Forbidden');
     }
@@ -238,6 +306,13 @@ export class StudentServicesService {
       throw new AppError(403, 'Forbidden');
     }
     return this.repo.listAllTranscripts();
+  }
+
+  async listExamOfficerTranscripts(role: UserRole) {
+    if (role !== 'EXAM_OFFICER' && role !== 'ADMIN') {
+      throw new AppError(403, 'Forbidden');
+    }
+    return this.repo.listTranscriptsByStatus('AFFAIRS_APPROVED');
   }
 
   async listStudents(
@@ -275,6 +350,7 @@ export class StudentServicesService {
   }
 
   async updateStudentProfile(
+    actorUserId: string,
     role: UserRole,
     collegeId: string | null,
     studentId: string,
@@ -314,9 +390,25 @@ export class StudentServicesService {
       }
     }
     const { name, ...rest } = updates;
-    return this.repo.updateStudent(studentId, {
+    const updated = await this.repo.updateStudent(studentId, {
       ...rest,
       userName: name,
     });
+
+    if (role === 'AFFAIRS' || role === 'ADMIN' || role === 'MANAGER') {
+      await this.audit?.log({
+        userId: actorUserId,
+        action: 'UPDATE_STUDENT_RECORD',
+        entity: 'students',
+        entityId: studentId,
+        details: {
+          studentName: updated.user?.name ?? name,
+          academicNumber: updated.academicNumber,
+          fields: Object.keys(updates),
+        },
+      });
+    }
+
+    return updated;
   }
 }

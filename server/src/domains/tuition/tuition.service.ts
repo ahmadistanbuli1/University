@@ -14,6 +14,24 @@ function genReference() {
   return `SPU-PAY-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
+async function assertFirstSemesterPaid(
+  repo: TuitionRepository,
+  studentId: string,
+  academicYear: string
+) {
+  const first = await repo.findInstallmentBySemesterKey(studentId, academicYear, 'semester-1');
+  if (!first) return;
+  const due = Number(first.amountDue);
+  const paid = Number(first.amountPaid);
+  if (installmentStatus(due, paid) !== 'PAID') {
+    throw new AppError(
+      400,
+      'You must complete first semester tuition before paying the second semester.',
+      'TUITION_SEMESTER_ORDER'
+    );
+  }
+}
+
 export class TuitionService {
   constructor(
     private readonly repo: TuitionRepository,
@@ -90,12 +108,17 @@ export class TuitionService {
       throw new AppError(404, 'Installment not found');
     }
 
+    if (inst.semesterKey === 'semester-2') {
+      await assertFirstSemesterPaid(this.repo, student.id, inst.academicYear);
+    }
+
     const due = Number(inst.amountDue);
     const paid = Number(inst.amountPaid);
     return {
       installment: {
         id: inst.id,
         label: inst.label,
+        semesterKey: inst.semesterKey,
         academicYear: inst.academicYear,
         amountDue: due,
         amountPaid: paid,
@@ -119,6 +142,10 @@ export class TuitionService {
     const inst = await this.repo.findInstallment(installmentId);
     if (!inst || inst.studentId !== student.id) {
       throw new AppError(404, 'Installment not found');
+    }
+
+    if (inst.semesterKey === 'semester-2') {
+      await assertFirstSemesterPaid(this.repo, student.id, inst.academicYear);
     }
 
     const due = Number(inst.amountDue);

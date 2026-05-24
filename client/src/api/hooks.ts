@@ -1,9 +1,10 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance, postFormData } from './http.js';
 
-export function useMeQuery() {
+export function useMeQuery(enabled = true) {
   return useQuery({
     queryKey: ['me'],
+    enabled,
     queryFn: async () => {
       const { data } = await axiosInstance.get<Record<string, unknown>>('/api/users/me');
       return data;
@@ -82,11 +83,14 @@ export function useMyResultsQuery() {
   return useQuery({
     queryKey: ['results', 'me'],
     queryFn: async () => {
-      const { data } = await axiosInstance.get<{ results: unknown[]; gpa: number }>(
-        '/api/academic/results/me'
-      );
+      const { data } = await axiosInstance.get<{
+        results: unknown[];
+        gpa: number | null;
+        pendingCurrentTerm?: boolean;
+      }>('/api/academic/results/me');
       return data;
     },
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -101,6 +105,8 @@ export function useMyStudyPlanQuery(studyYear?: number) {
       );
       return data;
     },
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
 }
 
@@ -117,12 +123,17 @@ export function useMyTranscriptsQuery() {
 export function useRequestTranscriptMutation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
-      const { data } = await axiosInstance.post<unknown>('/api/student-services/transcripts');
+    mutationFn: async (body: { confirmPayment: true }) => {
+      const { data } = await axiosInstance.post<unknown>(
+        '/api/student-services/transcripts',
+        body
+      );
       return data;
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['transcripts', 'me'] });
+      void qc.invalidateQueries({ queryKey: ['transcripts', 'all'] });
+      void qc.invalidateQueries({ queryKey: ['transcripts', 'exam-queue'] });
       void qc.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
     },
   });
@@ -201,7 +212,37 @@ export function useProcessTranscriptMutation() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['transcripts', 'all'] });
       void qc.invalidateQueries({ queryKey: ['transcripts', 'me'] });
+      void qc.invalidateQueries({ queryKey: ['transcripts', 'exam-queue'] });
       void qc.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
+    },
+  });
+}
+
+export function useExamOfficerTranscriptsQuery() {
+  return useQuery({
+    queryKey: ['transcripts', 'exam-queue'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<unknown[]>(
+        '/api/student-services/transcripts/exam-queue'
+      );
+      return data;
+    },
+  });
+}
+
+export function useFulfillTranscriptMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await axiosInstance.post<unknown>(
+        `/api/student-services/transcripts/${id}/fulfill`
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['transcripts', 'exam-queue'] });
+      void qc.invalidateQueries({ queryKey: ['transcripts', 'all'] });
+      void qc.invalidateQueries({ queryKey: ['transcripts', 'me'] });
     },
   });
 }
@@ -230,6 +271,139 @@ export function usePostResultMutation() {
       void qc.invalidateQueries({ queryKey: ['results', 'me'] });
       void qc.invalidateQueries({ queryKey: ['study-plan', 'me'] });
       void qc.invalidateQueries({ queryKey: ['analytics'] });
+    },
+  });
+}
+
+export function useGradeSubmissionWorkspaceQuery(facultyCourseId: string | null) {
+  return useQuery({
+    queryKey: ['grade-submissions', 'workspace', facultyCourseId],
+    enabled: !!facultyCourseId,
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<unknown>(
+        `/api/grade-submissions/faculty/workspace/${facultyCourseId}`
+      );
+      return data;
+    },
+  });
+}
+
+export function useSaveGradeDraftMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: {
+      facultyCourseId: string;
+      body:
+        | { lines: Array<{ studentId: string; practicalScore: number }> }
+        | { lines: Array<{ studentId: string; theoryScore: number }> };
+    }) => {
+      const { data } = await axiosInstance.put<unknown>(
+        `/api/grade-submissions/faculty/workspace/${args.facultyCourseId}/draft`,
+        args.body
+      );
+      return data;
+    },
+    onSuccess: (_d, vars) => {
+      void qc.invalidateQueries({
+        queryKey: ['grade-submissions', 'workspace', vars.facultyCourseId],
+      });
+    },
+  });
+}
+
+export function useSubmitGradeSubmissionMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (facultyCourseId: string) => {
+      const { data } = await axiosInstance.post<unknown>(
+        `/api/grade-submissions/faculty/workspace/${facultyCourseId}/submit`
+      );
+      return data;
+    },
+    onSuccess: (_d, facultyCourseId) => {
+      void qc.invalidateQueries({ queryKey: ['grade-submissions'] });
+      void qc.invalidateQueries({
+        queryKey: ['grade-submissions', 'workspace', facultyCourseId],
+      });
+    },
+  });
+}
+
+export function useGradeSubmissionQueueQuery() {
+  return useQuery({
+    queryKey: ['grade-submissions', 'queue'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<unknown[]>(
+        '/api/grade-submissions/exam-officer/queue'
+      );
+      return data;
+    },
+  });
+}
+
+export function useGradeSubmissionDetailQuery(id: string | null) {
+  return useQuery({
+    queryKey: ['grade-submissions', 'detail', id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<unknown>(`/api/grade-submissions/${id}`);
+      return data;
+    },
+  });
+}
+
+export function useUpdateGradeSubmissionLinesMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: {
+      id: string;
+      body:
+        | { lines: Array<{ studentId: string; practicalScore: number }> }
+        | { lines: Array<{ studentId: string; theoryScore: number }> };
+    }) => {
+      const { data } = await axiosInstance.patch<unknown>(
+        `/api/grade-submissions/${args.id}/lines`,
+        args.body
+      );
+      return data;
+    },
+    onSuccess: (_d, vars) => {
+      void qc.invalidateQueries({ queryKey: ['grade-submissions', 'detail', vars.id] });
+      void qc.invalidateQueries({ queryKey: ['grade-submissions', 'queue'] });
+    },
+  });
+}
+
+export function usePublishGradeSubmissionMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await axiosInstance.post<unknown>(
+        `/api/grade-submissions/${id}/publish`
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['grade-submissions'] });
+      void qc.invalidateQueries({ queryKey: ['results', 'me'] });
+      void qc.invalidateQueries({ queryKey: ['study-plan', 'me'] });
+      void qc.invalidateQueries({ queryKey: ['analytics'] });
+    },
+  });
+}
+
+export function useRejectGradeSubmissionMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { id: string; rejectionReason: string }) => {
+      const { data } = await axiosInstance.post<unknown>(
+        `/api/grade-submissions/${args.id}/reject`,
+        { rejectionReason: args.rejectionReason }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['grade-submissions'] });
     },
   });
 }
@@ -521,6 +695,25 @@ export function useCurriculumQuery(params: {
   });
 }
 
+export function useCreateCurriculumMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: {
+      departmentId: string;
+      studyYear: number;
+      term: 'FIRST' | 'SECOND';
+      name: string;
+      code?: string;
+    }) => {
+      const { data } = await axiosInstance.post<CurriculumCourseRow>('/api/curriculum', body);
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['curriculum'] });
+    },
+  });
+}
+
 export function useUpdateCurriculumMutation() {
   const qc = useQueryClient();
   return useMutation({
@@ -618,6 +811,26 @@ export function useResolveManagerRequestMutation() {
   });
 }
 
+export function useMyActivityLogQuery(page: number) {
+  return useQuery({
+    queryKey: ['activity-log', 'mine', page],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{
+        items: {
+          id: string;
+          action: string;
+          entity: string;
+          entityId: string;
+          details?: Record<string, unknown> | null;
+          createdAt: string;
+        }[];
+        total: number;
+      }>('/api/activity-log/mine', { params: { page, pageSize: 20 } });
+      return data;
+    },
+  });
+}
+
 export function useAuditLogsQuery(page: number) {
   return useQuery({
     queryKey: ['audit', 'logs', page],
@@ -669,17 +882,42 @@ export function useFacultyDirectoryQuery() {
   });
 }
 
-export function useNewsListQuery(page: number) {
+export type NewsListFilters = {
+  collegeId?: string;
+  category?: 'ANNOUNCEMENT' | 'WORKSHOP' | 'TRAINING' | 'TUITION';
+};
+
+export function useNewsListQuery(page: number, pageSize = 10, filters?: NewsListFilters) {
   return useQuery({
-    queryKey: ['news', 'list', page],
+    queryKey: ['news', 'list', page, pageSize, filters ?? {}],
     queryFn: async () => {
       const { data } = await axiosInstance.get<{
         items: unknown[];
         total: number;
         page: number;
         pageSize: number;
-      }>('/api/news', { params: { page, pageSize: 10 } });
+      }>('/api/news', {
+        params: {
+          page,
+          pageSize,
+          collegeId: filters?.collegeId || undefined,
+          category: filters?.category || undefined,
+        },
+      });
       return data;
+    },
+  });
+}
+
+export function useDeleteNewsMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await axiosInstance.delete(`/api/news/${id}`);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['news'] });
+      void qc.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
     },
   });
 }
@@ -714,17 +952,14 @@ export function useLibraryStatsQuery() {
   });
 }
 
-export function useLibrarianBooksQuery(page: number, categoryFilter?: string) {
+export function useLibrarianBooksQuery(page: number, filters?: LibraryBooksFilters) {
   return useQuery({
-    queryKey: ['books', 'manage', page, categoryFilter ?? 'all'],
+    queryKey: ['books', 'manage', page, filters ?? {}],
     queryFn: async () => {
-      const { data } = await axiosInstance.get<{ items: unknown[]; total: number }>('/api/library/books', {
-        params: {
-          page,
-          pageSize: 20,
-          ...(categoryFilter ? { category: categoryFilter } : {}),
-        },
-      });
+      const { data } = await axiosInstance.get<{ items: unknown[]; total: number }>(
+        '/api/library/books',
+        { params: libraryListParams(page, 20, filters) }
+      );
       return data;
     },
   });
@@ -739,6 +974,8 @@ export function useUpdateBookMutation() {
         title?: string;
         category?: string;
         publishYear?: number;
+        author?: string | null;
+        publisher?: string | null;
         keywords?: string;
       };
     }) => {
@@ -768,19 +1005,38 @@ export function useDeleteBookMutation() {
   });
 }
 
-export function useBooksQuery(page: number, category: string, keyword?: string) {
+export type LibraryBooksFilters = {
+  category?: string;
+  keyword?: string;
+  publishYear?: number | '';
+  author?: string;
+  publisher?: string;
+};
+
+function libraryListParams(page: number, pageSize: number, filters?: LibraryBooksFilters) {
+  return {
+    page,
+    pageSize,
+    ...(filters?.category ? { category: filters.category } : {}),
+    ...(filters?.keyword?.trim() ? { keyword: filters.keyword.trim() } : {}),
+    ...(filters?.publishYear ? { publishYear: filters.publishYear } : {}),
+    ...(filters?.author?.trim() ? { author: filters.author.trim() } : {}),
+    ...(filters?.publisher?.trim() ? { publisher: filters.publisher.trim() } : {}),
+  };
+}
+
+export function useBooksQuery(page: number, filters?: LibraryBooksFilters) {
   return useQuery({
-    queryKey: ['books', 'list', page, category, keyword ?? ''],
+    queryKey: ['books', 'list', page, filters ?? {}],
     queryFn: async () => {
       const { data } = await axiosInstance.get<{ items: unknown[]; total: number }>(
         '/api/library/books',
-        {
-          params: { page, pageSize: 10, category, ...(keyword ? { keyword } : {}) },
-        }
+        { params: libraryListParams(page, 10, filters) }
       );
       return data;
     },
-    staleTime: 10 * 60 * 1000,
+    placeholderData: keepPreviousData,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -826,8 +1082,10 @@ export function useCreateNewsMutation() {
       content: string;
       imageUrl?: string | null;
       collegeId?: string | null;
-      category?: 'GENERAL' | 'TUITION';
+      category?: 'ANNOUNCEMENT' | 'WORKSHOP' | 'TRAINING' | 'TUITION';
       enablePayNow?: boolean;
+      tuitionSemesterKey?: 'semester-1' | 'semester-2' | null;
+      scope?: 'COLLEGE' | 'UNIVERSITY';
     }) => {
       const { data } = await axiosInstance.post<unknown>('/api/news', body);
       return data;
@@ -848,6 +1106,7 @@ export type TuitionSummary = {
   installments: Array<{
     id: string;
     label: string;
+    semesterKey?: string;
     academicYear: string;
     amountDue: number;
     amountPaid: number;
@@ -875,6 +1134,7 @@ export function usePayInstallmentQuery(installmentId?: string) {
         installment: {
           id: string;
           label: string;
+          semesterKey?: string;
           academicYear: string;
           amountDue: number;
           amountPaid: number;

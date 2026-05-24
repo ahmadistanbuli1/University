@@ -1,18 +1,51 @@
 import { Newspaper } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNewsListQuery } from '../api/hooks.js';
+import { useCollegesQuery, useMeQuery, useNewsListQuery, type NewsListFilters } from '../api/hooks.js';
 import { Alert } from '../components/ui/Alert.js';
 import type { NewsCardItem } from '../components/ui/NewsCard.js';
 import { NewsTimeline } from '../components/ui/NewsTimeline.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
 import { Pagination } from '../components/ui/Pagination.js';
+import { Field } from '../components/ui/Field.js';
+import { Select } from '../components/ui/Select.js';
 import { NewsCardSkeleton } from '../components/ui/Skeleton.js';
+import { NEWS_CATEGORIES, newsCategoryLabel } from '../lib/news-categories.js';
+import { useAppSelector } from '../hooks/redux.js';
 
 export function NewsPage() {
   const { t } = useTranslation('nav');
+  const authUser = useAppSelector((s) => s.auth.user);
+  const { data: me } = useMeQuery(!!authUser);
+  const { data: colleges } = useCollegesQuery();
+
+  const studentCollegeId = useMemo(() => {
+    const profile = me as {
+      studentProfile?: { department?: { college?: { id: string } } };
+    } | undefined;
+    return profile?.studentProfile?.department?.college?.id ?? '';
+  }, [me]);
+
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError } = useNewsListQuery(page);
+  const [category, setCategory] = useState<NewsListFilters['category'] | ''>('');
+  const [collegeId, setCollegeId] = useState('');
+
+  useEffect(() => {
+    if (studentCollegeId && !collegeId) {
+      setCollegeId(studentCollegeId);
+    }
+  }, [studentCollegeId, collegeId]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [category, collegeId]);
+
+  const filters: NewsListFilters = {
+    collegeId: collegeId || undefined,
+    category: category || undefined,
+  };
+
+  const { data, isLoading, isError } = useNewsListQuery(page, 10, filters);
 
   if (isError) return <Alert variant="error">{t('messages.loadError')}</Alert>;
 
@@ -25,6 +58,37 @@ export function NewsPage() {
         description={t('messages.newsTimelineLead')}
         icon={Newspaper}
       />
+
+      <div className="mb-6 flex flex-wrap gap-3">
+        <Field label={t('news.filterCategory')} className="min-w-[10rem]">
+          <Select
+            value={category}
+            onChange={(e) => setCategory(e.target.value as NewsListFilters['category'] | '')}
+          >
+            <option value="">{t('news.allCategories')}</option>
+            {NEWS_CATEGORIES.filter((c) => c !== 'TUITION').map((c) => (
+              <option key={c} value={c}>
+                {newsCategoryLabel(c, t)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label={t('profile.college')} className="min-w-[12rem] flex-1">
+          <Select value={collegeId} onChange={(e) => setCollegeId(e.target.value)}>
+            <option value="">{t('news.allCollegesAndUniversity')}</option>
+            {colleges?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      </div>
+
+      {studentCollegeId && collegeId === studentCollegeId ? (
+        <Alert variant="info">{t('news.collegeFilterHint')}</Alert>
+      ) : null}
+
       {isLoading ? (
         <div className="max-w-3xl space-y-6">
           {Array.from({ length: 3 }).map((_, i) => (

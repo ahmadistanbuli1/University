@@ -4,7 +4,6 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { isAxiosError } from 'axios';
 import {
   useAdminUserQuery,
   useCollegesQuery,
@@ -34,19 +33,17 @@ import {
 } from '../lib/form-schemas.js';
 import { buildAcademicYearOptions } from '../lib/academic-options.js';
 import { FacultyCourseAssignmentPicker } from '../components/admin/FacultyCourseAssignmentPicker.js';
+import { apiErrorToast } from '../lib/api-error.js';
 
-const ROLES = ['ADMIN', 'STUDENT', 'FACULTY', 'LIBRARIAN', 'AFFAIRS', 'MANAGER'] as const;
-
-function apiErrorToast(err: unknown, fallback: string) {
-  if (isAxiosError(err)) {
-    const body = err.response?.data as { error?: string } | undefined;
-    if (body?.error) {
-      toast.error(body.error);
-      return;
-    }
-  }
-  toast.error(fallback);
-}
+const ROLES = [
+  'ADMIN',
+  'STUDENT',
+  'FACULTY',
+  'LIBRARIAN',
+  'AFFAIRS',
+  'MANAGER',
+  'EXAM_OFFICER',
+] as const;
 
 export function AdminUsersPage() {
   const { t } = useTranslation('nav');

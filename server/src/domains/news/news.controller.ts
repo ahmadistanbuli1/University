@@ -8,7 +8,10 @@ export class NewsController {
 
   list = async (req: Request, res: Response) => {
     const q = newsPaginationSchema.parse(req.query);
-    const data = await this.news.listPublic(q.page, q.pageSize);
+    const data = await this.news.listPublic(q.page, q.pageSize, {
+      collegeId: q.collegeId,
+      category: q.category,
+    });
     res.json(data);
   };
 
@@ -29,6 +32,8 @@ export class NewsController {
       authorCollegeId: req.authUser!.collegeId ?? null,
       category: body.category,
       enablePayNow: body.enablePayNow,
+      tuitionSemesterKey: body.tuitionSemesterKey ?? null,
+      scope: body.scope,
     });
     res.status(201).json(created);
   };

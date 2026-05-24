@@ -5,7 +5,15 @@ export const paginationQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-const userRoleEnum = z.enum(['ADMIN', 'STUDENT', 'FACULTY', 'LIBRARIAN', 'AFFAIRS', 'MANAGER']);
+const userRoleEnum = z.enum([
+  'ADMIN',
+  'STUDENT',
+  'FACULTY',
+  'LIBRARIAN',
+  'AFFAIRS',
+  'MANAGER',
+  'EXAM_OFFICER',
+]);
 
 export const listUsersQuerySchema = paginationQuerySchema.extend({
   search: z.string().max(120).optional(),

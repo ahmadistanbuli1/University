@@ -1,6 +1,10 @@
 import type { PrismaClient } from '@prisma/client';
 import { parseCourseStudyMeta } from './course-code.js';
-import { studyYearFromSemester } from '../domains/academic/study-plan.js';
+import {
+  isCourseReachable,
+  isGradeEntryOpenForTerm,
+  studyYearFromSemester,
+} from '../domains/academic/study-plan.js';
 
 const DEFAULT_FACULTY_EMAIL = 'faculty@university.edu';
 const DEFAULT_OFFERING_SEMESTER = 'Fall 2025';
@@ -76,6 +80,15 @@ export async function ensureFacultyOfferingsForDepartment(
   });
 
   for (const course of courses) {
+    const takenByOther = await prisma.facultyCourse.findFirst({
+      where: {
+        courseId: course.id,
+        semester: semesterLabel,
+        academicYear,
+      },
+    });
+    if (takenByOther) continue;
+
     const existing = await prisma.facultyCourse.findFirst({
       where: {
         facultyId,
@@ -98,8 +111,7 @@ export async function ensureFacultyOfferingsForDepartment(
 }
 
 /**
- * Enroll the student in every course of their department (full study plan).
- * Does not create curriculum grades — those are entered by faculty or affairs.
+ * Enroll the student in reachable courses for their current term (second semester in demo data).
  */
 export async function syncStudentDepartmentEnrollments(
   prisma: PrismaClient,
@@ -114,20 +126,44 @@ export async function syncStudentDepartmentEnrollments(
 
   await ensureDepartmentCoursesFromCurriculum(prisma, input.departmentId);
 
-  const courses = await prisma.course.findMany({
-    where: { departmentId: input.departmentId },
-    select: { id: true },
+  const student = await prisma.student.findUniqueOrThrow({
+    where: { id: input.studentId },
+    select: { currentSemester: true },
   });
 
+  const courses = await prisma.course.findMany({
+    where: { departmentId: input.departmentId },
+    select: { id: true, code: true },
+  });
+
+  const eligibleCourseIds = new Set<string>();
   for (const course of courses) {
+    const meta = parseCourseStudyMeta(course.code);
+    if (!meta || !isGradeEntryOpenForTerm(meta.term)) continue;
+    if (!isCourseReachable(student.currentSemester, meta.studyYear, meta.term)) continue;
+    eligibleCourseIds.add(course.id);
+  }
+
+  const existingEnrollments = await prisma.enrollment.findMany({
+    where: { studentId: input.studentId, course: { departmentId: input.departmentId } },
+    select: { id: true, courseId: true },
+  });
+
+  for (const row of existingEnrollments) {
+    if (!eligibleCourseIds.has(row.courseId)) {
+      await prisma.enrollment.delete({ where: { id: row.id } });
+    }
+  }
+
+  for (const courseId of eligibleCourseIds) {
     const existing = await prisma.enrollment.findFirst({
-      where: { studentId: input.studentId, courseId: course.id },
+      where: { studentId: input.studentId, courseId },
     });
     if (!existing) {
       await prisma.enrollment.create({
         data: {
           studentId: input.studentId,
-          courseId: course.id,
+          courseId,
           semester: semesterLabel,
           academicYear: input.academicYear,
         },

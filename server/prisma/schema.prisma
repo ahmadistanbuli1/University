@@ -24,6 +24,7 @@ enum UserRole {
   LIBRARIAN
   AFFAIRS
   MANAGER
+  EXAM_OFFICER
 }
 
 enum GradeAppealStatus {
@@ -34,13 +35,16 @@ enum GradeAppealStatus {
 
 enum TranscriptRequestStatus {
   PENDING
+  AFFAIRS_APPROVED
   PROCESSED
   DELIVERED
   REJECTED
 }
 
 enum NewsCategory {
-  GENERAL
+  ANNOUNCEMENT
+  WORKSHOP
+  TRAINING
   TUITION
 }
 
@@ -70,6 +74,7 @@ enum LibraryBookCategory {
   FRONTEND_WEB
   BACKEND_WEB
   ARTIFICIAL_INTELLIGENCE
+  GRADUATION_PROJECT
 }
 
 enum StudyTerm {
@@ -87,8 +92,23 @@ enum NotificationKind {
   DISCOUNT_REQUEST
   DISCOUNT_RESOLVED
   GRADE_PUBLISHED
+  PRACTICAL_GRADE_PUBLISHED
+  GRADE_SUBMISSION
+  GRADE_SUBMISSION_REJECTED
   MANAGER_REQUEST
   MANAGER_REQUEST_RESOLVED
+}
+
+enum GradeSubmissionStatus {
+  DRAFT
+  SUBMITTED
+  PUBLISHED
+  REJECTED
+}
+
+enum GradeSubmissionPhase {
+  PRACTICAL
+  THEORY
 }
 
 enum ManagerRequestStatus {
@@ -114,6 +134,8 @@ model User {
 
   studentProfile Student?
   facultyCourses FacultyCourse[] @relation("FacultyCourses")
+  gradeSubmissions GradeSubmission[] @relation("GradeSubmissionsByFaculty")
+  gradeSubmissionsPublished GradeSubmission[] @relation("GradeSubmissionsPublished")
   booksAdded     Book[]          @relation("BookAddedBy")
   newsArticles   News[]
   auditLogs           AuditLog[]
@@ -211,6 +233,7 @@ model FacultyCourse {
   semester     String
   academicYear String   @map("academic_year")
   examResults  ExamResult[]
+  gradeSubmission GradeSubmission?
 
   @@index([facultyId])
   @@index([courseId])
@@ -238,6 +261,7 @@ model Student {
   tuitionPayments     TuitionPayment[]
   discountRequests    DiscountRequest[]
   curriculumGrades    StudentCurriculumGrade[]
+  gradeSubmissionLines GradeSubmissionLine[]
 
   @@map("students")
 }
@@ -251,7 +275,7 @@ model CurriculumCourse {
   term           StudyTerm
   name           String
   code           String                   @unique
-  practicalPass  Int                      @default(40) @map("practical_pass")
+  practicalPass  Int                      @default(16) @map("practical_pass")
   theoryPass     Int                      @default(60) @map("theory_pass")
   sortOrder      Int                      @default(0) @map("sort_order")
   studentGrades  StudentCurriculumGrade[]
@@ -321,15 +345,58 @@ model GradeAppeal {
   @@map("grade_appeals")
 }
 
+/// Faculty-submitted grade batch per course section; published by exam officer.
+model GradeSubmission {
+  id              String                @id @default(uuid()) @db.Uuid
+  facultyCourseId String                @unique @map("faculty_course_id") @db.Uuid
+  facultyCourse   FacultyCourse         @relation(fields: [facultyCourseId], references: [id])
+  facultyId       String                @map("faculty_id") @db.Uuid
+  faculty         User                  @relation("GradeSubmissionsByFaculty", fields: [facultyId], references: [id])
+  status               GradeSubmissionStatus @default(DRAFT)
+  phase                GradeSubmissionPhase  @default(PRACTICAL)
+  practicalPublishedAt DateTime?             @map("practical_published_at")
+  rejectionReason      String?               @map("rejection_reason") @db.Text
+  submittedAt          DateTime?             @map("submitted_at")
+  publishedAt          DateTime?             @map("published_at")
+  publishedById   String?               @map("published_by") @db.Uuid
+  publishedBy     User?                 @relation("GradeSubmissionsPublished", fields: [publishedById], references: [id])
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  lines           GradeSubmissionLine[]
+
+  @@index([status])
+  @@index([facultyId])
+  @@map("grade_submissions")
+}
+
+model GradeSubmissionLine {
+  id             String          @id @default(uuid()) @db.Uuid
+  submissionId   String          @map("submission_id") @db.Uuid
+  submission     GradeSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  studentId      String          @map("student_id") @db.Uuid
+  student        Student         @relation(fields: [studentId], references: [id])
+  practicalScore Decimal  @map("practical_score") @db.Decimal(5, 2)
+  theoryScore    Decimal? @map("theory_score") @db.Decimal(5, 2)
+
+  @@unique([submissionId, studentId])
+  @@map("grade_submission_lines")
+}
+
 model TranscriptRequest {
-  id              String                   @id @default(uuid()) @db.Uuid
-  studentId       String                   @map("student_id") @db.Uuid
-  student         Student                  @relation(fields: [studentId], references: [id])
-  status          TranscriptRequestStatus
-  filePath        String?                  @map("file_path")
-  rejectionReason String?                  @map("rejection_reason") @db.Text
-  requestedAt     DateTime                 @default(now()) @map("requested_at")
-  processedAt     DateTime?                @map("processed_at")
+  id                String                   @id @default(uuid()) @db.Uuid
+  studentId         String                   @map("student_id") @db.Uuid
+  student           Student                  @relation(fields: [studentId], references: [id])
+  status            TranscriptRequestStatus
+  filePath          String?                  @map("file_path")
+  rejectionReason   String?                  @map("rejection_reason") @db.Text
+  feeAmount         Float                    @default(5) @map("fee_amount")
+  feePaid           Boolean                  @default(false) @map("fee_paid")
+  feeRefunded       Boolean                  @default(false) @map("fee_refunded")
+  paymentReference  String?                  @map("payment_reference")
+  paidAt            DateTime?                @map("paid_at")
+  requestedAt       DateTime                 @default(now()) @map("requested_at")
+  affairsReviewedAt DateTime?                @map("affairs_reviewed_at")
+  processedAt       DateTime?                @map("processed_at")
 
   @@map("transcript_requests")
 }
@@ -350,6 +417,8 @@ model Book {
   downloadsCount  Int           @default(0) @map("downloads_count")
   readsCount      Int           @default(0) @map("reads_count")
   publishYear     Int           @map("publish_year")
+  author          String?
+  publisher       String?
   createdAt       DateTime      @default(now()) @map("created_at")
   keywords        BookKeyword[]
 
@@ -374,8 +443,10 @@ model News {
   title        String
   content      String       @db.Text
   imageUrl     String?      @map("image_url")
-  category     NewsCategory @default(GENERAL)
-  enablePayNow Boolean      @default(false) @map("enable_pay_now")
+  category           NewsCategory @default(ANNOUNCEMENT)
+  enablePayNow       Boolean      @default(false) @map("enable_pay_now")
+  /// When category is TUITION: semester-1 | semester-2 — which installment pay box to unlock.
+  tuitionSemesterKey String?      @map("tuition_semester_key")
   collegeId    String?      @map("college_id") @db.Uuid
   college      College?     @relation(fields: [collegeId], references: [id])
   authorId     String       @map("author_id") @db.Uuid

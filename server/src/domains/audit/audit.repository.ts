@@ -21,4 +21,21 @@ export class AuditRepository {
     ]);
     return { items, total };
   }
+
+  async listForUser(userId: string, params: { page: number; pageSize: number }) {
+    const { page, pageSize } = params;
+    const skip = (page - 1) * pageSize;
+    const where = { userId };
+    const [items, total] = await Promise.all([
+      this.db.auditLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+        include: { user: { select: { id: true, email: true, name: true, role: true } } },
+      }),
+      this.db.auditLog.count({ where }),
+    ]);
+    return { items, total };
+  }
 }

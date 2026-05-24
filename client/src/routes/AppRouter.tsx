@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AdminLayout } from '../layouts/AdminLayout.js';
 import { AffairsLayout } from '../layouts/AffairsLayout.js';
 import { FacultyLayout } from '../layouts/FacultyLayout.js';
+import { ExamOfficerLayout } from '../layouts/ExamOfficerLayout.js';
 import { LibrarianLayout } from '../layouts/LibrarianLayout.js';
 import { ManagerLayout } from '../layouts/ManagerLayout.js';
 import { PublicLayout } from '../layouts/PublicLayout.js';
@@ -17,6 +18,7 @@ import { AffairsTranscriptsPage } from '../pages/AffairsTranscriptsPage.js';
 import { FacultyAnalyticsPage } from '../pages/FacultyAnalyticsPage.js';
 import { FacultyClassesPage } from '../pages/FacultyClassesPage.js';
 import { FacultyDashboardPage } from '../pages/FacultyDashboardPage.js';
+import { ActivityLogPage } from '../pages/ActivityLogPage.js';
 import { FacultyGradesPage } from '../pages/FacultyGradesPage.js';
 import { HomePage } from '../pages/HomePage.js';
 import { LibrarianBooksPage } from '../pages/LibrarianBooksPage.js';
@@ -37,6 +39,9 @@ import { StudentCoursesPage } from '../pages/StudentCoursesPage.js';
 import { StudentDashboardPage } from '../pages/StudentDashboardPage.js';
 import { StudentGradesPage } from '../pages/StudentGradesPage.js';
 import { StudentStudyPlanPage } from '../pages/StudentStudyPlanPage.js';
+import { ExamOfficerDashboardPage } from '../pages/ExamOfficerDashboardPage.js';
+import { ExamOfficerGradesPage } from '../pages/ExamOfficerGradesPage.js';
+import { ExamOfficerTranscriptsPage } from '../pages/ExamOfficerTranscriptsPage.js';
 import { StudentTranscriptsPage } from '../pages/StudentTranscriptsPage.js';
 import { StudentTuitionPage } from '../pages/StudentTuitionPage.js';
 import { StudentPaymentPage } from '../pages/StudentPaymentPage.js';
@@ -88,6 +93,7 @@ export function AppRouter() {
           <Route path="classes" element={<FacultyClassesPage />} />
           <Route path="grades" element={<FacultyGradesPage />} />
           <Route path="analytics" element={<FacultyAnalyticsPage />} />
+          <Route path="activity" element={<ActivityLogPage />} />
         </Route>
 
         <Route
@@ -121,6 +127,7 @@ export function AppRouter() {
           <Route index element={<AffairsDashboardPage />} />
           <Route path="students" element={<AffairsStudentsPage />} />
           <Route path="transcripts" element={<AffairsTranscriptsPage />} />
+          <Route path="activity" element={<ActivityLogPage />} />
         </Route>
 
         <Route
@@ -149,6 +156,19 @@ export function AppRouter() {
           <Route index element={<LibrarianDashboardPage />} />
           <Route path="books" element={<LibrarianBooksPage />} />
           <Route path="news" element={<NewsPage />} />
+        </Route>
+
+        <Route
+          path="/exam-officer"
+          element={
+            <RoleRoute allowedRoles={['EXAM_OFFICER', 'ADMIN']}>
+              <ExamOfficerLayout />
+            </RoleRoute>
+          }
+        >
+          <Route index element={<ExamOfficerDashboardPage />} />
+          <Route path="transcripts" element={<ExamOfficerTranscriptsPage />} />
+          <Route path="grades" element={<ExamOfficerGradesPage />} />
         </Route>
       </Route>
 

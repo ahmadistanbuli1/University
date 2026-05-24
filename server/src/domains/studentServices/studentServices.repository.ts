@@ -75,18 +75,31 @@ export class StudentServicesRepository {
     });
   }
 
-  createTranscriptRequest(studentId: string) {
+  createTranscriptRequest(data: {
+    studentId: string;
+    feeAmount: number;
+    feePaid: boolean;
+    paymentReference: string;
+    paidAt: Date;
+  }) {
     return this.db.transcriptRequest.create({
       data: {
-        student: { connect: { id: studentId } },
+        student: { connect: { id: data.studentId } },
         status: 'PENDING',
+        feeAmount: data.feeAmount,
+        feePaid: data.feePaid,
+        paymentReference: data.paymentReference,
+        paidAt: data.paidAt,
       },
     });
   }
 
-  findPendingTranscriptForStudent(studentId: string) {
+  findActiveTranscriptForStudent(studentId: string) {
     return this.db.transcriptRequest.findFirst({
-      where: { studentId, status: 'PENDING' },
+      where: {
+        studentId,
+        status: { in: ['PENDING', 'AFFAIRS_APPROVED'] },
+      },
     });
   }
 
@@ -122,6 +135,16 @@ export class StudentServicesRepository {
     });
   }
 
+  listTranscriptsByStatus(status: TranscriptRequestStatus) {
+    return this.db.transcriptRequest.findMany({
+      where: { status },
+      orderBy: { requestedAt: 'asc' },
+      include: {
+        student: { include: { user: { select: { id: true, name: true, email: true } } } },
+      },
+    });
+  }
+
   updateTranscript(
     id: string,
     data: {
@@ -129,6 +152,8 @@ export class StudentServicesRepository {
       filePath?: string | null;
       rejectionReason?: string | null;
       processedAt?: Date | null;
+      affairsReviewedAt?: Date | null;
+      feeRefunded?: boolean;
     }
   ) {
     return this.db.transcriptRequest.update({

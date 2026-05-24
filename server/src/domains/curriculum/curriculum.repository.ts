@@ -42,6 +42,58 @@ export class CurriculumRepository {
     });
   }
 
+  findCurriculumByCode(code: string) {
+    return this.db.curriculumCourse.findUnique({ where: { code } });
+  }
+
+  listCodesInSlot(departmentId: string, studyYear: number, term: StudyTerm) {
+    return this.db.curriculumCourse.findMany({
+      where: { departmentId, studyYear, term },
+      select: { code: true, sortOrder: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+  }
+
+  createCurriculum(data: {
+    departmentId: string;
+    studyYear: number;
+    term: StudyTerm;
+    name: string;
+    code: string;
+    sortOrder: number;
+  }) {
+    return this.db.$transaction(async (tx) => {
+      const created = await tx.curriculumCourse.create({
+        data: {
+          departmentId: data.departmentId,
+          studyYear: data.studyYear,
+          term: data.term,
+          name: data.name,
+          code: data.code,
+          sortOrder: data.sortOrder,
+          practicalPass: 40,
+          theoryPass: 60,
+        },
+        include: {
+          department: { include: { college: { select: { id: true, name: true } } } },
+        },
+      });
+      await tx.course.upsert({
+        where: { code: data.code },
+        create: {
+          code: data.code,
+          name: data.name,
+          departmentId: data.departmentId,
+        },
+        update: {
+          name: data.name,
+          departmentId: data.departmentId,
+        },
+      });
+      return created;
+    });
+  }
+
   updateCurriculumName(id: string, name: string, code: string) {
     return this.db.$transaction(async (tx) => {
       const updated = await tx.curriculumCourse.update({

@@ -1,16 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
-import {
-  buildCurriculumForDepartment,
-  DEPT_MAX_STUDY_YEARS,
-  INFO_ENG_DEMO_GRADES,
-} from './seed-curriculum-data.js';
+import { buildCurriculumForDepartment, DEPT_MAX_STUDY_YEARS } from './seed-curriculum-data.js';
 import { ensureDepartmentCoursesFromCurriculum } from '../src/lib/student-enrollment.js';
-
-function randomGrade(minP: number, maxP: number, minT: number, maxT: number) {
-  const practical = Math.round((minP + Math.random() * (maxP - minP)) * 10) / 10;
-  const theory = Math.round((minT + Math.random() * (maxT - minT)) * 10) / 10;
-  return { practical, theory };
-}
 
 /** Upsert curriculum courses for all departments and seed demo grades. */
 export async function seedCurriculum(prisma: PrismaClient) {
@@ -31,7 +21,7 @@ export async function seedCurriculum(prisma: PrismaClient) {
           term: seed.term,
           name: seed.name,
           code: seed.code,
-          practicalPass: 40,
+          practicalPass: 16,
           theoryPass: 60,
           sortOrder: index,
         },
@@ -47,48 +37,6 @@ export async function seedCurriculum(prisma: PrismaClient) {
     }
 
     await ensureDepartmentCoursesFromCurriculum(prisma, dept.id);
-  }
-
-  const infoStudent = await prisma.student.findFirst({
-    where: { user: { email: 'student.infoeng@university.edu' } },
-  });
-
-  if (infoStudent) {
-    await prisma.student.update({
-      where: { id: infoStudent.id },
-      data: { currentSemester: 7 },
-    });
-
-    const infoCourses = await prisma.curriculumCourse.findMany({
-      where: { department: { code: 'INFO_ENG' } },
-    });
-
-    for (const course of infoCourses) {
-      const preset = INFO_ENG_DEMO_GRADES[course.code];
-      const isYear4Term2OrLater =
-        course.studyYear > 4 || (course.studyYear === 4 && course.term === 'SECOND');
-      if (isYear4Term2OrLater) continue;
-
-      const scores = preset ?? randomGrade(28, 38, 42, 58);
-      await prisma.studentCurriculumGrade.upsert({
-        where: {
-          studentId_curriculumCourseId: {
-            studentId: infoStudent.id,
-            curriculumCourseId: course.id,
-          },
-        },
-        create: {
-          studentId: infoStudent.id,
-          curriculumCourseId: course.id,
-          practicalScore: scores.practical,
-          theoryScore: scores.theory,
-        },
-        update: {
-          practicalScore: scores.practical,
-          theoryScore: scores.theory,
-        },
-      });
-    }
   }
 
   console.log(`Curriculum seeded: ${courseCount} course slots across departments.`);

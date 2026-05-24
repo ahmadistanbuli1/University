@@ -50,7 +50,7 @@ function TranscriptRowActions({
           process.mutate(
             { id: row.id, action: 'approve' },
             {
-              onSuccess: () => toast.success(t('messages.transcriptApproved')),
+              onSuccess: () => toast.success(t('messages.transcriptForwarded')),
               onError: (err: unknown) => {
                 const msg =
                   err &&
@@ -63,7 +63,7 @@ function TranscriptRowActions({
           )
         }
       >
-        {t('transcripts.approve')}
+        {t('transcripts.forwardToExamOfficer')}
       </Button>
       <Button
         type="button"
