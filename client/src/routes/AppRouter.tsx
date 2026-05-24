@@ -41,6 +41,7 @@ import { StudentGradesPage } from '../pages/StudentGradesPage.js';
 import { StudentStudyPlanPage } from '../pages/StudentStudyPlanPage.js';
 import { ExamOfficerDashboardPage } from '../pages/ExamOfficerDashboardPage.js';
 import { ExamOfficerGradesPage } from '../pages/ExamOfficerGradesPage.js';
+import { ExamOfficerStudentsPage } from '../pages/ExamOfficerStudentsPage.js';
 import { ExamOfficerTranscriptsPage } from '../pages/ExamOfficerTranscriptsPage.js';
 import { StudentTranscriptsPage } from '../pages/StudentTranscriptsPage.js';
 import { StudentTuitionPage } from '../pages/StudentTuitionPage.js';
@@ -169,6 +170,7 @@ export function AppRouter() {
           <Route index element={<ExamOfficerDashboardPage />} />
           <Route path="transcripts" element={<ExamOfficerTranscriptsPage />} />
           <Route path="grades" element={<ExamOfficerGradesPage />} />
+          <Route path="students" element={<ExamOfficerStudentsPage />} />
         </Route>
       </Route>
 

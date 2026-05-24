@@ -24,7 +24,7 @@ export const processTranscriptSchema = z.discriminatedUnion('action', [
 
 export const listStudentsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  pageSize: z.coerce.number().int().min(1).max(500).default(20),
   search: z.string().max(120).optional(),
   departmentId: z.string().uuid().optional(),
   studyYear: z.coerce.number().int().min(1).max(6).optional(),

@@ -342,7 +342,7 @@ export class StudentServicesService {
       const [items, total] = await this.repo.listStudents({ ...params, collegeId });
       return { items, total, page: params.page, pageSize: params.pageSize };
     }
-    if (role !== 'AFFAIRS' && role !== 'ADMIN') {
+    if (role !== 'AFFAIRS' && role !== 'ADMIN' && role !== 'EXAM_OFFICER') {
       throw new AppError(403, 'Forbidden');
     }
     const [items, total] = await this.repo.listStudents(params);

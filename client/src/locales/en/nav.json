@@ -118,6 +118,11 @@
     "dashboard": "Dashboard",
     "transcripts": "Generate transcripts",
     "grades": "Publish grades",
+    "students": "Student registry",
+    "studentsLead": "Browse registered students by department and study year, then export a formatted Excel list.",
+    "studentsSelectHint": "Select a department, then a study year to load students.",
+    "studentsEmpty": "No students in this department for the selected year.",
+    "openStudents": "Student registry",
     "dashboardLead": "Manage transcripts and grade batches from faculty.",
     "dashboardHint": "Use the sidebar to open each queue.",
     "openTranscripts": "Transcript queue",
@@ -125,6 +130,21 @@
     "openQueue": "Open queue",
     "pendingGeneration": "Transcripts pending",
     "pendingGrades": "Sections awaiting grade publication"
+  },
+  "excel": {
+    "exportStudents": "Export Excel",
+    "exportGrades": "Export grades",
+    "exporting": "Exporting…",
+    "exportSuccess": "File downloaded successfully.",
+    "selectFiltersFirst": "Select department and study year first.",
+    "selectDepartment": "Select department",
+    "selectStudyYear": "Select year",
+    "noStudentsToExport": "No students to export.",
+    "noGradesToExport": "No grades to export.",
+    "studentsSheetTitle": "Student list — Syria Private University",
+    "gradesSheetTitle": "Section grades — Syria Private University",
+    "generatedAt": "Generated: {{date}}",
+    "studentCount": "{{count}} students"
   },
   "gradeSubmissions": {
     "facultyLead": "Choose a course (name — department — plan year). We are in term 2: enter practical grades, then theory after practical is published.",
@@ -347,6 +367,7 @@
     "examOfficerDashboard": "Exam officer overview",
     "examOfficerTranscripts": "Generate & deliver transcripts",
     "examOfficerGrades": "Publish section grades",
+    "examOfficerStudents": "Student registry",
     "activityLog": "Activity log"
   },
   "labels": {

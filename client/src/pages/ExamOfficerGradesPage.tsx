@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { FileSpreadsheet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { axiosInstance } from '../api/http.js';
 import {
   useGradeSubmissionDetailQuery,
   useGradeSubmissionQueueQuery,
@@ -19,6 +21,7 @@ import { LoadingState } from '../components/ui/LoadingState.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
 import { StatusBadge } from '../components/ui/StatusBadge.js';
 import { Textarea } from '../components/ui/Textarea.js';
+import { excelExportButtonClass, exportGradeSubmissionToExcel } from '../lib/excel-export.js';
 import { gradeSubmissionStatusLabel } from '../lib/grade-submission-status.js';
 
 type QueueItem = {
@@ -49,7 +52,9 @@ function phaseLabel(phase: 'PRACTICAL' | 'THEORY' | undefined, t: (k: string) =>
 }
 
 export function ExamOfficerGradesPage() {
-  const { t } = useTranslation('nav');
+  const { t, i18n } = useTranslation('nav');
+  const lang = i18n.language;
+  const [exportingId, setExportingId] = useState<string | null>(null);
   const { data: queue, isLoading, isError } = useGradeSubmissionQueueQuery();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const detail = useGradeSubmissionDetailQuery(selectedId);
@@ -81,6 +86,52 @@ export function ExamOfficerGradesPage() {
 
   function openDetail(id: string) {
     setSelectedId(id);
+  }
+
+  async function exportSubmission(
+    item: QueueItem,
+    lines: Line[],
+    phase: 'PRACTICAL' | 'THEORY' | undefined
+  ) {
+    if (!lines.length) {
+      toast.error(t('excel.noGradesToExport'));
+      return;
+    }
+    setExportingId(item.id);
+    try {
+      const isTheory = phase === 'THEORY';
+      const courseName = item.facultyCourse?.course?.name ?? '—';
+      const facultyName = item.facultyCourse?.faculty?.name ?? '—';
+      const term = `${item.facultyCourse?.semester ?? ''} / ${item.facultyCourse?.academicYear ?? ''}`;
+      await exportGradeSubmissionToExcel(
+        lines.map((l) => ({
+          academicNumber: l.student?.academicNumber ?? '—',
+          fullName: l.student?.user?.name ?? '—',
+          practicalScore: Number(l.practicalScore),
+          theoryScore: l.theoryScore != null ? Number(l.theoryScore) : null,
+        })),
+        {
+          lang,
+          isTheoryPhase: isTheory,
+          sheetTitle: t('excel.gradesSheetTitle'),
+          subtitle: `${courseName} — ${facultyName} · ${term}`,
+          phaseLabel: phaseLabel(phase, t),
+          headers: {
+            index: '#',
+            academicNumber: t('profile.academicNumber'),
+            fullName: t('labels.fullName'),
+            practical: t('studyPlan.practical', { max: 40 }),
+            theory: t('studyPlan.theory', { max: 60 }),
+            total: t('studyPlan.total'),
+          },
+        }
+      );
+      toast.success(t('excel.exportSuccess'));
+    } catch {
+      toast.error(t('messages.loadError'));
+    } finally {
+      setExportingId(null);
+    }
   }
 
   return (
@@ -128,9 +179,33 @@ export function ExamOfficerGradesPage() {
               key: 'act',
               header: t('labels.action'),
               render: (r) => (
-                <Button type="button" size="sm" onClick={() => openDetail(r.id)}>
-                  {t('gradeSubmissions.review')}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" onClick={() => openDetail(r.id)}>
+                    {t('gradeSubmissions.review')}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className={excelExportButtonClass}
+                    disabled={exportingId === r.id}
+                    onClick={() => {
+                      void (async () => {
+                        try {
+                          const { data } = await axiosInstance.get<Detail>(
+                            `/api/grade-submissions/${r.id}`
+                          );
+                          await exportSubmission(r, data.lines ?? [], data.phase);
+                        } catch {
+                          toast.error(t('messages.loadError'));
+                        }
+                      })();
+                    }}
+                    title={t('excel.exportGrades')}
+                    aria-label={t('excel.exportGrades')}
+                  >
+                    <FileSpreadsheet className="h-3.5 w-3.5" aria-hidden />
+                  </Button>
+                </div>
               ),
             },
           ]}
@@ -155,13 +230,25 @@ export function ExamOfficerGradesPage() {
           <Alert variant="error">{t('messages.loadError')}</Alert>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <StatusBadge status={d.status} />
-              <span>{gradeSubmissionStatusLabel(d.status, t)}</span>
-              <span className="text-zinc-500">
-                {d.facultyCourse?.course?.name} — {d.facultyCourse?.faculty?.name} ·{' '}
-                {phaseLabel(d.phase, t)}
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge status={d.status} />
+                <span>{gradeSubmissionStatusLabel(d.status, t)}</span>
+                <span className="text-zinc-500">
+                  {d.facultyCourse?.course?.name} — {d.facultyCourse?.faculty?.name} ·{' '}
+                  {phaseLabel(d.phase, t)}
+                </span>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                disabled={exportingId === d.id || editLines.length === 0}
+                className={`inline-flex items-center gap-2 ${excelExportButtonClass}`}
+                onClick={() => void exportSubmission(d, editLines, d.phase)}
+              >
+                <FileSpreadsheet className="h-4 w-4" aria-hidden />
+                {exportingId === d.id ? t('excel.exporting') : t('excel.exportGrades')}
+              </Button>
             </div>
 
             {editLines.length ? (

@@ -583,6 +583,35 @@ export type AffairsStudentRow = {
   enrollments: { course: { name: string; code: string } }[];
 };
 
+export function useExamOfficerStudentsQuery(params: {
+  page: number;
+  departmentId?: string;
+  studyYear?: number;
+  enabled?: boolean;
+}) {
+  return useQuery({
+    queryKey: ['exam-officer', 'students', params],
+    enabled: params.enabled !== false && Boolean(params.departmentId && params.studyYear),
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{
+        items: AffairsStudentRow[];
+        total: number;
+        page: number;
+        pageSize: number;
+      }>('/api/student-services/students', {
+        params: {
+          page: params.page,
+          pageSize: 50,
+          departmentId: params.departmentId,
+          studyYear: params.studyYear,
+        },
+      });
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useAffairsStudentsQuery(params: {
   page: number;
   search?: string;

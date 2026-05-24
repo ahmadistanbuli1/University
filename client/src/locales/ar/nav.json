@@ -118,6 +118,11 @@
     "dashboard": "لوحة التحكم",
     "transcripts": "توليد الكشوفات",
     "grades": "اعتماد العلامات",
+    "students": "سجل الطلاب",
+    "studentsLead": "تصفّح الطلاب المسجّلين حسب القسم والسنة الدراسية، ثم صدّر قائمة منسّقة إلى Excel.",
+    "studentsSelectHint": "اختر القسم ثم السنة الدراسية لعرض الطلاب.",
+    "studentsEmpty": "لا يوجد طلاب في هذا القسم لهذه السنة.",
+    "openStudents": "سجل الطلاب",
     "dashboardLead": "إدارة الكشوفات واعتماد علامات الشعب المرسلة من الأساتذة.",
     "dashboardHint": "راجع قوائم الانتظار من القائمة الجانبية.",
     "openTranscripts": "قائمة الكشوفات",
@@ -125,6 +130,21 @@
     "openQueue": "فتح قائمة الانتظار",
     "pendingGeneration": "كشوف بانتظار التوليد",
     "pendingGrades": "شعب بانتظار نشر العلامات"
+  },
+  "excel": {
+    "exportStudents": "تصدير Excel",
+    "exportGrades": "تصدير العلامات",
+    "exporting": "جارٍ التصدير…",
+    "exportSuccess": "تم تنزيل الملف بنجاح.",
+    "selectFiltersFirst": "اختر القسم والسنة الدراسية أولاً.",
+    "selectDepartment": "اختر القسم",
+    "selectStudyYear": "اختر السنة",
+    "noStudentsToExport": "لا يوجد طلاب للتصدير.",
+    "noGradesToExport": "لا توجد علامات للتصدير.",
+    "studentsSheetTitle": "قائمة الطلاب — جامعة سوريا الخاصة",
+    "gradesSheetTitle": "علامات الشعبة — جامعة سوريا الخاصة",
+    "generatedAt": "تاريخ التوليد: {{date}}",
+    "studentCount": "{{count}} طالب"
   },
   "gradeSubmissions": {
     "facultyLead": "اختر المادة من القائمة (الاسم — القسم — سنة الخطة). نحن في الفصل الثاني: أدخل علامات العملي ثم النظري بعد نشر العملي.",
@@ -347,6 +367,7 @@
     "examOfficerDashboard": "لوحة موظف الامتحانات",
     "examOfficerTranscripts": "توليد وإرسال الكشوفات",
     "examOfficerGrades": "اعتماد ونشر العلامات",
+    "examOfficerStudents": "سجل الطلاب",
     "activityLog": "سجل النشاط"
   },
   "labels": {

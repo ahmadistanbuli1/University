@@ -63,7 +63,7 @@ export function createStudentServicesRouter(
   );
   r.get(
     '/students',
-    requireRoles('AFFAIRS', 'ADMIN', 'MANAGER'),
+    requireRoles('AFFAIRS', 'ADMIN', 'MANAGER', 'EXAM_OFFICER'),
     asyncHandler(controller.listStudents.bind(controller))
   );
   r.patch(
