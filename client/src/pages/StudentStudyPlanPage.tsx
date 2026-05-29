@@ -72,8 +72,8 @@ export function StudentStudyPlanPage() {
             className={cn(
               'rounded-2xl border px-4 py-2 text-sm font-semibold transition',
               activeYear === year
-                ? 'border-violet-500 bg-violet-600 text-white shadow-md'
-                : 'border-zinc-200 bg-white text-zinc-700 hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-violet-500/15'
+                ? 'border-brand bg-brand text-white shadow-md'
+                : 'border-zinc-200 bg-white text-zinc-700 hover:bg-brand/5 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-brand/15'
             )}
           >
             {getStudyYearLabel(year, lang)}
@@ -84,7 +84,7 @@ export function StudentStudyPlanPage() {
       <Card>
         <p className="m-0 text-sm text-zinc-500 dark:text-zinc-400">
           {t('studyPlan.yearGpa')}{' '}
-          <strong className="text-xl font-bold text-indigo-600 dark:text-violet-300">
+          <strong className="text-xl font-bold text-brand dark:text-brand-light">
             {plan.yearGpa != null ? plan.yearGpa : '—'}
           </strong>
         </p>
@@ -99,7 +99,7 @@ export function StudentStudyPlanPage() {
             </h2>
             <p className="m-0 text-sm text-zinc-500 dark:text-zinc-400">
               {t('studyPlan.termGpa')}{' '}
-              <strong className="text-indigo-600 dark:text-violet-300">
+              <strong className="text-brand dark:text-brand-light">
                 {termBlock.termGpa != null ? termBlock.termGpa : '—'}
               </strong>
             </p>

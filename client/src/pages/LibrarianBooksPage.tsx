@@ -101,7 +101,7 @@ export function LibrarianBooksPage() {
           </Field>
           <Field label={t('labels.pdfFile')} error={fileError ?? undefined}>
             <div className="flex items-center gap-2">
-              <FileUp className="size-5 shrink-0 text-violet-600 dark:text-violet-400" aria-hidden />
+              <FileUp className="size-5 shrink-0 text-brand dark:text-brand-light" aria-hidden />
               <Input ref={fileRef} type="file" accept="application/pdf" className="flex-1" onChange={() => setFileError(null)} />
             </div>
           </Field>

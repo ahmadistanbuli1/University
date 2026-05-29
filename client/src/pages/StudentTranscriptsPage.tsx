@@ -82,7 +82,7 @@ export function StudentTranscriptsPage() {
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-500">{t('tuition.amountDue')}</dt>
-            <dd className="m-0 text-lg font-bold text-violet-600">${TRANSCRIPT_FEE_USD.toFixed(2)}</dd>
+            <dd className="m-0 text-lg font-bold text-brand">${TRANSCRIPT_FEE_USD.toFixed(2)}</dd>
           </div>
         </dl>
         <div className="mt-4 flex justify-center">
@@ -210,7 +210,7 @@ export function StudentTranscriptsPage() {
               }
               if (r.status === 'AFFAIRS_APPROVED') {
                 return (
-                  <span className="text-xs text-violet-600 dark:text-violet-300">
+                  <span className="text-xs text-brand dark:text-brand-light">
                     {t('transcripts.atExamOffice')}
                   </span>
                 );

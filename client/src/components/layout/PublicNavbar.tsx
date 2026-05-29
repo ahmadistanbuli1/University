@@ -18,8 +18,8 @@ function linkClass({ isActive }: { isActive: boolean }) {
   return cn(
     'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200',
     isActive
-      ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-600/20'
-      : 'text-zinc-700 hover:bg-violet-50 hover:text-violet-900 dark:text-zinc-200 dark:hover:bg-white/10 dark:hover:text-white'
+      ? 'bg-gradient-to-r from-brand to-brand-light text-white shadow-md shadow-brand/20'
+      : 'text-zinc-700 hover:bg-brand/5 hover:text-brand-dark dark:text-zinc-200 dark:hover:bg-white/10 dark:hover:text-white'
   );
 }
 
@@ -52,7 +52,7 @@ export function PublicNavbar() {
           onClick={() => setOpen(false)}
         >
           <span
-            className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-500 text-sm font-black text-white shadow-lg shadow-indigo-600/30"
+            className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand via-brand-light to-brand-secondary text-sm font-black text-white shadow-lg shadow-brand/30"
             aria-hidden
           >
             SPU

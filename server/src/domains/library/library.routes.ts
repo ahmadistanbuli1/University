@@ -38,6 +38,30 @@ export function createLibraryRouter(
 
   r.get('/books', asyncHandler(controller.listBooks.bind(controller)));
   r.get(
+    '/favorites/ids',
+    authenticate,
+    requireRoles('STUDENT', 'FACULTY'),
+    asyncHandler(controller.listFavoriteIds.bind(controller))
+  );
+  r.get(
+    '/favorites',
+    authenticate,
+    requireRoles('STUDENT', 'FACULTY'),
+    asyncHandler(controller.listFavorites.bind(controller))
+  );
+  r.post(
+    '/favorites/:id/toggle',
+    authenticate,
+    requireRoles('STUDENT', 'FACULTY'),
+    asyncHandler(controller.toggleFavorite.bind(controller))
+  );
+  r.delete(
+    '/favorites/:id',
+    authenticate,
+    requireRoles('STUDENT', 'FACULTY'),
+    asyncHandler(controller.removeFavorite.bind(controller))
+  );
+  r.get(
     '/stats',
     authenticate,
     requireRoles('LIBRARIAN'),

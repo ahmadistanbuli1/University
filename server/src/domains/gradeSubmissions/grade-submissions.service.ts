@@ -1,6 +1,7 @@
 import type { UserRole } from '@prisma/client';
 
 import { AppError } from '../../utils/AppError.js';
+import { normalizeOfferingTerm } from '../../lib/study-term.js';
 
 import { computePublishedTotal } from '../academic/grade-rules.js';
 
@@ -268,7 +269,7 @@ export class GradeSubmissionsService {
 
         id: fc.id,
 
-        semester: fc.semester,
+        semester: normalizeOfferingTerm(fc.semester, fc.course.code),
 
         academicYear: fc.academicYear,
 
@@ -814,7 +815,7 @@ export class GradeSubmissionsService {
 
           theoryScore: null,
 
-          semester: fc.semester,
+          semester: normalizeOfferingTerm(fc.semester, fc.course.code),
 
           academicYear: fc.academicYear,
 
@@ -912,7 +913,7 @@ export class GradeSubmissionsService {
 
         theoryScore: theory,
 
-        semester: fc.semester,
+        semester: normalizeOfferingTerm(fc.semester, fc.course.code),
 
         academicYear: fc.academicYear,
 

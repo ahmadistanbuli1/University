@@ -1069,6 +1069,64 @@ export function useBooksQuery(page: number, filters?: LibraryBooksFilters) {
   });
 }
 
+export function useFavoriteBookIdsQuery(enabled = true) {
+  return useQuery({
+    queryKey: ['library', 'favorites', 'ids'],
+    enabled,
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{ bookIds: string[] }>(
+        '/api/library/favorites/ids'
+      );
+      return new Set(data.bookIds);
+    },
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useFavoriteBooksQuery(page: number, filters?: LibraryBooksFilters) {
+  return useQuery({
+    queryKey: ['library', 'favorites', 'list', page, filters ?? {}],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{ items: unknown[]; total: number }>(
+        '/api/library/favorites',
+        { params: libraryListParams(page, 10, filters) }
+      );
+      return data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useToggleBookFavoriteMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (bookId: string) => {
+      const { data } = await axiosInstance.post<{ saved: boolean; bookId: string }>(
+        `/api/library/favorites/${bookId}/toggle`
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['library', 'favorites'] });
+    },
+  });
+}
+
+export function useRemoveBookFavoriteMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (bookId: string) => {
+      const { data } = await axiosInstance.delete<{ saved: boolean; bookId: string }>(
+        `/api/library/favorites/${bookId}`
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['library', 'favorites'] });
+    },
+  });
+}
+
 export type DepartmentDto = {
   id: string;
   code: string;

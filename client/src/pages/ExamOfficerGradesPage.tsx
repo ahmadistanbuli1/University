@@ -23,6 +23,7 @@ import { StatusBadge } from '../components/ui/StatusBadge.js';
 import { Textarea } from '../components/ui/Textarea.js';
 import { excelExportButtonClass, exportGradeSubmissionToExcel } from '../lib/excel-export.js';
 import { gradeSubmissionStatusLabel } from '../lib/grade-submission-status.js';
+import { formatStudyTermLabel } from '../lib/study-term.js';
 
 type QueueItem = {
   id: string;
@@ -102,7 +103,12 @@ export function ExamOfficerGradesPage() {
       const isTheory = phase === 'THEORY';
       const courseName = item.facultyCourse?.course?.name ?? '—';
       const facultyName = item.facultyCourse?.faculty?.name ?? '—';
-      const term = `${item.facultyCourse?.semester ?? ''} / ${item.facultyCourse?.academicYear ?? ''}`;
+      const term = formatStudyTermLabel(
+        item.facultyCourse?.semester ?? '',
+        t,
+        item.facultyCourse?.course?.code
+      );
+      const termLine = `${term} · ${item.facultyCourse?.academicYear ?? ''}`;
       await exportGradeSubmissionToExcel(
         lines.map((l) => ({
           academicNumber: l.student?.academicNumber ?? '—',
@@ -114,7 +120,7 @@ export function ExamOfficerGradesPage() {
           lang,
           isTheoryPhase: isTheory,
           sheetTitle: t('excel.gradesSheetTitle'),
-          subtitle: `${courseName} — ${facultyName} · ${term}`,
+          subtitle: `${courseName} — ${facultyName} · ${termLine}`,
           phaseLabel: phaseLabel(phase, t),
           headers: {
             index: '#',
@@ -166,8 +172,14 @@ export function ExamOfficerGradesPage() {
             {
               key: 'term',
               header: t('labels.semester'),
-              render: (r) =>
-                `${r.facultyCourse?.semester ?? ''} / ${r.facultyCourse?.academicYear ?? ''}`,
+              render: (r) => {
+                const termLabel = formatStudyTermLabel(
+                  r.facultyCourse?.semester ?? '',
+                  t,
+                  r.facultyCourse?.course?.code
+                );
+                return `${termLabel} · ${r.facultyCourse?.academicYear ?? ''}`;
+              },
             },
             {
               key: 'at',

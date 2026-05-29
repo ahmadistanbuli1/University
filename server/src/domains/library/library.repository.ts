@@ -11,8 +11,11 @@ export class LibraryRepository {
     publishYear?: number;
     author?: string;
     publisher?: string;
+    userId?: string;
+    favoritesOnly?: boolean;
   }) {
-    const { page, pageSize, keyword, category, publishYear, author, publisher } = params;
+    const { page, pageSize, keyword, category, publishYear, author, publisher, userId, favoritesOnly } =
+      params;
     const skip = (page - 1) * pageSize;
     const conditions: Prisma.BookWhereInput[] = [];
 
@@ -34,6 +37,9 @@ export class LibraryRepository {
           { keywords: { some: { keyword: { contains: q, mode: 'insensitive' } } } },
         ],
       });
+    }
+    if (favoritesOnly && userId) {
+      conditions.push({ favorites: { some: { userId } } });
     }
 
     const where: Prisma.BookWhereInput = conditions.length ? { AND: conditions } : {};
@@ -175,5 +181,31 @@ export class LibraryRepository {
 
   deleteBook(id: string) {
     return this.db.book.delete({ where: { id } });
+  }
+
+  listFavoriteBookIds(userId: string) {
+    return this.db.bookFavorite.findMany({
+      where: { userId },
+      select: { bookId: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  findFavorite(userId: string, bookId: string) {
+    return this.db.bookFavorite.findUnique({
+      where: { userId_bookId: { userId, bookId } },
+    });
+  }
+
+  addFavorite(userId: string, bookId: string) {
+    return this.db.bookFavorite.create({
+      data: { userId, bookId },
+    });
+  }
+
+  removeFavorite(userId: string, bookId: string) {
+    return this.db.bookFavorite.delete({
+      where: { userId_bookId: { userId, bookId } },
+    });
   }
 }

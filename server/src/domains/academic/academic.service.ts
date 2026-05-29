@@ -16,6 +16,7 @@ import {
 } from './study-plan.js';
 
 import { groupEnrollmentsForCurrentYear } from '../../lib/student-enrollment.js';
+import { normalizeOfferingTerm } from '../../lib/study-term.js';
 import { DEPT_MAX_STUDY_YEARS } from '../../lib/dept-study-years.js';
 
 export class AcademicService {
@@ -145,7 +146,7 @@ export class AcademicService {
       score: total,
       practicalScore: input.practicalScore,
       theoryScore: input.theoryScore,
-      semester: fc.semester,
+      semester: normalizeOfferingTerm(fc.semester, fc.course.code),
       academicYear: fc.academicYear,
     });
 

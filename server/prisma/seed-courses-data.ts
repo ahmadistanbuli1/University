@@ -7,7 +7,7 @@ export type CourseSeed = {
 export { facultyCoursesForStudyTerm, facultyCoursesYear1Term1 } from './seed-curriculum-data.js';
 
 export const SEED_ACADEMIC_TERM = {
-  semester: 'Fall 2025',
+  semester: 'FIRST',
   academicYear: '2025-2026',
 } as const;
 

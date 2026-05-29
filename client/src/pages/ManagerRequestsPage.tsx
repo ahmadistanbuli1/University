@@ -83,7 +83,7 @@ export function ManagerRequestsPage() {
               <Card>
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <p className="m-0 font-semibold">{req.subject}</p>
-                  <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-800 dark:bg-violet-500/20 dark:text-violet-200">
+                  <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand-dark dark:bg-brand/15 dark:text-brand-light">
                     {statusLabel(req.status)}
                   </span>
                 </div>

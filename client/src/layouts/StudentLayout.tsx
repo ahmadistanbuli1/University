@@ -1,8 +1,10 @@
 import {
   BookOpen,
+  Bookmark,
   ClipboardList,
   FileBadge,
   LayoutDashboard,
+  Library,
   Percent,
   Scale,
   TrendingUp,
@@ -19,6 +21,8 @@ const navItems: NavItem[] = [
   { to: '/student/transcripts', labelKey: 'student.transcripts', icon: FileBadge },
   { to: '/student/tuition', labelKey: 'student.tuition', icon: Wallet },
   { to: '/student/discounts', labelKey: 'student.discounts', icon: Percent },
+  { to: '/student/library', labelKey: 'student.library', icon: Library },
+  { to: '/student/favorites', labelKey: 'student.favorites', icon: Bookmark },
 ];
 
 export function StudentLayout() {

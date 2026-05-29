@@ -113,7 +113,7 @@ export function StudentDiscountsPage() {
                 </div>
                 {r.notes ? <p className="mt-2 text-sm text-zinc-600">{r.notes}</p> : null}
                 {r.adminResponse ? (
-                  <p className="mt-2 text-sm text-violet-700 dark:text-violet-300">
+                  <p className="mt-2 text-sm text-brand dark:text-brand-light">
                     {t('tuition.adminResponse')}: {r.adminResponse}
                   </p>
                 ) : null}
@@ -128,7 +128,7 @@ export function StudentDiscountsPage() {
                     href={resolveMediaUrl(r.proofFilePath)}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-2 inline-block text-xs text-violet-600 hover:underline"
+                    className="mt-2 inline-block text-xs text-brand hover:underline"
                   >
                     {t('tuition.viewProof')}
                   </a>

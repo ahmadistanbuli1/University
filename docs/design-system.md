@@ -12,10 +12,10 @@ name university : SPU - Shamal Private University
 ## Primary Color
 
 ```css
-#7C3AED
+#025692
 ```
 
-Rich modern purple used for:
+Primary blue (gradient to `#0388BE`) used for:
 
 - Buttons
 - Active states
@@ -42,13 +42,19 @@ Rich modern purple used for:
 ## Primary Accent
 
 ```css
-#7C3AED
+#025692
 ```
 
 ## Secondary Accent
 
 ```css
-#A78BFA
+#F4853C
+```
+
+## Primary Gradient
+
+```css
+linear-gradient(90deg, #025692 0%, #0388BE 100%)
 ```
 
 ## Text Primary
@@ -79,7 +85,7 @@ Rich modern purple used for:
 #09090B
 ```
 
-Deep black with a slight purple-pink tone.
+Deep neutral background (zinc scale).
 
 ---
 
@@ -99,18 +105,18 @@ Deep black with a slight purple-pink tone.
 
 ---
 
-## Purple Accent
+## Brand Blue (dark mode accent)
 
 ```css
-#8B5CF6
+#0388BE
 ```
 
 ---
 
-## Pink-Purple Glow Accent
+## Orange Secondary Accent
 
 ```css
-#C084FC
+#F4853C
 ```
 
 Use softly for:
@@ -253,7 +259,9 @@ Example colors:
 ```css
 linear-gradient(
   135deg,
-  #7C3AED,
+  #025692,
+  #0388BE,
+  #F4853C,
   #C084FC
 )
 ```
@@ -378,8 +386,10 @@ Modern card-based layout.
 
 ```js
 colors: {
-  primary: "#7C3AED",
-  secondary: "#A78BFA",
+  primary: "#025692",
+  secondary: "#F4853C",
+  secondary: "#F4853C",
+  light: "#0388BE",
   dark: "#09090B",
   surface: "#18181B",
   border: "#27272A",

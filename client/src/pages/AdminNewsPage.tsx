@@ -161,7 +161,7 @@ export function AdminNewsPage() {
           <Card key={n.id}>
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <p className="m-0 text-xs font-semibold text-violet-600 dark:text-violet-300">
+                <p className="m-0 text-xs font-semibold text-brand dark:text-brand-light">
                   {newsCategoryLabel(n.category, t)}
                   {n.college?.name ? ` · ${n.college.name}` : ` · ${t('news.universityWide')}`}
                 </p>

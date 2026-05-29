@@ -77,4 +77,33 @@ export class LibraryController {
     const result = await this.library.deleteBook(req.authUser!.id, paramId(req));
     res.json(result);
   };
+
+  listFavoriteIds = async (req: Request, res: Response) => {
+    const bookIds = await this.library.listFavoriteBookIds(req.authUser!.id);
+    res.json({ bookIds });
+  };
+
+  listFavorites = async (req: Request, res: Response) => {
+    const q = listBooksQuerySchema.parse(req.query);
+    const result = await this.library.listFavoriteBooks(req.authUser!.id, {
+      page: q.page,
+      pageSize: q.pageSize,
+      keyword: q.keyword,
+      category: q.category,
+      publishYear: q.publishYear,
+      author: q.author,
+      publisher: q.publisher,
+    });
+    res.json(result);
+  };
+
+  toggleFavorite = async (req: Request, res: Response) => {
+    const result = await this.library.toggleFavorite(req.authUser!.id, paramId(req));
+    res.json(result);
+  };
+
+  removeFavorite = async (req: Request, res: Response) => {
+    const result = await this.library.removeFavorite(req.authUser!.id, paramId(req));
+    res.json(result);
+  };
 }

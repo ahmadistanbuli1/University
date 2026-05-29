@@ -39,14 +39,14 @@ import { useAppSelector } from '../hooks/redux.js';
 import { cn } from '../lib/cn.js';
 
 const BRAND = {
-  primary: '#7C3AED',
-  secondary: '#A78BFA',
-  glow: '#C084FC',
-  darkPrimary: '#8B5CF6',
+  primary: '#025692',
+  secondary: '#F4853C',
+  light: '#0388BE',
+  dark: '#014A7A',
 };
 
-const PIE_LIGHT = [BRAND.primary, BRAND.secondary, '#6366f1', BRAND.glow, '#c4b5fd', '#94a3b8'];
-const PIE_DARK = [BRAND.darkPrimary, BRAND.secondary, BRAND.glow, '#e879f9', '#a5b4fc', '#94a3b8'];
+const PIE_LIGHT = [BRAND.primary, BRAND.secondary, BRAND.light, '#94a3b8', '#f9a66b', '#64748b'];
+const PIE_DARK = [BRAND.light, BRAND.secondary, BRAND.primary, '#f9a66b', '#0388be', '#94a3b8'];
 
 const adminLinks: { to: string; labelKey: 'admin.users' | 'admin.news' | 'admin.appeals' | 'admin.logs'; icon: LucideIcon }[] = [
   { to: '/admin/users', labelKey: 'admin.users', icon: Users },
@@ -58,7 +58,7 @@ const adminLinks: { to: string; labelKey: 'admin.users' | 'admin.news' | 'admin.
 function ChartHeading({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
   return (
     <div className="mb-4 flex items-center gap-3">
-      <span className="grid size-10 place-items-center rounded-xl bg-violet-100 text-[#7C3AED] dark:bg-[#7C3AED]/20 dark:text-[#C084FC]">
+      <span className="grid size-10 place-items-center rounded-xl bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand-secondary">
         <Icon className="size-[1.2rem]" strokeWidth={1.75} aria-hidden />
       </span>
       <h2 className="text-sm font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">{children}</h2>
@@ -98,7 +98,7 @@ export function AdminDashboardPage() {
   const tickFill = isDark ? '#a1a1aa' : '#6b7280';
   const tooltipBg = isDark ? 'rgba(24,24,27,0.95)' : '#ffffff';
   const tooltipBorder = isDark ? '#3f3f46' : '#e5e7eb';
-  const barFill = isDark ? BRAND.darkPrimary : BRAND.primary;
+  const barFill = isDark ? BRAND.light : BRAND.primary;
   const areaStroke = isDark ? BRAND.secondary : BRAND.primary;
   return (
     <section>
@@ -124,7 +124,7 @@ export function AdminDashboardPage() {
         {t('labels.adminActivity')}
       </p>
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="border-[#7C3AED]/10 dark:border-[#8B5CF6]/15">
+        <Card className="border-brand/10 dark:border-brand-light/15">
           <ChartHeading icon={BarChart3}>{t('labels.chartUsersByRole')}</ChartHeading>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -145,14 +145,14 @@ export function AdminDashboardPage() {
             </ResponsiveContainer>
           </div>
         </Card>
-        <Card className="border-[#7C3AED]/10 dark:border-[#8B5CF6]/15">
+        <Card className="border-brand/10 dark:border-brand-light/15">
           <ChartHeading icon={Activity}>{t('labels.chartAuditVolume')}</ChartHeading>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.auditByDay} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="auditFillDash" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={isDark ? BRAND.darkPrimary : BRAND.primary} stopOpacity={isDark ? 0.5 : 0.35} />
+                    <stop offset="0%" stopColor={isDark ? BRAND.light : BRAND.primary} stopOpacity={isDark ? 0.5 : 0.35} />
                     <stop offset="100%" stopColor={BRAND.secondary} stopOpacity={0} />
                   </linearGradient>
                 </defs>
@@ -173,7 +173,7 @@ export function AdminDashboardPage() {
             </ResponsiveContainer>
           </div>
         </Card>
-        <Card className="border-[#7C3AED]/10 dark:border-[#8B5CF6]/15">
+        <Card className="border-brand/10 dark:border-brand-light/15">
           <ChartHeading icon={PieChartIcon}>{t('labels.chartRoleShare')}</ChartHeading>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -207,12 +207,12 @@ export function AdminDashboardPage() {
         </Card>
       </div>
 
-      <Card className="mt-8 border-dashed border-[#7C3AED]/25 dark:border-[#8B5CF6]/30">
+      <Card className="mt-8 border-dashed border-brand/25 dark:border-brand-light/30">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <IconTile
               icon={LayoutDashboard}
-              className="size-11 rounded-xl bg-violet-100 text-[#7C3AED] dark:bg-[#7C3AED]/20 dark:text-[#C084FC]"
+              className="size-11 rounded-xl bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand-secondary"
             />
             <div>
               <h2 className="text-sm font-extrabold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
@@ -231,8 +231,8 @@ export function AdminDashboardPage() {
                 cn(
                   'group flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-sm font-bold transition-all duration-200',
                   isActive
-                    ? 'border-[#7C3AED]/50 bg-gradient-to-r from-[#7C3AED] to-[#A78BFA] text-white shadow-lg shadow-[#7C3AED]/25'
-                    : 'border-zinc-200/80 bg-white/80 text-zinc-800 hover:border-[#7C3AED]/30 hover:bg-violet-50/50 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:hover:border-[#8B5CF6]/35 dark:hover:bg-[#7C3AED]/10'
+                    ? 'border-[#025692]/50 bg-gradient-to-r from-brand to-brand-light text-white shadow-lg shadow-[#025692]/25'
+                    : 'border-zinc-200/80 bg-white/80 text-zinc-800 hover:border-brand/30 hover:bg-brand/5 dark:border-white/10 dark:bg-zinc-950/40 dark:text-zinc-100 dark:hover:border-brand-light/35 dark:hover:bg-brand/10'
                 )
               }
             >

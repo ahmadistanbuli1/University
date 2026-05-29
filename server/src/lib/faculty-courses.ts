@@ -1,8 +1,9 @@
 import type { PrismaClient } from '@prisma/client';
 import { AppError } from '../utils/AppError.js';
+import { normalizeOfferingTerm } from './study-term.js';
 
 export const DEFAULT_FACULTY_OFFERING = {
-  semester: 'Fall 2025',
+  semester: 'SECOND',
   academicYear: '2025-2026',
 } as const;
 
@@ -122,11 +123,16 @@ export async function assignFacultyCourses(
   }
 
   for (const courseId of uniqueIds) {
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: { code: true },
+    });
+    const term = normalizeOfferingTerm(semester, course?.code);
     await prisma.facultyCourse.create({
       data: {
         facultyId: facultyUserId,
         courseId,
-        semester,
+        semester: term,
         academicYear,
       },
     });

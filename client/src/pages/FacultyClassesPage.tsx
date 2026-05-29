@@ -5,6 +5,7 @@ import { DataTable } from '../components/ui/DataTable.js';
 import { LoadingState } from '../components/ui/LoadingState.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
 import { getDepartmentLabel } from '../lib/department-labels.js';
+import { formatStudyTermLabel } from '../lib/study-term.js';
 
 type Fc = {
   id: string;
@@ -47,7 +48,11 @@ export function FacultyClassesPage() {
                   )
                 : (r.course?.department?.name ?? '—'),
           },
-          { key: 's', header: t('labels.semester'), render: (r) => r.semester },
+          {
+            key: 's',
+            header: t('labels.semester'),
+            render: (r) => formatStudyTermLabel(r.semester, t, r.course?.code),
+          },
           { key: 'y', header: t('labels.academicYear'), render: (r) => r.academicYear },
         ]}
         rows={rows}

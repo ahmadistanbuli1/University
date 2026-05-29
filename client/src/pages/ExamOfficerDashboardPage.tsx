@@ -45,7 +45,7 @@ export function ExamOfficerDashboardPage() {
           </p>
           <Link
             to="/exam-officer/transcripts"
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-violet-400 px-4 py-2 text-sm font-semibold text-white shadow-md"
+            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand to-brand-light px-4 py-2 text-sm font-semibold text-white shadow-md"
           >
             {t('examOfficer.openTranscripts')}
           </Link>
@@ -56,7 +56,7 @@ export function ExamOfficerDashboardPage() {
           </p>
           <Link
             to="/exam-officer/grades"
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-violet-400 px-4 py-2 text-sm font-semibold text-white shadow-md"
+            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand to-brand-light px-4 py-2 text-sm font-semibold text-white shadow-md"
           >
             {t('examOfficer.openGrades')}
           </Link>
@@ -68,7 +68,7 @@ export function ExamOfficerDashboardPage() {
           </p>
           <Link
             to="/exam-officer/students"
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-violet-400 px-4 py-2 text-sm font-semibold text-white shadow-md"
+            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand to-brand-light px-4 py-2 text-sm font-semibold text-white shadow-md"
           >
             {t('examOfficer.openStudents')}
           </Link>

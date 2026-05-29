@@ -5,6 +5,7 @@ import { Card } from '../components/ui/Card.js';
 import { DataTable } from '../components/ui/DataTable.js';
 import { LoadingState } from '../components/ui/LoadingState.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
+import { formatStudyTermLabel } from '../lib/study-term.js';
 
 type ResultRow = {
   id: string;
@@ -42,7 +43,7 @@ export function StudentGradesPage() {
       <Card className="mb-6">
         <p className="m-0 text-sm text-slate-500">
           {t('labels.gpa')}{' '}
-          <strong className="text-2xl font-bold text-indigo-600">
+          <strong className="text-2xl font-bold text-brand">
             {pending || data.gpa == null ? '—' : data.gpa}
           </strong>
         </p>
@@ -71,7 +72,12 @@ export function StudentGradesPage() {
               render: (r) => formatScore(r.theoryScore),
             },
             { key: 'score', header: t('studyPlan.total'), render: (r) => formatScore(r.score) },
-            { key: 'sem', header: t('labels.semester'), render: (r) => r.semester },
+            {
+              key: 'sem',
+              header: t('labels.semester'),
+              render: (r) =>
+                formatStudyTermLabel(r.semester, t, r.facultyCourse?.course?.code),
+            },
             { key: 'year', header: t('labels.academicYear'), render: (r) => r.academicYear },
           ]}
           rows={rows}

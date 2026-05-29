@@ -22,8 +22,8 @@ export function SidebarNavItem({ to, end, label, icon: Icon, collapsed }: Sideba
           'group relative flex items-center rounded-2xl text-sm font-semibold outline-none transition-[background-color,color,box-shadow] duration-200',
           collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5',
           isActive
-            ? 'bg-gradient-to-r from-violet-600 to-violet-400 text-white shadow-md shadow-violet-600/25 ring-1 ring-violet-500/20'
-            : 'text-zinc-600 hover:bg-violet-50 hover:text-violet-800 dark:text-zinc-400 dark:hover:bg-violet-500/12 dark:hover:text-violet-100'
+            ? 'bg-gradient-to-r from-brand to-brand-light text-white shadow-md shadow-brand/25 ring-1 ring-brand/20'
+            : 'text-zinc-600 hover:bg-brand/5 hover:text-brand-dark dark:text-zinc-400 dark:hover:bg-brand/12 dark:hover:text-brand-light'
         )
       }
     >
@@ -34,7 +34,7 @@ export function SidebarNavItem({ to, end, label, icon: Icon, collapsed }: Sideba
               'grid size-10 shrink-0 place-items-center rounded-xl transition-colors duration-200',
               isActive
                 ? 'bg-white/20 text-white'
-                : 'bg-violet-100/0 text-inherit group-hover:bg-violet-100/80 group-hover:text-violet-700 dark:group-hover:bg-violet-500/15 dark:group-hover:text-violet-200'
+                : 'bg-brand/0 text-inherit group-hover:bg-brand/10 group-hover:text-brand dark:group-hover:bg-brand/50/15 dark:group-hover:text-brand-light'
             )}
           >
             <Icon className="size-[1.25rem]" strokeWidth={1.85} aria-hidden />

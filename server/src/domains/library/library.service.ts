@@ -20,8 +20,53 @@ export class LibraryService {
     publishYear?: number;
     author?: string;
     publisher?: string;
+    userId?: string;
+    favoritesOnly?: boolean;
   }) {
     return this.repo.listBooks(params);
+  }
+
+  async listFavoriteBookIds(userId: string) {
+    const rows = await this.repo.listFavoriteBookIds(userId);
+    return rows.map((r) => r.bookId);
+  }
+
+  async listFavoriteBooks(
+    userId: string,
+    params: {
+      page: number;
+      pageSize: number;
+      keyword?: string;
+      category?: LibraryBookCategory;
+      publishYear?: number;
+      author?: string;
+      publisher?: string;
+    }
+  ) {
+    return this.repo.listBooks({ ...params, userId, favoritesOnly: true });
+  }
+
+  async toggleFavorite(userId: string, bookId: string) {
+    const book = await this.repo.findBook(bookId);
+    if (!book) {
+      throw new AppError(404, 'Book not found');
+    }
+    const existing = await this.repo.findFavorite(userId, bookId);
+    if (existing) {
+      await this.repo.removeFavorite(userId, bookId);
+      return { saved: false, bookId };
+    }
+    await this.repo.addFavorite(userId, bookId);
+    return { saved: true, bookId };
+  }
+
+  async removeFavorite(userId: string, bookId: string) {
+    const existing = await this.repo.findFavorite(userId, bookId);
+    if (!existing) {
+      throw new AppError(404, 'Favorite not found');
+    }
+    await this.repo.removeFavorite(userId, bookId);
+    return { saved: false, bookId };
   }
 
   async getLibrarianStats() {

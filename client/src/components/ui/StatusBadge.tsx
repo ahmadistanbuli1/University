@@ -8,7 +8,7 @@ const tones: Record<string, string> = {
   REJECTED: 'bg-red-100 text-red-900 ring-1 ring-red-600/15 dark:bg-red-500/15 dark:text-red-100 dark:ring-red-400/25',
   PROCESSED: 'bg-sky-100 text-sky-900 ring-1 ring-sky-600/15 dark:bg-sky-500/15 dark:text-sky-100 dark:ring-sky-400/25',
   AFFAIRS_APPROVED:
-    'bg-indigo-100 text-indigo-900 ring-1 ring-indigo-600/15 dark:bg-indigo-500/15 dark:text-indigo-100 dark:ring-indigo-400/25',
+    'bg-brand/10 text-brand-dark ring-1 ring-brand/15 dark:bg-brand/15 dark:text-brand-light dark:ring-brand-light/25',
   DELIVERED:
     'bg-emerald-100 text-emerald-900 ring-1 ring-emerald-600/15 dark:bg-emerald-500/15 dark:text-emerald-100 dark:ring-emerald-400/25',
   DRAFT:

@@ -50,7 +50,7 @@ export function NotificationBell() {
         type="button"
         variant="ghost"
         size="sm"
-        className="relative rounded-2xl border border-zinc-200/80 bg-white/90 p-2.5 text-violet-700 shadow-sm hover:bg-violet-50 dark:border-white/10 dark:bg-white/5 dark:text-violet-200 dark:hover:bg-violet-500/15"
+        className="relative rounded-2xl border border-zinc-200/80 bg-white/90 p-2.5 text-brand shadow-sm hover:bg-brand/5 dark:border-white/10 dark:bg-white/5 dark:text-brand-light dark:hover:bg-brand/15"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label={t('notifications.bellLabel')}
@@ -80,7 +80,7 @@ export function NotificationBell() {
               {unreadCount > 0 ? (
                 <button
                   type="button"
-                  className="text-xs font-semibold text-violet-600 hover:underline dark:text-violet-300"
+                  className="text-xs font-semibold text-brand hover:underline dark:text-brand-light"
                   onClick={() => markAllRead.mutate()}
                 >
                   {t('notifications.markAllRead')}
@@ -104,8 +104,8 @@ export function NotificationBell() {
                       <button
                         type="button"
                         className={cn(
-                          'w-full border-0 border-b border-zinc-50 px-4 py-3 text-start transition hover:bg-violet-50/80 dark:border-white/5 dark:hover:bg-violet-500/10',
-                          !n.read && 'bg-violet-50/50 dark:bg-violet-500/5'
+                          'w-full border-0 border-b border-zinc-50 px-4 py-3 text-start transition hover:bg-brand/5 dark:border-white/5 dark:hover:bg-brand/10',
+                          !n.read && 'bg-brand/5 dark:bg-brand/5'
                         )}
                         onClick={() => handleClick(n)}
                       >

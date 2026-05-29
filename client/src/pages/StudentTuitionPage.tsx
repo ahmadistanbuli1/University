@@ -34,7 +34,7 @@ export function StudentTuitionPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="text-center">
           <p className="m-0 text-sm text-zinc-500">{t('tuition.totalDue')}</p>
-          <p className="m-0 mt-1 text-2xl font-bold text-violet-600">${data.totalDue.toFixed(2)}</p>
+          <p className="m-0 mt-1 text-2xl font-bold text-brand">${data.totalDue.toFixed(2)}</p>
         </Card>
         <Card className="text-center">
           <p className="m-0 text-sm text-zinc-500">{t('tuition.totalPaid')}</p>
@@ -69,12 +69,12 @@ export function StudentTuitionPage() {
                 'flex flex-col gap-4 border-2 transition',
                 paid
                   ? 'border-emerald-300/60 bg-emerald-50/30 dark:border-emerald-500/30 dark:bg-emerald-950/15'
-                  : 'border-violet-200/80 dark:border-violet-500/25'
+                  : 'border-brand/20 dark:border-brand/25'
               )}
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="m-0 text-xs font-bold uppercase tracking-wide text-violet-600 dark:text-violet-400">
+                  <p className="m-0 text-xs font-bold uppercase tracking-wide text-brand dark:text-brand-light">
                     {inst.academicYear}
                   </p>
                   <h3 className="m-0 mt-1 text-lg font-bold text-zinc-900 dark:text-white">{title}</h3>
@@ -84,7 +84,7 @@ export function StudentTuitionPage() {
 
               <div className="rounded-xl bg-zinc-50 px-4 py-3 dark:bg-white/5">
                 <p className="m-0 text-sm text-zinc-500">{t('tuition.amountDue')}</p>
-                <p className="m-0 text-2xl font-bold text-violet-700 dark:text-violet-300">
+                <p className="m-0 text-2xl font-bold text-brand dark:text-brand-light">
                   ${inst.amountDue.toFixed(2)}
                 </p>
                 <p className="m-0 mt-2 text-sm text-zinc-600 dark:text-zinc-400">
@@ -108,7 +108,7 @@ export function StudentTuitionPage() {
               {payable ? (
                 <Link
                   to={`/student/pay/${inst.id}`}
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-violet-400 px-5 py-2.5 text-base font-semibold text-white shadow-md shadow-violet-600/25 transition hover:from-violet-700 hover:to-violet-500"
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-brand to-brand-light px-5 py-2.5 text-base font-semibold text-white shadow-md shadow-brand/25 transition hover:from-brand-dark hover:to-brand-light"
                 >
                   {t('tuition.payNow')}
                 </Link>

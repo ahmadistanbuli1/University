@@ -11,7 +11,7 @@ describe('formatFacultyCourseConflictMessage', () => {
         facultyId: 'f1',
         facultyName: 'Dr. Ali',
         facultyEmail: 'ali@university.edu',
-        semester: 'Fall 2025',
+        semester: 'FIRST',
         academicYear: '2025-2026',
       },
     ]);

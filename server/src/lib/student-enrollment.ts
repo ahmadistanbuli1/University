@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import { parseCourseStudyMeta } from './course-code.js';
+import { normalizeOfferingTerm } from './study-term.js';
 import {
   isCourseReachable,
   isGradeEntryOpenForTerm,
@@ -7,7 +8,7 @@ import {
 } from '../domains/academic/study-plan.js';
 
 const DEFAULT_FACULTY_EMAIL = 'faculty@university.edu';
-const DEFAULT_OFFERING_SEMESTER = 'Fall 2025';
+const DEFAULT_OFFERING_SEMESTER = 'SECOND';
 
 /**
  * If the registration form sent a study year (1..max) instead of a semester index,
@@ -76,14 +77,15 @@ export async function ensureFacultyOfferingsForDepartment(
 
   const courses = await prisma.course.findMany({
     where: { departmentId },
-    select: { id: true },
+    select: { id: true, code: true },
   });
 
   for (const course of courses) {
+    const term = normalizeOfferingTerm(semesterLabel, course.code);
     const takenByOther = await prisma.facultyCourse.findFirst({
       where: {
         courseId: course.id,
-        semester: semesterLabel,
+        semester: term,
         academicYear,
       },
     });
@@ -93,7 +95,7 @@ export async function ensureFacultyOfferingsForDepartment(
       where: {
         facultyId,
         courseId: course.id,
-        semester: semesterLabel,
+        semester: term,
         academicYear,
       },
     });
@@ -102,7 +104,7 @@ export async function ensureFacultyOfferingsForDepartment(
         data: {
           facultyId,
           courseId: course.id,
-          semester: semesterLabel,
+          semester: term,
           academicYear,
         },
       });
@@ -155,7 +157,11 @@ export async function syncStudentDepartmentEnrollments(
     }
   }
 
+  const courseById = new Map(courses.map((c) => [c.id, c]));
+
   for (const courseId of eligibleCourseIds) {
+    const course = courseById.get(courseId);
+    const term = normalizeOfferingTerm(semesterLabel, course?.code);
     const existing = await prisma.enrollment.findFirst({
       where: { studentId: input.studentId, courseId },
     });
@@ -164,9 +170,14 @@ export async function syncStudentDepartmentEnrollments(
         data: {
           studentId: input.studentId,
           courseId,
-          semester: semesterLabel,
+          semester: term,
           academicYear: input.academicYear,
         },
+      });
+    } else if (existing.semester !== term) {
+      await prisma.enrollment.update({
+        where: { id: existing.id },
+        data: { semester: term },
       });
     }
   }

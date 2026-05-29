@@ -37,23 +37,23 @@ export function NewsCard({ item, className }: NewsCardProps) {
   return (
     <Card
       className={cn(
-        'group relative flex h-full flex-col overflow-hidden border-zinc-200/90 p-0 transition duration-300 hover:-translate-y-0.5 hover:border-[#7C3AED]/35 hover:shadow-lg hover:shadow-[#7C3AED]/10 dark:border-white/10 dark:hover:border-[#8B5CF6]/40',
+        'group relative flex h-full flex-col overflow-hidden border-zinc-200/90 p-0 transition duration-300 hover:-translate-y-0.5 hover:border-brand/35 hover:shadow-lg hover:shadow-brand/10 dark:border-white/10 dark:hover:border-brand-light/40',
         className
       )}
     >
       <div
-        className="h-1.5 w-full bg-gradient-to-r from-[#7C3AED] via-[#A78BFA] to-[#C084FC]"
+        className="h-1.5 w-full bg-gradient-to-r from-brand via-brand-light to-brand-secondary"
         aria-hidden
       />
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-white/10">
-            <Calendar className="size-3.5 shrink-0 text-[#7C3AED] dark:text-[#A78BFA]" aria-hidden />
+            <Calendar className="size-3.5 shrink-0 text-brand dark:text-brand-light" aria-hidden />
             <time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time>
           </span>
           {author ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-white/10">
-              <User className="size-3.5 shrink-0 text-[#7C3AED] dark:text-[#A78BFA]" aria-hidden />
+              <User className="size-3.5 shrink-0 text-brand dark:text-brand-light" aria-hidden />
               {author}
             </span>
           ) : null}

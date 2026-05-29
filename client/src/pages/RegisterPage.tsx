@@ -217,13 +217,13 @@ export function RegisterPage() {
 
           {selectedDepartment && groupInfo ? (
             <div
-              className="rounded-xl border border-violet-200/80 bg-violet-50/60 px-4 py-3 text-sm text-violet-950 dark:border-violet-500/20 dark:bg-violet-950/30 dark:text-violet-100"
+              className="rounded-xl border border-brand/20 bg-brand/5 px-4 py-3 text-sm text-brand-dark dark:border-brand/20 dark:bg-brand/15 dark:text-brand-light"
               role="note"
             >
-              <p className="font-medium text-violet-900 dark:text-violet-50">
+              <p className="font-medium text-brand-dark dark:text-white">
                 {getDepartmentLabel(selectedDepartment, lang)}
               </p>
-              <p className="mt-1 text-violet-800/90 dark:text-violet-200/90">{groupInfo}</p>
+              <p className="mt-1 text-brand-dark/90 dark:text-brand-light/90">{groupInfo}</p>
             </div>
           ) : null}
 

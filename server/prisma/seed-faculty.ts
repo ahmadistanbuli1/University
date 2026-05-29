@@ -19,13 +19,13 @@ export function buildFacultyDemoCourseCodes(): string[] {
 export const FACULTY_DEMO_COURSE_CODES = buildFacultyDemoCourseCodes();
 
 export const FACULTY_OFFERING_TERM = {
-  semester: 'Spring 2026',
+  semester: 'SECOND',
   academicYear: '2025-2026',
 } as const;
 
 /** Historical first-semester offering label for completed demo grades. */
 export const FACULTY_S1_COMPLETED_TERM = {
-  semester: 'Fall 2025',
+  semester: 'FIRST',
   academicYear: '2025-2026',
 } as const;
 

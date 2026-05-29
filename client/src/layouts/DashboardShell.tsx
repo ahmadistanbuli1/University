@@ -65,7 +65,7 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
             type="button"
             variant="ghost"
             size="sm"
-            className="hidden rounded-2xl border border-zinc-200/80 bg-white/90 px-2.5 py-2 text-violet-700 shadow-sm hover:bg-violet-50 hover:text-violet-900 dark:border-white/10 dark:bg-white/5 dark:text-violet-200 dark:hover:bg-violet-500/15 dark:hover:text-white md:inline-flex"
+            className="hidden rounded-2xl border border-zinc-200/80 bg-white/90 px-2.5 py-2 text-brand shadow-sm hover:bg-brand/5 hover:text-brand-dark dark:border-white/10 dark:bg-white/5 dark:text-brand-light dark:hover:bg-brand/15 dark:hover:text-white md:inline-flex"
             onClick={toggle}
             aria-expanded={!collapsed}
             aria-label={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
@@ -78,7 +78,7 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
             )}
           </Button>
           <span className="hidden sm:grid">
-            <span className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-500 text-xs font-black text-white shadow-md">
+            <span className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand-light text-xs font-black text-white shadow-md">
               SPU
             </span>
           </span>
@@ -98,7 +98,7 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
           {user ? (
             <div className="flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/90 py-1 pe-1 ps-2.5 dark:border-white/10 dark:bg-white/5">
               <span
-                className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-violet-600 to-violet-400 text-xs font-black text-white shadow-md"
+                className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-brand to-brand-light text-xs font-black text-white shadow-md"
                 aria-hidden
               >
                 {initial}
@@ -146,8 +146,8 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
                   cn(
                     'flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-bold transition-colors duration-200',
                     isActive
-                      ? 'bg-gradient-to-r from-violet-600 to-violet-400 text-white shadow-md'
-                      : 'bg-white/80 text-zinc-600 ring-1 ring-zinc-200/80 hover:bg-violet-50 hover:text-violet-800 dark:bg-white/5 dark:text-zinc-300 dark:ring-white/10 dark:hover:bg-violet-500/12 dark:hover:text-violet-100'
+                      ? 'bg-gradient-to-r from-brand to-brand-light text-white shadow-md'
+                      : 'bg-white/80 text-zinc-600 ring-1 ring-zinc-200/80 hover:bg-brand/5 hover:text-brand-dark dark:bg-white/5 dark:text-zinc-300 dark:ring-white/10 dark:hover:bg-brand/12 dark:hover:text-brand-light'
                   )
                 }
               >
@@ -173,7 +173,7 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
                 collapsed ? 'flex-col justify-center px-0' : 'px-2'
               )}
             >
-              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-500 text-xs font-black text-white shadow-md">
+              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand-light text-xs font-black text-white shadow-md">
                 SPU
               </span>
               <AnimatePresence mode="wait">
@@ -200,7 +200,7 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  'shrink-0 rounded-xl border border-zinc-200/80 bg-white/80 text-violet-700 hover:bg-violet-50 hover:text-violet-900 dark:border-white/10 dark:bg-white/5 dark:text-violet-200 dark:hover:bg-violet-500/15 dark:hover:text-white',
+                  'shrink-0 rounded-xl border border-zinc-200/80 bg-white/80 text-brand hover:bg-brand/5 hover:text-brand-dark dark:border-white/10 dark:bg-white/5 dark:text-brand-light dark:hover:bg-brand/15 dark:hover:text-white',
                   collapsed && 'mt-1'
                 )}
                 onClick={toggle}

@@ -137,6 +137,7 @@ model User {
   gradeSubmissions GradeSubmission[] @relation("GradeSubmissionsByFaculty")
   gradeSubmissionsPublished GradeSubmission[] @relation("GradeSubmissionsPublished")
   booksAdded     Book[]          @relation("BookAddedBy")
+  bookFavorites  BookFavorite[]
   newsArticles   News[]
   auditLogs           AuditLog[]
   notifications       Notification[]
@@ -421,8 +422,22 @@ model Book {
   publisher       String?
   createdAt       DateTime      @default(now()) @map("created_at")
   keywords        BookKeyword[]
+  favorites       BookFavorite[]
 
   @@map("books")
+}
+
+model BookFavorite {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookId    String   @map("book_id") @db.Uuid
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, bookId])
+  @@index([userId, createdAt])
+  @@map("book_favorites")
 }
 
 model BookKeyword {

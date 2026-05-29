@@ -6,9 +6,12 @@
 @theme {
   --font-sans: 'Cairo', ui-sans-serif, system-ui, sans-serif;
 
-  --color-brand: #7c3aed;
-  --color-brand-secondary: #a78bfa;
-  --color-brand-glow: #c084fc;
+  --color-brand: #025692;
+  --color-brand-light: #0388be;
+  --color-brand-dark: #014a7a;
+  --color-brand-secondary: #f4853c;
+  --color-brand-secondary-light: #f9a66b;
+  --color-brand-glow: #f4853c;
   --color-bg-app: #f8fafc;
   --color-surface: #ffffff;
   --color-text-primary: #111827;

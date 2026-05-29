@@ -3,7 +3,7 @@ import { cn } from '../../lib/cn.js';
 
 const variants = {
   primary:
-    'bg-gradient-to-r from-[#7C3AED] to-[#A78BFA] text-white shadow-md shadow-violet-500/20 ring-1 ring-inset ring-white/10 hover:from-[#6D28D9] hover:to-[#9779fa] dark:from-[#7C3AED] dark:to-[#8B5CF6] dark:hover:from-[#8B5CF6] dark:hover:to-[#C084FC]/90',
+    'bg-gradient-to-r from-brand to-brand-light text-white shadow-md shadow-brand/20 ring-1 ring-inset ring-white/10 hover:from-brand-dark hover:to-brand dark:from-brand dark:to-brand-light dark:hover:from-brand-light dark:hover:to-brand-secondary/90',
   secondary:
     'bg-[var(--color-surface)] text-[var(--color-text-primary)] ring-1 ring-inset ring-[var(--color-border)] hover:bg-zinc-50 dark:bg-[var(--color-surface-dark)] dark:text-[var(--color-text-primary-dark)] dark:ring-[var(--color-border-dark)] dark:hover:bg-zinc-800/80',
   ghost:
@@ -32,7 +32,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7C3AED] disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:outline-[#A78BFA]',
+        'inline-flex items-center justify-center gap-2 font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:outline-brand-light',
         variants[variant],
         sizes[size],
         className

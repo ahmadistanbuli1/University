@@ -75,8 +75,8 @@ export function FacultyCourseAssignmentPicker({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-violet-200/70 bg-violet-50/40 p-4 dark:border-violet-500/20 dark:bg-violet-950/20">
-      <p className="m-0 text-sm font-medium text-violet-950 dark:text-violet-100">
+    <div className="flex flex-col gap-4 rounded-2xl border border-brand/20 bg-brand/5/40 p-4 dark:border-brand/20 dark:bg-brand/10">
+      <p className="m-0 text-sm font-medium text-brand-dark dark:text-brand-light">
         {t('admin.facultyCoursesTitle')}
       </p>
 
@@ -176,8 +176,8 @@ export function FacultyCourseAssignmentPicker({
                   type="button"
                   onClick={() => removeCourse(c.id)}
                   className={cn(
-                    'group flex max-w-full items-start gap-2 rounded-xl border border-violet-300/80 bg-white px-3 py-2 text-start shadow-sm',
-                    'transition-colors hover:border-red-300 hover:bg-red-50 dark:border-violet-500/30 dark:bg-zinc-900/80',
+                    'group flex max-w-full items-start gap-2 rounded-xl border border-brand/30 bg-white px-3 py-2 text-start shadow-sm',
+                    'transition-colors hover:border-red-300 hover:bg-red-50 dark:border-brand/30 dark:bg-zinc-900/80',
                     'dark:hover:border-red-500/40 dark:hover:bg-red-950/30'
                   )}
                   title={t('admin.removeCourse')}

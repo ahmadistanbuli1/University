@@ -47,6 +47,8 @@ import { StudentTranscriptsPage } from '../pages/StudentTranscriptsPage.js';
 import { StudentTuitionPage } from '../pages/StudentTuitionPage.js';
 import { StudentPaymentPage } from '../pages/StudentPaymentPage.js';
 import { StudentDiscountsPage } from '../pages/StudentDiscountsPage.js';
+import { StudentFavoriteBooksPage } from '../pages/StudentFavoriteBooksPage.js';
+import { StudentLibraryPage } from '../pages/StudentLibraryPage.js';
 import { AdminDiscountsPage } from '../pages/AdminDiscountsPage.js';
 import { ProtectedRoute } from './ProtectedRoute.js';
 import { RoleRoute } from './RoleRoute.js';
@@ -80,6 +82,8 @@ export function AppRouter() {
           <Route path="tuition" element={<StudentTuitionPage />} />
           <Route path="pay/:installmentId" element={<StudentPaymentPage />} />
           <Route path="discounts" element={<StudentDiscountsPage />} />
+          <Route path="library" element={<StudentLibraryPage />} />
+          <Route path="favorites" element={<StudentFavoriteBooksPage />} />
         </Route>
 
         <Route

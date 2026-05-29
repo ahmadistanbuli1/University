@@ -3,7 +3,7 @@ import { studyYearFromSemester } from '../src/domains/academic/study-plan.js';
 import { syncStudentDepartmentEnrollments } from '../src/lib/student-enrollment.js';
 
 export const CURRENT_STUDENT_TERM = {
-  semester: 'Spring 2026',
+  semester: 'SECOND',
   academicYear: '2025-2026',
 } as const;
 

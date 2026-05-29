@@ -102,7 +102,7 @@ export function StudentDashboardPage() {
       <PageHeader title={t('headings.studentProfile')} description={t('profile.lead')} />
 
       <Card className="overflow-hidden p-0">
-        <div className="bg-gradient-to-br from-violet-600/90 via-violet-600 to-indigo-700 px-6 py-6 text-white">
+        <div className="bg-gradient-to-br from-brand/90 via-brand to-brand-dark px-6 py-6 text-white">
           <div className="flex flex-wrap items-center gap-4">
             <span
               className="grid size-16 shrink-0 place-items-center rounded-2xl bg-white/20 text-2xl font-black ring-2 ring-white/30 backdrop-blur-sm"
@@ -112,7 +112,7 @@ export function StudentDashboardPage() {
             </span>
             <div className="min-w-0 flex-1">
               <h2 className="m-0 text-xl font-bold tracking-tight">{name}</h2>
-              <p className="m-0 mt-1 text-sm text-violet-100">{email}</p>
+              <p className="m-0 mt-1 text-sm text-brand/15">{email}</p>
               <p className="m-0 mt-2 inline-flex rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold">
                 {role}
               </p>
@@ -122,7 +122,7 @@ export function StudentDashboardPage() {
 
         {profile ? (
           <div className="flex flex-col gap-4 p-6">
-            <h3 className="m-0 text-sm font-bold uppercase tracking-wide text-violet-700 dark:text-violet-300">
+            <h3 className="m-0 text-sm font-bold uppercase tracking-wide text-brand dark:text-brand-light">
               {t('profile.academic')}
             </h3>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -137,7 +137,7 @@ export function StudentDashboardPage() {
             </div>
             <Link
               to="/student/study-plan"
-              className="inline-flex w-fit items-center gap-1.5 rounded-xl bg-violet-50 px-4 py-2.5 text-sm font-semibold text-violet-800 transition hover:bg-violet-100 dark:bg-violet-500/15 dark:text-violet-200 dark:hover:bg-violet-500/25"
+              className="inline-flex w-fit items-center gap-1.5 rounded-xl bg-brand/5 px-4 py-2.5 text-sm font-semibold text-brand-dark transition hover:bg-brand/10 dark:bg-brand/15 dark:text-brand-light dark:hover:bg-brand/15"
             >
               {t('student.studyPlan')}
               {isRtl ? (
@@ -168,7 +168,7 @@ export function StudentDashboardPage() {
           </div>
           <Link
             to="/student/tuition"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-600 hover:underline dark:text-violet-300"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline dark:text-brand-light"
           >
             {t('tuition.viewDetails')}
             {isRtl ? (
@@ -194,15 +194,15 @@ export function StudentDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="text-center">
-          <p className="m-0 text-2xl font-bold text-violet-600 dark:text-violet-400">{courseCount}</p>
+          <p className="m-0 text-2xl font-bold text-brand dark:text-brand-light">{courseCount}</p>
           <p className="m-0 mt-1 text-sm text-zinc-500">{t('profile.enrolledCourses')}</p>
         </Card>
         <Card className="text-center">
-          <p className="m-0 text-2xl font-bold text-violet-600 dark:text-violet-400">{gradeCount}</p>
+          <p className="m-0 text-2xl font-bold text-brand dark:text-brand-light">{gradeCount}</p>
           <p className="m-0 mt-1 text-sm text-zinc-500">{t('profile.recordedGrades')}</p>
         </Card>
         <Card className="text-center">
-          <p className="m-0 text-2xl font-bold text-violet-600 dark:text-violet-400">{gpa}</p>
+          <p className="m-0 text-2xl font-bold text-brand dark:text-brand-light">{gpa}</p>
           <p className="m-0 mt-1 text-sm text-zinc-500">{t('labels.gpa')}</p>
         </Card>
       </div>

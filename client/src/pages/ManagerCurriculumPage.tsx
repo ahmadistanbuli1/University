@@ -74,7 +74,7 @@ export function ManagerCurriculumPage() {
       ) : (
         data.grouped.map((yearBlock) => (
           <div key={yearBlock.studyYear} className="flex flex-col gap-4">
-            <h2 className="m-0 text-lg font-semibold text-violet-800 dark:text-violet-200">
+            <h2 className="m-0 text-lg font-semibold text-brand-dark dark:text-brand-light">
               {getStudyYearLabel(yearBlock.studyYear, lang)}
             </h2>
             {yearBlock.terms.map((termBlock) => (

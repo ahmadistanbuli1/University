@@ -46,8 +46,8 @@ import {
 import { chartTickStyle, truncateChartLabel } from '../lib/chart-utils.js';
 import { resolveMediaUrl } from '../lib/mediaUrl.js';
 
-const BRAND = { primary: '#7C3AED', secondary: '#A78BFA', glow: '#C084FC', dark: '#8B5CF6' };
-const PIE_COLORS = [BRAND.primary, BRAND.secondary, '#6366f1', BRAND.glow, '#c4b5fd', '#94a3b8', '#e879f9'];
+const BRAND = { primary: '#025692', secondary: '#F4853C', light: '#0388BE', dark: '#014A7A' };
+const PIE_COLORS = [BRAND.primary, BRAND.secondary, BRAND.light, '#94a3b8', '#f9a66b', '#0278B0', '#64748b'];
 
 type BookRow = {
   id: string;

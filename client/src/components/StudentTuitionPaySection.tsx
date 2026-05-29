@@ -46,7 +46,7 @@ function PayCard({
         'flex flex-col gap-3 border-2 transition',
         dimmed && 'pointer-events-none border-zinc-200/50 opacity-45 dark:border-white/5',
         !dimmed && paid && 'border-emerald-300/60 bg-emerald-50/25 dark:border-emerald-500/30',
-        !dimmed && !paid && active && 'border-violet-300/80 dark:border-violet-500/40'
+        !dimmed && !paid && active && 'border-brand/30 dark:border-brand/40'
       )}
       aria-disabled={dimmed}
     >
@@ -63,7 +63,7 @@ function PayCard({
       {!dimmed && active && !paid && payHref ? (
         <Link
           to={payHref}
-          className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-violet-400 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-600/20 transition hover:from-violet-700 hover:to-violet-500"
+          className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-brand to-brand-light px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/20 transition hover:from-brand-dark hover:to-brand-light"
         >
           {t('tuition.payNow')}
         </Link>

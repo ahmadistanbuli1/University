@@ -47,9 +47,9 @@ export function HomePage() {
 
   return (
     <section className="space-y-14 pb-4">
-      <div className="relative overflow-hidden rounded-[2rem] border border-violet-200/50 bg-gradient-to-br from-white via-violet-50/50 to-indigo-50/40 px-6 py-12 shadow-xl sm:px-10 sm:py-16 dark:border-violet-500/20 dark:from-zinc-900 dark:via-violet-950/40 dark:to-zinc-950">
+      <div className="relative overflow-hidden rounded-[2rem] border border-brand/20 bg-gradient-to-br from-white via-brand/5 to-indigo-50/40 px-6 py-12 shadow-xl sm:px-10 sm:py-16 dark:border-brand/20 dark:from-zinc-900 dark:via-brand/10 dark:to-zinc-950">
         <motion.div
-          className="pointer-events-none absolute -end-24 -top-24 size-80 rounded-full bg-violet-400/20 blur-3xl"
+          className="pointer-events-none absolute -end-24 -top-24 size-80 rounded-full bg-brand-light/20 blur-3xl"
           aria-hidden
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -57,7 +57,7 @@ export function HomePage() {
         />
         <RevealHero className="relative mx-auto max-w-3xl text-center">
           <RevealHeroItem>
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-300/40 bg-white/90 px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-violet-700 dark:border-violet-500/30 dark:bg-white/5 dark:text-violet-300">
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand/25 bg-white/90 px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-brand dark:border-brand/30 dark:bg-white/5 dark:text-brand-light">
               <Sparkles className="size-4" aria-hidden />
               SPU
             </p>
@@ -68,7 +68,7 @@ export function HomePage() {
             </h1>
           </RevealHeroItem>
           <RevealHeroItem>
-            <p className="mt-2 text-sm font-semibold text-violet-700 dark:text-violet-300">
+            <p className="mt-2 text-sm font-semibold text-brand dark:text-brand-light">
               {t('brandFull')}
             </p>
           </RevealHeroItem>
@@ -100,7 +100,7 @@ export function HomePage() {
             <div className="mb-4 flex items-center gap-3">
               <IconTile
                 icon={GraduationCap}
-                className="size-12 rounded-2xl bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-200"
+                className="size-12 rounded-2xl bg-brand/10 text-brand dark:bg-brand/15 dark:text-brand-light"
               />
               <h2 className="m-0 text-2xl font-black text-zinc-900 dark:text-white">
                 {t('homeAboutTitle')}
@@ -128,7 +128,7 @@ export function HomePage() {
                     <div className="flex gap-3">
                       <IconTile
                         icon={Icon}
-                        className="size-10 shrink-0 rounded-xl bg-zinc-100 text-zinc-700 dark:bg-white/10 dark:text-violet-200"
+                        className="size-10 shrink-0 rounded-xl bg-zinc-100 text-zinc-700 dark:bg-white/10 dark:text-brand-light"
                       />
                       <div>
                         <p className="m-0 font-bold text-zinc-900 dark:text-white">{o.title}</p>
@@ -151,7 +151,7 @@ export function HomePage() {
             </h2>
             <Link
               to="/news"
-              className="inline-flex items-center gap-1 text-sm font-bold text-violet-600 no-underline hover:text-violet-800 dark:text-violet-400"
+              className="inline-flex items-center gap-1 text-sm font-bold text-brand no-underline hover:text-brand-dark dark:text-brand-light"
             >
               {t('homeViewAllNews')}
               <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
@@ -185,11 +185,11 @@ export function HomePage() {
               return (
                 <RevealStaggerItem key={tile.to}>
                   <Link to={tile.to} className="group block h-full no-underline">
-                    <Card className="h-full transition group-hover:-translate-y-0.5 group-hover:border-violet-300/50 group-hover:shadow-lg">
+                    <Card className="h-full transition group-hover:-translate-y-0.5 group-hover:border-brand/25 group-hover:shadow-lg">
                       <div className="flex items-start gap-3">
                         <IconTile
                           icon={Icon}
-                          className="size-11 rounded-xl bg-violet-50 text-violet-700 group-hover:bg-violet-100 dark:bg-violet-500/15 dark:text-violet-200"
+                          className="size-11 rounded-xl bg-brand/5 text-brand group-hover:bg-brand/10 dark:bg-brand/15 dark:text-brand-light"
                         />
                         <div>
                           <p className="font-bold text-zinc-900 dark:text-white">{tile.title}</p>

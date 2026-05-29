@@ -68,7 +68,7 @@ export function StudentPaymentPage() {
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-zinc-500">{t('tuition.remaining')}</dt>
-              <dd className="m-0 text-lg font-bold text-violet-600">${remaining.toFixed(2)}</dd>
+              <dd className="m-0 text-lg font-bold text-brand">${remaining.toFixed(2)}</dd>
             </div>
           </dl>
           {remaining > 0 && !receipt ? (
@@ -142,7 +142,7 @@ export function StudentPaymentPage() {
           </motion.div>
         ) : (
           <motion.div key="back" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Link to="/student/tuition" className="text-sm text-violet-600 hover:underline dark:text-violet-400">
+            <Link to="/student/tuition" className="text-sm text-brand hover:underline dark:text-brand-light">
               {t('tuition.backToTuition')}
             </Link>
           </motion.div>

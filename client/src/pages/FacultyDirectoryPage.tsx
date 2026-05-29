@@ -4,6 +4,7 @@ import { Alert } from '../components/ui/Alert.js';
 import { FeedList, FeedListItem } from '../components/ui/FeedList.js';
 import { LoadingState } from '../components/ui/LoadingState.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
+import { formatStudyTermLabel } from '../lib/study-term.js';
 
 type Fc = {
   id: string;
@@ -38,7 +39,8 @@ export function FacultyDirectoryPage() {
             <ul className="mt-1 list-disc ps-5 text-sm text-slate-500">
               {(f.facultyCourses ?? []).map((fc) => (
                 <li key={`${f.id}-${fc.course?.code}-${fc.semester}`}>
-                  {fc.course?.name} ({fc.course?.code}) — {fc.semester} {fc.academicYear}
+                  {fc.course?.name} ({fc.course?.code}) —{' '}
+                  {formatStudyTermLabel(fc.semester ?? '', t, fc.course?.code)} {fc.academicYear}
                 </li>
               ))}
             </ul>

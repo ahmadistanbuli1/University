@@ -32,7 +32,7 @@ export function AppBootSplash() {
       style={{ pointerEvents: visible ? 'auto' : 'none' }}
     >
       <motion.div
-        className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-violet-400 shadow-lg shadow-violet-500/25"
+        className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand-light shadow-lg shadow-brand/25"
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={springSoft}
@@ -47,7 +47,7 @@ export function AppBootSplash() {
       >
         SPU
       </motion.p>
-      <Spinner className="size-6 border-2 border-zinc-200 border-t-violet-600 dark:border-zinc-700 dark:border-t-violet-400" />
+      <Spinner className="size-6 border-2 border-zinc-200 border-t-brand dark:border-zinc-700 dark:border-t-brand-light" />
     </motion.div>
   );
 }

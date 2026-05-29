@@ -80,7 +80,7 @@ export function StudentAppealsPage() {
                 </div>
                 <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{a.reason}</p>
                 {a.adminResponse ? (
-                  <p className="mt-2 rounded-lg bg-violet-50 px-3 py-2 text-sm text-violet-900 dark:bg-violet-950/40 dark:text-violet-100">
+                  <p className="mt-2 rounded-lg bg-brand/5 px-3 py-2 text-sm text-brand-dark dark:bg-brand/15 dark:text-brand-light">
                     <span className="font-medium">{t('appeals.adminDecision')}:</span> {a.adminResponse}
                   </p>
                 ) : a.status === 'PENDING' ? (
