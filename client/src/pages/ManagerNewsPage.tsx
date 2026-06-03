@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -9,6 +10,7 @@ import { Button } from '../components/ui/Button.js';
 import { Card } from '../components/ui/Card.js';
 import { Field } from '../components/ui/Field.js';
 import { Input } from '../components/ui/Input.js';
+import { NewsImageUpload } from '../components/ui/NewsImageUpload.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
 import { Select } from '../components/ui/Select.js';
 import { Textarea } from '../components/ui/Textarea.js';
@@ -17,7 +19,6 @@ import { MANAGER_NEWS_CATEGORIES, newsCategoryLabel, newsScopeLabel } from '../l
 const managerNewsSchema = z.object({
   title: z.string().min(1),
   content: z.string().min(1),
-  imageUrl: z.union([z.literal(''), z.string().url()]),
   scope: z.enum(['COLLEGE', 'UNIVERSITY']),
   category: z.enum(['ANNOUNCEMENT', 'WORKSHOP', 'TRAINING']),
 });
@@ -28,6 +29,7 @@ export function ManagerNewsPage() {
   const { t } = useTranslation('nav');
   const { data: me } = useMeQuery();
   const create = useCreateNewsMutation();
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const collegeName =
     (me as { college?: { name?: string } } | undefined)?.college?.name ?? '';
@@ -42,7 +44,6 @@ export function ManagerNewsPage() {
     defaultValues: {
       title: '',
       content: '',
-      imageUrl: '',
       scope: 'COLLEGE',
       category: 'ANNOUNCEMENT',
     },
@@ -58,35 +59,40 @@ export function ManagerNewsPage() {
 
       <Card className="max-w-lg">
         <form
-          className="flex flex-col gap-3"
+          className="flex flex-col gap-4"
           onSubmit={handleSubmit((vals) => {
             create.mutate(
               {
-                title: vals.title,
-                content: vals.content,
-                imageUrl: vals.imageUrl || undefined,
-                category: vals.category,
-                scope: vals.scope,
-                collegeId: vals.scope === 'COLLEGE' ? undefined : null,
+                body: {
+                  title: vals.title,
+                  content: vals.content,
+                  category: vals.category,
+                  scope: vals.scope,
+                  collegeId: vals.scope === 'COLLEGE' ? undefined : null,
+                },
+                imageFile,
               },
               {
                 onSuccess: () => {
                   toast.success(t('messages.newsCreated'));
                   reset();
+                  setImageFile(null);
                 },
                 onError: () => toast.error(t('messages.loadError')),
               }
             );
           })}
         >
+          <NewsImageUpload
+            file={imageFile}
+            onFileChange={setImageFile}
+            disabled={create.isPending}
+          />
           <Field label={t('labels.title')} error={errors.title?.message}>
             <Input aria-invalid={!!errors.title} {...register('title')} />
           </Field>
           <Field label={t('labels.content')} error={errors.content?.message}>
             <Textarea rows={6} aria-invalid={!!errors.content} {...register('content')} />
-          </Field>
-          <Field label={t('labels.imageUrl')} error={errors.imageUrl?.message}>
-            <Input type="url" aria-invalid={!!errors.imageUrl} {...register('imageUrl')} />
           </Field>
           <Field label={t('news.publishScope')}>
             <Select {...register('scope')}>

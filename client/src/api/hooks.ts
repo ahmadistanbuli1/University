@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { axiosInstance, postFormData } from './http.js';
+import { axiosInstance, patchFormData, postFormData } from './http.js';
 
 export function useMeQuery(enabled = true) {
   return useQuery({
@@ -1164,17 +1164,51 @@ export function useCollegesQuery() {
 export function useCreateNewsMutation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: {
-      title: string;
-      content: string;
-      imageUrl?: string | null;
-      collegeId?: string | null;
-      category?: 'ANNOUNCEMENT' | 'WORKSHOP' | 'TRAINING' | 'TUITION';
-      enablePayNow?: boolean;
-      tuitionSemesterKey?: 'semester-1' | 'semester-2' | null;
-      scope?: 'COLLEGE' | 'UNIVERSITY';
+    mutationFn: async (args: {
+      body: {
+        title: string;
+        content: string;
+        imageUrl?: string | null;
+        collegeId?: string | null;
+        category?: 'ANNOUNCEMENT' | 'WORKSHOP' | 'TRAINING' | 'TUITION';
+        enablePayNow?: boolean;
+        tuitionSemesterKey?: 'semester-1' | 'semester-2' | null;
+        scope?: 'COLLEGE' | 'UNIVERSITY';
+      };
+      imageFile?: File | null;
     }) => {
-      const { data } = await axiosInstance.post<unknown>('/api/news', body);
+      const { buildNewsFormData } = await import('../lib/news-form.js');
+      const fd = buildNewsFormData(args.body, args.imageFile);
+      const { data } = await postFormData<unknown>('/api/news', fd);
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['news'] });
+      void qc.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
+      void qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export function useUpdateNewsMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: {
+      id: string;
+      body: {
+        title: string;
+        content: string;
+        imageUrl?: string | null;
+        collegeId?: string | null;
+        category?: 'ANNOUNCEMENT' | 'WORKSHOP' | 'TRAINING' | 'TUITION';
+        enablePayNow?: boolean;
+        tuitionSemesterKey?: 'semester-1' | 'semester-2' | null;
+      };
+      imageFile?: File | null;
+    }) => {
+      const { buildNewsFormData } = await import('../lib/news-form.js');
+      const fd = buildNewsFormData(args.body, args.imageFile);
+      const { data } = await patchFormData<unknown>(`/api/news/${args.id}`, fd);
       return data;
     },
     onSuccess: () => {

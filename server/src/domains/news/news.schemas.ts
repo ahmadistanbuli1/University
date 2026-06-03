@@ -10,10 +10,16 @@ export const newsPaginationSchema = z.object({
   category: z.enum(NEWS_CONTENT_CATEGORIES).optional(),
 });
 
+const imageUrlSchema = z
+  .union([z.literal(''), z.string().url(), z.string().regex(/^\/uploads\//)])
+  .optional()
+  .nullable()
+  .transform((v) => (v === '' || v == null ? null : v));
+
 const newsBodySchema = z.object({
   title: z.string().min(1),
   content: z.string().min(1),
-  imageUrl: z.string().url().optional().nullable(),
+  imageUrl: imageUrlSchema,
   collegeId: z.string().uuid().optional().nullable(),
   category: z.enum(NEWS_CONTENT_CATEGORIES).optional(),
   enablePayNow: z.boolean().optional(),
@@ -49,3 +55,44 @@ export const createNewsSchema = newsBodySchema.superRefine((data, ctx) => {
 });
 
 export const updateNewsSchema = newsBodySchema.partial();
+
+/** Multipart form fields arrive as strings */
+export function parseNewsFormBody(raw: Record<string, unknown>) {
+  const enablePayNow =
+    raw.enablePayNow === true ||
+    raw.enablePayNow === 'true' ||
+    raw.enablePayNow === '1';
+  return createNewsSchema.parse({
+    title: raw.title,
+    content: raw.content,
+    imageUrl: raw.imageUrl,
+    collegeId: raw.collegeId === '' ? null : raw.collegeId,
+    category: raw.category || undefined,
+    enablePayNow,
+    tuitionSemesterKey:
+      raw.tuitionSemesterKey === '' || raw.tuitionSemesterKey == null
+        ? null
+        : raw.tuitionSemesterKey,
+    scope: raw.scope || undefined,
+  });
+}
+
+export function parseNewsUpdateBody(raw: Record<string, unknown>) {
+  const patch: Record<string, unknown> = {};
+  for (const key of [
+    'title',
+    'content',
+    'imageUrl',
+    'collegeId',
+    'category',
+    'tuitionSemesterKey',
+    'scope',
+  ] as const) {
+    if (raw[key] !== undefined) patch[key] = raw[key] === '' ? null : raw[key];
+  }
+  if (raw.enablePayNow !== undefined) {
+    patch.enablePayNow =
+      raw.enablePayNow === true || raw.enablePayNow === 'true' || raw.enablePayNow === '1';
+  }
+  return updateNewsSchema.parse(patch);
+}

@@ -160,7 +160,7 @@ export function createApp(env: Env) {
   );
   app.use('/api/student-services', createStudentServicesRouter(studentController, authenticate));
   app.use('/api/library', createLibraryRouter(libraryController, authenticate, env));
-  app.use('/api/news', createNewsRouter(newsController, authenticate));
+  app.use('/api/news', createNewsRouter(newsController, authenticate, env));
   app.use('/api/admin', createAdminRouter(adminController, authenticate));
   app.use(
     '/api/admin',

@@ -1,6 +1,10 @@
 import type { Request, Response } from 'express';
 import { paramId } from '../../utils/paramId.js';
-import { createNewsSchema, newsPaginationSchema, updateNewsSchema } from './news.schemas.js';
+import {
+  newsPaginationSchema,
+  parseNewsFormBody,
+  parseNewsUpdateBody,
+} from './news.schemas.js';
 import type { NewsService } from './news.service.js';
 
 export class NewsController {
@@ -21,7 +25,11 @@ export class NewsController {
   };
 
   create = async (req: Request, res: Response) => {
-    const body = createNewsSchema.parse(req.body);
+    const uploaded = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const body = parseNewsFormBody({
+      ...(req.body as Record<string, unknown>),
+      ...(uploaded ? { imageUrl: uploaded } : {}),
+    });
     const created = await this.news.createNews({
       authorId: req.authUser!.id,
       role: req.authUser!.role,
@@ -39,7 +47,11 @@ export class NewsController {
   };
 
   update = async (req: Request, res: Response) => {
-    const body = updateNewsSchema.parse(req.body);
+    const uploaded = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const body = parseNewsUpdateBody({
+      ...(req.body as Record<string, unknown>),
+      ...(uploaded ? { imageUrl: uploaded } : {}),
+    });
     const updated = await this.news.updateNews(paramId(req), {
       id: req.authUser!.id,
       role: req.authUser!.role,

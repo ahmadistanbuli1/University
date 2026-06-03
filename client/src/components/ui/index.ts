@@ -12,6 +12,8 @@ export { LanguageSwitcher } from './LanguageSwitcher.js';
 export { LoadingState } from './LoadingState.js';
 export { Mono } from './Mono.js';
 export { NewsCard, type NewsCardItem } from './NewsCard.js';
+export { NewsCover, NewsCoverPlaceholder } from './NewsCover.js';
+export { NewsImageUpload } from './NewsImageUpload.js';
 export { PageHeader } from './PageHeader.js';
 export { Pagination } from './Pagination.js';
 export { Select } from './Select.js';

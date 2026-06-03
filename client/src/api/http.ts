@@ -54,3 +54,7 @@ export function setAuthToken(token: string | null) {
 export function postFormData<T = unknown>(path: string, body: FormData) {
   return formHttp.post<T>(path, body);
 }
+
+export function patchFormData<T = unknown>(path: string, body: FormData) {
+  return formHttp.patch<T>(path, body);
+}

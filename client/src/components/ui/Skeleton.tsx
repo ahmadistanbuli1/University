@@ -66,12 +66,15 @@ export function LibraryTableSkeleton({ rows = 5 }: { rows?: number }) {
 
 export function NewsCardSkeleton() {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200/80 bg-white p-5 dark:border-white/10 dark:bg-zinc-900/60">
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-6 w-full max-w-md" />
-      <Skeleton className="h-3 w-full" />
-      <Skeleton className="h-3 w-full max-w-[92%]" />
-      <Skeleton className="h-3 w-full max-w-[70%]" />
+    <div className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white dark:border-white/10 dark:bg-zinc-900/60">
+      <Skeleton className="h-48 w-full rounded-none" />
+      <div className="flex flex-col gap-3 p-5">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-6 w-full max-w-md" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-full max-w-[92%]" />
+        <Skeleton className="h-3 w-full max-w-[70%]" />
+      </div>
     </div>
   );
 }

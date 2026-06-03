@@ -3,7 +3,11 @@ import { ZodError } from 'zod';
 import { AppError } from '../utils/AppError.js';
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
-  if (err instanceof Error && err.message === 'Only PDF uploads are allowed') {
+  if (
+    err instanceof Error &&
+    (err.message === 'Only PDF uploads are allowed' ||
+      err.message === 'Only image uploads are allowed')
+  ) {
     res.status(400).json({ error: err.message });
     return;
   }

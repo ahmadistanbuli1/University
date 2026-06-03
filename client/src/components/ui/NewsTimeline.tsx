@@ -1,6 +1,7 @@
 import { Calendar, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card } from './Card.js';
+import { NewsCover } from './NewsCover.js';
 import { newsCategoryLabel } from '../../lib/news-categories.js';
 import { cn } from '../../lib/cn.js';
 import type { NewsCardItem } from './NewsCard.js';
@@ -41,7 +42,14 @@ export function NewsTimeline({ items, className }: NewsTimelineProps) {
             {index + 1}
           </span>
           <Card className="overflow-hidden border-zinc-200/90 p-0 transition hover:border-brand/30 hover:shadow-lg dark:border-white/10">
-            <div className="h-1 w-full bg-gradient-to-r from-brand via-brand-light to-brand-secondary" aria-hidden />
+            {item.imageUrl ? (
+              <NewsCover imageUrl={item.imageUrl} alt={item.title} heightClass="h-52 sm:h-56" />
+            ) : (
+              <div
+                className="h-1 w-full bg-gradient-to-r from-brand via-brand-light to-brand-secondary"
+                aria-hidden
+              />
+            )}
             <article className="p-5 sm:p-6">
               <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/5 px-2.5 py-1 text-brand-dark dark:bg-brand/15 dark:text-brand-light">
@@ -49,7 +57,7 @@ export function NewsTimeline({ items, className }: NewsTimelineProps) {
                   <time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time>
                 </span>
                 {item.category ? (
-                  <span className="inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-200">
+                  <span className="inline-flex rounded-full bg-brand/10 px-2.5 py-1 text-brand-dark dark:bg-brand/15 dark:text-brand-light">
                     {newsCategoryLabel(item.category, t)}
                   </span>
                 ) : null}
