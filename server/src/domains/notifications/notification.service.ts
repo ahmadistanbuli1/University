@@ -105,6 +105,46 @@ export class NotificationDispatchService {
     });
   }
 
+  async notifyClearanceRequested(studentName: string) {
+    const payload = {
+      kind: 'CLEARANCE_REQUEST' as NotificationKind,
+      title: 'Clearance certificate request',
+      body: `${studentName} requested a clearance certificate (براءة ذمة)`,
+      meta: { studentName },
+    };
+    const affairs = await this.repo.findUserIdsByRoles(['AFFAIRS']);
+    const admins = await this.repo.findUserIdsByRoles(['ADMIN']);
+    await this.push([
+      ...this.itemsForUserIds(
+        affairs.map((u) => u.id),
+        { ...payload, linkPath: '/affairs/clearances' }
+      ),
+      ...this.itemsForUserIds(
+        admins.map((u) => u.id),
+        { ...payload, linkPath: '/affairs/clearances' }
+      ),
+    ]);
+  }
+
+  async notifyClearanceReady(userId: string) {
+    await this.notifyUser(userId, {
+      kind: 'CLEARANCE_READY',
+      title: 'Clearance certificate ready',
+      body: 'Your clearance certificate (براءة ذمة) is ready. You can download the PDF.',
+      linkPath: '/student/clearances',
+    });
+  }
+
+  async notifyClearanceRejected(userId: string, reason: string, feeAmount: number) {
+    await this.notifyUser(userId, {
+      kind: 'CLEARANCE_REJECTED',
+      title: 'Clearance request rejected',
+      body: `${reason} Your payment of $${feeAmount.toFixed(2)} has been refunded (demo).`,
+      linkPath: '/student/clearances',
+      meta: { reason, feeRefunded: true, feeAmount },
+    });
+  }
+
   async notifyTranscriptAffairsApproved(userId: string) {
     await this.notifyUser(userId, {
       kind: 'TRANSCRIPT_REQUEST',

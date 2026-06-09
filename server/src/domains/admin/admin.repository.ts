@@ -1,4 +1,10 @@
 import type { PrismaClient } from '@prisma/client';
+import {
+  ensureCollegeTuitionConfigs,
+  ensureUniversityFinancialSettings,
+  semesterFromAnnual,
+} from '../../lib/financial-settings.js';
+import type { UpdateFinancialSettingsInput } from './admin.schemas.js';
 
 export class AdminRepository {
   constructor(private readonly db: PrismaClient) {}
@@ -51,5 +57,62 @@ export class AdminRepository {
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     return dayKeys.map((date) => ({ date, count: counts.get(date) ?? 0 }));
+  }
+
+  async getFinancialSettings() {
+    await ensureUniversityFinancialSettings(this.db);
+    await ensureCollegeTuitionConfigs(this.db);
+
+    const [settings, colleges] = await Promise.all([
+      this.db.universityFinancialSettings.findUniqueOrThrow({ where: { id: 'default' } }),
+      this.db.college.findMany({
+        orderBy: { name: 'asc' },
+        include: { tuitionConfig: true },
+      }),
+    ]);
+
+    return {
+      transcriptFee: settings.transcriptFee,
+      clearanceFee: settings.clearanceFee,
+      updatedAt: settings.updatedAt.toISOString(),
+      colleges: colleges.map((college) => ({
+        id: college.id,
+        name: college.name,
+        annualAmount: college.tuitionConfig
+          ? Number(college.tuitionConfig.totalAmount)
+          : 1000,
+        semesterAmount: college.tuitionConfig
+          ? Number(college.tuitionConfig.semesterAmount)
+          : 500,
+      })),
+    };
+  }
+
+  async updateFinancialSettings(input: UpdateFinancialSettingsInput) {
+    await this.db.universityFinancialSettings.update({
+      where: { id: 'default' },
+      data: {
+        transcriptFee: input.transcriptFee,
+        clearanceFee: input.clearanceFee,
+      },
+    });
+
+    for (const row of input.collegeTuitions) {
+      const semesterAmount = semesterFromAnnual(row.annualAmount);
+      await this.db.collegeTuitionConfig.upsert({
+        where: { collegeId: row.collegeId },
+        create: {
+          collegeId: row.collegeId,
+          totalAmount: row.annualAmount,
+          semesterAmount,
+        },
+        update: {
+          totalAmount: row.annualAmount,
+          semesterAmount,
+        },
+      });
+    }
+
+    return this.getFinancialSettings();
   }
 }

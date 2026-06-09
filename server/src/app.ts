@@ -158,7 +158,7 @@ export function createApp(env: Env) {
     '/api/grade-submissions',
     createGradeSubmissionsRouter(gradeSubmissionsController, authenticate)
   );
-  app.use('/api/student-services', createStudentServicesRouter(studentController, authenticate));
+  app.use('/api/student-services', createStudentServicesRouter(studentController, authenticate, resolve(env.UPLOAD_DIR)));
   app.use('/api/library', createLibraryRouter(libraryController, authenticate, env));
   app.use('/api/news', createNewsRouter(newsController, authenticate, env));
   app.use('/api/admin', createAdminRouter(adminController, authenticate));

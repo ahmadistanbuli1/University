@@ -255,6 +255,159 @@ export async function fetchTranscriptPdfBlob(requestId: string): Promise<Blob> {
   return data;
 }
 
+export type AffairsDashboardStats = {
+  totalStudents: number;
+  recentlyRegistered: number;
+  pendingClearances: number;
+  pendingTranscripts: number;
+  studentsByCollege: Array<{ collegeId: string; collegeName: string; count: number }>;
+  studentsByCollegeYear: Array<{
+    collegeId: string;
+    collegeName: string;
+    studyYear: number;
+    count: number;
+  }>;
+};
+
+export function useAffairsDashboardQuery() {
+  return useQuery({
+    queryKey: ['affairs', 'dashboard'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<AffairsDashboardStats>(
+        '/api/student-services/affairs/dashboard'
+      );
+      return data;
+    },
+  });
+}
+
+export function useCreateAffairsStudentMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: {
+      name: string;
+      email: string;
+      password: string;
+      departmentId: string;
+      academicNumber: string;
+      currentSemester: number;
+      academicYear: string;
+    }) => {
+      const { data } = await axiosInstance.post<AffairsStudentRow>(
+        '/api/student-services/students',
+        body
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['affairs'] });
+      void qc.invalidateQueries({ queryKey: ['manager', 'students'] });
+    },
+  });
+}
+
+export function useDeleteAffairsStudentMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await axiosInstance.delete<AffairsStudentRow>(
+        `/api/student-services/students/${id}`
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['affairs'] });
+      void qc.invalidateQueries({ queryKey: ['manager', 'students'] });
+    },
+  });
+}
+
+export async function fetchStudentProfilePdfBlob(studentId: string): Promise<Blob> {
+  const { data } = await axiosInstance.get<Blob>(
+    `/api/student-services/students/${studentId}/profile-pdf`,
+    { responseType: 'blob' }
+  );
+  return data;
+}
+
+export function useMyClearancesQuery() {
+  return useQuery({
+    queryKey: ['clearances', 'me'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<unknown[]>('/api/student-services/clearances/me');
+      return data;
+    },
+  });
+}
+
+export function useRequestClearanceMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { confirmPayment: true }) => {
+      const { data } = await axiosInstance.post<unknown>(
+        '/api/student-services/clearances',
+        body
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['clearances'] });
+      void qc.invalidateQueries({ queryKey: ['affairs', 'dashboard'] });
+    },
+  });
+}
+
+export function useAllClearancesQuery() {
+  return useQuery({
+    queryKey: ['clearances', 'all'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<unknown[]>('/api/student-services/clearances');
+      return data;
+    },
+  });
+}
+
+export function useProcessClearanceMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { id: string; rejectionReason: string }) => {
+      const { data } = await axiosInstance.patch<unknown>(
+        `/api/student-services/clearances/${args.id}`,
+        { action: 'reject', rejectionReason: args.rejectionReason }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['clearances'] });
+      void qc.invalidateQueries({ queryKey: ['affairs', 'dashboard'] });
+    },
+  });
+}
+
+export function useDeliverClearanceMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await axiosInstance.post<unknown>(
+        `/api/student-services/clearances/${id}/deliver`
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['clearances'] });
+      void qc.invalidateQueries({ queryKey: ['affairs', 'dashboard'] });
+    },
+  });
+}
+
+export async function fetchClearancePdfBlob(requestId: string): Promise<Blob> {
+  const { data } = await axiosInstance.get<Blob>(
+    `/api/student-services/clearances/${requestId}/file`,
+    { responseType: 'blob' }
+  );
+  return data;
+}
+
 export function usePostResultMutation() {
   const qc = useQueryClient();
   return useMutation({
@@ -896,6 +1049,65 @@ export function useAdminDashboardQuery() {
     queryKey: ['admin', 'dashboard'],
     queryFn: async () => {
       const { data } = await axiosInstance.get<AdminDashboardData>('/api/admin/dashboard');
+      return data;
+    },
+  });
+}
+
+export type AdminFinancialSettings = {
+  transcriptFee: number;
+  clearanceFee: number;
+  updatedAt: string;
+  colleges: Array<{
+    id: string;
+    name: string;
+    annualAmount: number;
+    semesterAmount: number;
+  }>;
+};
+
+export function useAdminFinancialSettingsQuery() {
+  return useQuery({
+    queryKey: ['admin', 'financial-settings'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<AdminFinancialSettings>('/api/admin/financial-settings');
+      return data;
+    },
+  });
+}
+
+export function useUpdateAdminFinancialSettingsMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: {
+      transcriptFee: number;
+      clearanceFee: number;
+      collegeTuitions: Array<{ collegeId: string; annualAmount: number }>;
+    }) => {
+      const { data } = await axiosInstance.patch<AdminFinancialSettings>(
+        '/api/admin/financial-settings',
+        body
+      );
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin', 'financial-settings'] });
+      void qc.invalidateQueries({ queryKey: ['tuition'] });
+      void qc.invalidateQueries({ queryKey: ['service-fees'] });
+    },
+  });
+}
+
+export type ServiceFees = {
+  transcriptFee: number;
+  clearanceFee: number;
+};
+
+export function useServiceFeesQuery() {
+  return useQuery({
+    queryKey: ['service-fees'],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<ServiceFees>('/api/student-services/service-fees');
       return data;
     },
   });

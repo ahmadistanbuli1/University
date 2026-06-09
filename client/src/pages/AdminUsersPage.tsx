@@ -351,14 +351,13 @@ export function AdminUsersPage() {
               </Select>
             </Field>
             <Field label={t('labels.status')}>
-              <select
-                className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-zinc-950/50"
+              <Select
                 value={editForm.watch('active') ? 'true' : 'false'}
                 onChange={(e) => editForm.setValue('active', e.target.value === 'true')}
               >
                 <option value="true">{t('labels.active')}</option>
                 <option value="false">{t('labels.inactive')}</option>
-              </select>
+              </Select>
             </Field>
             {editRole === 'FACULTY' ? (
               <FacultyCourseAssignmentPicker

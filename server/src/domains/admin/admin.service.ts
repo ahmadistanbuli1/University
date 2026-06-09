@@ -1,6 +1,6 @@
 import type { AuditService } from '../audit/audit.service.js';
 import type { AdminRepository } from './admin.repository.js';
-
+import type { UpdateFinancialSettingsInput } from './admin.schemas.js';
 export class AdminService {
   constructor(
     private readonly repo: AdminRepository,
@@ -39,5 +39,25 @@ export class AdminService {
 
   listAuditLogs(page: number, pageSize: number) {
     return this.audit.listAuditLogs({ page, pageSize });
+  }
+
+  getFinancialSettings() {
+    return this.repo.getFinancialSettings();
+  }
+
+  async updateFinancialSettings(adminId: string, input: UpdateFinancialSettingsInput) {
+    const updated = await this.repo.updateFinancialSettings(input);
+    await this.audit.log({
+      userId: adminId,
+      action: 'UPDATE_FINANCIAL_SETTINGS',
+      entity: 'university_financial_settings',
+      entityId: 'default',
+      details: {
+        transcriptFee: input.transcriptFee,
+        clearanceFee: input.clearanceFee,
+        collegeTuitionRows: input.collegeTuitions.length,
+      },
+    });
+    return updated;
   }
 }

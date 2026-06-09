@@ -9,5 +9,15 @@ export function createAdminRouter(controller: AdminController, authenticate: Req
   r.use(authenticate);
   r.get('/dashboard', requireRoles('ADMIN'), asyncHandler(controller.dashboard.bind(controller)));
   r.get('/audit-logs', requireRoles('ADMIN'), asyncHandler(controller.auditLogs.bind(controller)));
+  r.get(
+    '/financial-settings',
+    requireRoles('ADMIN'),
+    asyncHandler(controller.financialSettings.bind(controller))
+  );
+  r.patch(
+    '/financial-settings',
+    requireRoles('ADMIN'),
+    asyncHandler(controller.updateFinancialSettings.bind(controller))
+  );
   return r;
 }

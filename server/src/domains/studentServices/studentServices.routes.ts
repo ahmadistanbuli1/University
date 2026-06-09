@@ -6,9 +6,11 @@ import type { StudentServicesController } from './studentServices.controller.js'
 
 export function createStudentServicesRouter(
   controller: StudentServicesController,
-  authenticate: RequestHandler
+  authenticate: RequestHandler,
+  _uploadRoot: string
 ) {
   const r = Router();
+
   r.use(authenticate);
   r.post(
     '/appeals',
@@ -61,15 +63,70 @@ export function createStudentServicesRouter(
     requireRoles('STUDENT', 'FACULTY', 'AFFAIRS', 'ADMIN', 'EXAM_OFFICER'),
     asyncHandler(controller.downloadTranscript.bind(controller))
   );
+  r.post(
+    '/clearances',
+    requireRoles('STUDENT', 'FACULTY'),
+    asyncHandler(controller.requestClearance.bind(controller))
+  );
+  r.get(
+    '/clearances/me',
+    requireRoles('STUDENT', 'FACULTY'),
+    asyncHandler(controller.myClearances.bind(controller))
+  );
+  r.get(
+    '/clearances',
+    requireRoles('AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.listClearances.bind(controller))
+  );
+  r.patch(
+    '/clearances/:id',
+    requireRoles('AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.patchClearance.bind(controller))
+  );
+  r.post(
+    '/clearances/:id/deliver',
+    requireRoles('AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.deliverClearance.bind(controller))
+  );
+  r.get(
+    '/clearances/:id/file',
+    requireRoles('STUDENT', 'FACULTY', 'AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.downloadClearance.bind(controller))
+  );
+  r.get(
+    '/service-fees',
+    requireRoles('STUDENT', 'FACULTY', 'ADMIN', 'AFFAIRS'),
+    asyncHandler(controller.serviceFees.bind(controller))
+  );
+  r.get(
+    '/affairs/dashboard',
+    requireRoles('AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.affairsDashboard.bind(controller))
+  );
   r.get(
     '/students',
     requireRoles('AFFAIRS', 'ADMIN', 'MANAGER', 'EXAM_OFFICER'),
     asyncHandler(controller.listStudents.bind(controller))
   );
+  r.post(
+    '/students',
+    requireRoles('AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.createStudent.bind(controller))
+  );
   r.patch(
     '/students/:id',
     requireRoles('AFFAIRS', 'ADMIN', 'MANAGER'),
     asyncHandler(controller.patchStudent.bind(controller))
+  );
+  r.delete(
+    '/students/:id',
+    requireRoles('AFFAIRS', 'ADMIN'),
+    asyncHandler(controller.deleteStudent.bind(controller))
+  );
+  r.get(
+    '/students/:id/profile-pdf',
+    requireRoles('AFFAIRS', 'ADMIN', 'MANAGER'),
+    asyncHandler(controller.downloadStudentProfile.bind(controller))
   );
   return r;
 }

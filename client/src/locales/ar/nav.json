@@ -16,6 +16,7 @@
     "grades": "الدرجات والمعدل",
     "appeals": "تظلمات الدرجات",
     "transcripts": "الكشوفات",
+    "clearances": "براءة الذمة",
     "tuition": "الأقساط والرسوم",
     "discounts": "طلبات الخصم",
     "studyPlan": "الخطة الدراسية",
@@ -45,6 +46,18 @@
       },
       "TRANSCRIPT_REJECTED": {
         "title": "رفض طلب الكشف",
+        "body": "{{reason}}"
+      },
+      "CLEARANCE_REQUEST": {
+        "title": "طلب براءة ذمة",
+        "body": "{{studentName}} قدّم طلب براءة ذمة"
+      },
+      "CLEARANCE_READY": {
+        "title": "براءة الذمة جاهزة",
+        "body": "يمكنك الآن تحميل شهادة براءة الذمة"
+      },
+      "CLEARANCE_REJECTED": {
+        "title": "رفض طلب براءة الذمة",
         "body": "{{reason}}"
       },
       "APPEAL_SUBMITTED": {
@@ -114,6 +127,39 @@
       "DELIVERED": "جاهز للتحميل",
       "REJECTED": "مرفوض",
       "PROCESSED": "قيد المعالجة"
+    }
+  },
+  "clearances": {
+    "studentLead": "قدّم طلب براءة ذمة برسوم 15$ (محاكاة). بعد الموافقة يُولَّد ملف الشهادة بالعربية تلقائياً.",
+    "affairsLead": "راجع طلبات براءة الذمة المدفوعة: وافق لتوليد الشهادة بالعربية وإرسالها، أو ارفض مع سبب وإشعار بإرجاع الرسوم.",
+    "request": "طلب براءة ذمة",
+    "approveAndSend": "موافقة وإرسال",
+    "approveTitle": "الموافقة على براءة الذمة",
+    "approveDescription": "سيتم توليد شهادة براءة ذمة بالإنجليزية للطالب وإرسالها فوراً.",
+    "approveHint": "يتضمن الملف اسم الجامعة وبيانات الطالب الرسمية.",
+    "confirmApprove": "تأكيد وإرسال للطالب",
+    "generating": "جارٍ التوليد…",
+    "payTitle": "دفع رسوم براءة الذمة",
+    "payDescription": "رسوم إدارية لشهادة براءة الذمة. الدفع محاكى لأغراض العرض.",
+    "feeItem": "البند",
+    "certificateTitle": "شهادة براءة ذمة",
+    "confirmPay": "تأكيد الدفع وإرسال الطلب",
+    "requestSubmitted": "تم إرسال طلب براءة الذمة.",
+    "activeRequestHint": "لديك طلب براءة ذمة قيد المعالجة.",
+    "empty": "لا توجد طلبات براءة ذمة بعد.",
+    "refunded": "تم إرجاع {{amount}}$ (عرض تجريبي)",
+    "rejectTitle": "رفض طلب براءة الذمة",
+    "rejectPlaceholder": "مثال: أقساط مستحقة — يرجى تسديد الرسوم أولاً.",
+    "rejected": "تم رفض الطلب وتسجيل إرجاع الرسوم.",
+    "uploadTitle": "رفع شهادة براءة الذمة",
+    "uploadDescription": "ارفع ملف PDF الموقّع لـ {{name}}. سيتم إشعار الطالب فوراً.",
+    "uploadAndDeliver": "رفع وإرسال",
+    "fileRequired": "يرجى اختيار ملف PDF.",
+    "delivered": "تم تسليم براءة الذمة للطالب.",
+    "status": {
+      "PENDING": "بانتظار المراجعة",
+      "DELIVERED": "تم التسليم",
+      "REJECTED": "مرفوض"
     }
   },
   "examOfficer": {
@@ -263,6 +309,7 @@
     "appeals": "التظلمات",
     "logs": "سجل التدقيق",
     "discounts": "طلبات الخصم",
+    "financialSettings": "الإعدادات المالية",
     "transcripts": "طلبات الكشوفات",
     "curriculum": "الخطة الدراسية",
     "managerRequests": "طلبات المديرين"
@@ -271,7 +318,25 @@
     "dashboard": "لوحة التحكم",
     "students": "سجلات الطلاب",
     "transcripts": "طلبات الكشوفات",
-    "activity": "سجل النشاط"
+    "clearances": "براءة الذمة",
+    "activity": "سجل النشاط",
+    "dashboardLead": "إحصائيات الطلاب وقوائم الانتظار.",
+    "statsTotalStudents": "إجمالي الطلاب",
+    "statsRecentStudents": "تسجيلات جديدة (30 يوماً)",
+    "statsRecentHint": "طلاب انضموا مؤخراً",
+    "statsPendingClearances": "براءة ذمة معلّقة",
+    "statsPendingTranscripts": "كشوف معلّقة",
+    "chartByCollege": "الطلاب حسب الكلية",
+    "chartByCollegeYear": "الطلاب حسب السنة والكلية",
+    "studyYearShort": "السنة {{year}}",
+    "noData": "لا توجد بيانات بعد.",
+    "addStudent": "إضافة طالب",
+    "createStudentHint": "يُربط الطالب تلقائياً بالخطة الدراسية وتسجيل المقررات في قسمه.",
+    "studentCreated": "تم إنشاء حساب الطالب.",
+    "deactivateStudent": "إلغاء التفعيل",
+    "deactivateConfirm": "إلغاء تفعيل {{name}} ({{number}})؟ لن يتمكن من تسجيل الدخول.",
+    "studentDeactivated": "تم إلغاء تفعيل حساب الطالب.",
+    "downloadProfilePdf": "PDF الملف الشخصي"
   },
   "activityLog": {
     "lead": "سجل بما تم إرساله أو استلامه أو تخزينه من حسابك.",
@@ -342,6 +407,7 @@
     "studentLibrary": "مكتبة الجامعة",
     "studentFavoriteBooks": "كتبي المحفوظة",
     "adminDiscounts": "مراجعة طلبات الخصم",
+    "adminFinancialSettings": "الإعدادات المالية",
     "facultyDashboard": "نظرة عامة للتدريس",
     "facultyProfile": "الملف الشخصي",
     "facultyCourses": "المواد",
@@ -356,6 +422,8 @@
     "affairsDashboard": "نظرة عامة لشؤون الطلاب",
     "affairsTranscripts": "معالجة الكشوفات",
     "affairsStudents": "سجلات الطلاب",
+    "affairsClearances": "براءة الذمة",
+    "studentClearances": "براءة الذمة",
     "adminCurriculum": "إدارة الخطة الدراسية",
     "adminManagerRequests": "طلبات مديري الكليات",
     "managerDashboard": "نظرة عامة للمدير",
@@ -558,6 +626,20 @@
       "TRAINING": "دورة تدريبية",
       "TUITION": "أقساط"
     }
+  },
+  "financial": {
+    "lead": "تحديد القسط السنوي لكل كلية ورسوم الخدمات الرسمية.",
+    "serviceFees": "رسوم الخدمات",
+    "collegeTuition": "أقساط الكليات",
+    "college": "الكلية",
+    "transcriptFee": "رسوم كشف العلامات (دولار)",
+    "clearanceFee": "رسوم براءة الذمة (دولار)",
+    "annualTuition": "القسط السنوي (دولار)",
+    "semesterTuition": "قسط الفصل (دولار)",
+    "collegeTuitionHint": "مبلغ سنوي واحد لكل كلية — يُقسّم بالتساوي على فصلين دراسيين.",
+    "saveChanges": "حفظ التغييرات",
+    "saved": "تم تحديث الإعدادات المالية.",
+    "invalidAmounts": "أدخل مبالغاً صحيحة غير سالبة."
   },
   "tuition": {
     "lead": "القسط السنوي 1000 دولار (500 دولار لكل فصل). الدفع محاكى لأغراض العرض.",

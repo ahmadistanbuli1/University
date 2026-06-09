@@ -1,32 +1,16 @@
 import type { PrismaClient } from '@prisma/client';
+import { getCollegeTuition } from './financial-settings.js';
 
-const DEFAULT_TOTAL = 1000;
-const DEFAULT_SEMESTER = 500;
+export { ensureCollegeTuitionConfigs } from './financial-settings.js';
 
-export async function ensureCollegeTuitionConfigs(prisma: PrismaClient) {
-  const colleges = await prisma.college.findMany();
-  for (const college of colleges) {
-    await prisma.collegeTuitionConfig.upsert({
-      where: { collegeId: college.id },
-      create: {
-        collegeId: college.id,
-        totalAmount: DEFAULT_TOTAL,
-        semesterAmount: DEFAULT_SEMESTER,
-      },
-      update: {},
-    });
-  }
-}
-
-/** Create two semester installments for a student (500 each). */
+/** Create two semester installments for a student based on college tuition. */
 export async function ensureStudentTuitionInstallments(
   prisma: PrismaClient,
   studentId: string,
   collegeId: string,
   academicYear = '2025-2026'
 ) {
-  const config = await prisma.collegeTuitionConfig.findUnique({ where: { collegeId } });
-  const semesterAmount = config ? Number(config.semesterAmount) : DEFAULT_SEMESTER;
+  const { semesterAmount } = await getCollegeTuition(prisma, collegeId);
 
   const semesters = [
     { key: 'semester-1', label: 'First semester tuition' },

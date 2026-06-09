@@ -41,6 +41,12 @@ enum TranscriptRequestStatus {
   REJECTED
 }
 
+enum ClearanceRequestStatus {
+  PENDING
+  DELIVERED
+  REJECTED
+}
+
 enum NewsCategory {
   ANNOUNCEMENT
   WORKSHOP
@@ -87,6 +93,9 @@ enum NotificationKind {
   TRANSCRIPT_REQUEST
   TRANSCRIPT_READY
   TRANSCRIPT_REJECTED
+  CLEARANCE_REQUEST
+  CLEARANCE_READY
+  CLEARANCE_REJECTED
   APPEAL_SUBMITTED
   APPEAL_RESOLVED
   DISCOUNT_REQUEST
@@ -143,6 +152,7 @@ model User {
   notifications       Notification[]
   managerRequests     ManagerRequest[]     @relation("ManagerRequests")
   resolvedMgrRequests ManagerRequest[]     @relation("ManagerRequestResolver")
+  clearanceProcessed  ClearanceCertificateRequest[] @relation("ClearanceProcessedBy")
 
   @@map("users")
 }
@@ -192,7 +202,7 @@ model College {
   departments Department[]
   users       User[]
   news        News[]
-  tuitionConfig CollegeTuitionConfig?
+  tuitionConfig       CollegeTuitionConfig?
 
   @@map("colleges")
 }
@@ -258,6 +268,7 @@ model Student {
   examResults         ExamResult[]
   gradeAppeals        GradeAppeal[]
   transcriptRequests  TranscriptRequest[]
+  clearanceRequests   ClearanceCertificateRequest[]
   tuitionInstallments StudentTuitionInstallment[]
   tuitionPayments     TuitionPayment[]
   discountRequests    DiscountRequest[]
@@ -402,6 +413,26 @@ model TranscriptRequest {
   @@map("transcript_requests")
 }
 
+model ClearanceCertificateRequest {
+  id               String                   @id @default(uuid()) @db.Uuid
+  studentId        String                   @map("student_id") @db.Uuid
+  student          Student                  @relation(fields: [studentId], references: [id])
+  status           ClearanceRequestStatus
+  filePath         String?                  @map("file_path")
+  rejectionReason  String?                  @map("rejection_reason") @db.Text
+  feeAmount        Float                    @default(15) @map("fee_amount")
+  feePaid          Boolean                  @default(false) @map("fee_paid")
+  feeRefunded      Boolean                  @default(false) @map("fee_refunded")
+  paymentReference String?                  @map("payment_reference")
+  paidAt           DateTime?                @map("paid_at")
+  requestedAt      DateTime                 @default(now()) @map("requested_at")
+  processedAt      DateTime?                @map("processed_at")
+  processedById    String?                  @map("processed_by") @db.Uuid
+  processedBy      User?                    @relation("ClearanceProcessedBy", fields: [processedById], references: [id])
+
+  @@map("clearance_certificate_requests")
+}
+
 // -----------------------------------------------------------------------------
 // Library
 // -----------------------------------------------------------------------------
@@ -483,6 +514,15 @@ model CollegeTuitionConfig {
   semesterAmount Decimal @map("semester_amount") @db.Decimal(10, 2)
 
   @@map("college_tuition_configs")
+}
+
+model UniversityFinancialSettings {
+  id            String   @id @default("default")
+  transcriptFee Float    @default(5) @map("transcript_fee")
+  clearanceFee  Float    @default(15) @map("clearance_fee")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("university_financial_settings")
 }
 
 model StudentTuitionInstallment {

@@ -16,6 +16,7 @@
     "grades": "Grades & GPA",
     "appeals": "Grade appeals",
     "transcripts": "Transcripts",
+    "clearances": "Clearance certificate",
     "tuition": "Tuition & fees",
     "discounts": "Discount requests",
     "studyPlan": "Study plan",
@@ -45,6 +46,18 @@
       },
       "TRANSCRIPT_REJECTED": {
         "title": "Transcript rejected",
+        "body": "{{reason}}"
+      },
+      "CLEARANCE_REQUEST": {
+        "title": "Clearance certificate request",
+        "body": "{{studentName}} requested a clearance certificate"
+      },
+      "CLEARANCE_READY": {
+        "title": "Clearance certificate ready",
+        "body": "Your clearance certificate is ready to download"
+      },
+      "CLEARANCE_REJECTED": {
+        "title": "Clearance request rejected",
         "body": "{{reason}}"
       },
       "APPEAL_SUBMITTED": {
@@ -114,6 +127,39 @@
       "DELIVERED": "Ready to download",
       "REJECTED": "Rejected",
       "PROCESSED": "Processing"
+    }
+  },
+  "clearances": {
+    "studentLead": "Request a clearance certificate (براءة ذمة) for $15 (simulated). After approval, student affairs generates your Arabic certificate automatically.",
+    "affairsLead": "Review paid clearance requests: approve to generate and deliver the Arabic certificate, or reject with a reason and automatic refund notice.",
+    "request": "Request clearance",
+    "approveAndSend": "Approve & send",
+    "approveTitle": "Approve clearance certificate",
+    "approveDescription": "An English clearance certificate will be generated for this student and sent immediately.",
+    "approveHint": "The PDF includes the university name and the student's official details.",
+    "confirmApprove": "Confirm & send to student",
+    "generating": "Generating…",
+    "payTitle": "Clearance certificate fee",
+    "payDescription": "Administrative clearance certificate fee. Payment is simulated for demonstration.",
+    "feeItem": "Item",
+    "certificateTitle": "Clearance certificate (براءة ذمة)",
+    "confirmPay": "Confirm payment & submit",
+    "requestSubmitted": "Clearance request submitted.",
+    "activeRequestHint": "You already have a pending clearance request.",
+    "empty": "No clearance requests yet.",
+    "refunded": "Refunded ${{amount}} (demo)",
+    "rejectTitle": "Reject clearance request",
+    "rejectPlaceholder": "e.g. Outstanding tuition balance — please settle fees first.",
+    "rejected": "Request rejected and fee refund recorded.",
+    "uploadTitle": "Upload clearance certificate",
+    "uploadDescription": "Upload the signed PDF for {{name}}. The student will be notified immediately.",
+    "uploadAndDeliver": "Upload & deliver",
+    "fileRequired": "Please choose a PDF file.",
+    "delivered": "Clearance certificate delivered to the student.",
+    "status": {
+      "PENDING": "Pending review",
+      "DELIVERED": "Delivered",
+      "REJECTED": "Rejected"
     }
   },
   "examOfficer": {
@@ -263,6 +309,7 @@
     "appeals": "Appeals",
     "logs": "Audit log",
     "discounts": "Discount requests",
+    "financialSettings": "Financial settings",
     "transcripts": "Transcript requests",
     "curriculum": "Study plan",
     "managerRequests": "Manager requests"
@@ -271,7 +318,25 @@
     "dashboard": "Dashboard",
     "students": "Student records",
     "transcripts": "Transcript requests",
-    "activity": "Activity log"
+    "clearances": "Clearance certificates",
+    "activity": "Activity log",
+    "dashboardLead": "University student statistics and pending queues.",
+    "statsTotalStudents": "Total students",
+    "statsRecentStudents": "New registrations (30 days)",
+    "statsRecentHint": "Students who joined recently",
+    "statsPendingClearances": "Pending clearances",
+    "statsPendingTranscripts": "Pending transcripts",
+    "chartByCollege": "Students by college",
+    "chartByCollegeYear": "Students by year & college",
+    "studyYearShort": "Year {{year}}",
+    "noData": "No data yet.",
+    "addStudent": "Add student",
+    "createStudentHint": "The student is linked to the study plan and enrollments for their department automatically.",
+    "studentCreated": "Student account created.",
+    "deactivateStudent": "Deactivate",
+    "deactivateConfirm": "Deactivate {{name}} ({{number}})? They will no longer sign in.",
+    "studentDeactivated": "Student account deactivated.",
+    "downloadProfilePdf": "Profile PDF"
   },
   "activityLog": {
     "lead": "History of actions you sent, received, or stored.",
@@ -342,6 +407,7 @@
     "studentLibrary": "University library",
     "studentFavoriteBooks": "Saved books",
     "adminDiscounts": "Review discount requests",
+    "adminFinancialSettings": "Financial settings",
     "facultyDashboard": "Faculty overview",
     "facultyProfile": "Profile",
     "facultyCourses": "My courses",
@@ -356,6 +422,8 @@
     "affairsDashboard": "Affairs overview",
     "affairsTranscripts": "Process transcripts",
     "affairsStudents": "Student records",
+    "affairsClearances": "Clearance certificates",
+    "studentClearances": "Clearance certificate",
     "adminCurriculum": "Study plan management",
     "adminManagerRequests": "Manager requests",
     "managerDashboard": "Manager overview",
@@ -558,6 +626,20 @@
       "TRAINING": "Training course",
       "TUITION": "Tuition"
     }
+  },
+  "financial": {
+    "lead": "Set tuition per college and official service fees.",
+    "serviceFees": "Service fees",
+    "collegeTuition": "College tuition",
+    "college": "College",
+    "transcriptFee": "Transcript fee (USD)",
+    "clearanceFee": "Clearance certificate fee (USD)",
+    "annualTuition": "Annual tuition (USD)",
+    "semesterTuition": "Semester tuition (USD)",
+    "collegeTuitionHint": "One annual amount per college — split equally across two semesters.",
+    "saveChanges": "Save changes",
+    "saved": "Financial settings updated.",
+    "invalidAmounts": "Enter valid non-negative amounts."
   },
   "tuition": {
     "lead": "Annual tuition is $1,000 ($500 per semester). Payments are simulated for demonstration.",

@@ -42,3 +42,25 @@ export const affairsUpdateStudentSchema = z.object({
   currentSemester: z.coerce.number().int().min(1).max(10).optional(),
   academicYear: z.string().regex(/^\d{4}-\d{4}$/).optional(),
 });
+
+export const affairsCreateStudentSchema = z.object({
+  name: z.string().min(2).max(120),
+  email: z.string().email(),
+  password: z.string().min(8).max(128),
+  departmentId: z.string().uuid(),
+  academicNumber: z
+    .string()
+    .min(3)
+    .max(32)
+    .regex(/^[A-Za-z0-9-]+$/),
+  currentSemester: z.coerce.number().int().min(1).max(10),
+  academicYear: z.string().regex(/^\d{4}-\d{4}$/),
+});
+
+export const requestClearanceSchema = z.object({
+  confirmPayment: z.literal(true),
+});
+
+export const processClearanceSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('reject'), rejectionReason: z.string().min(3).max(500) }),
+]);

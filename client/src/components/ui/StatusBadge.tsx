@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { cn } from '../../lib/cn.js';
 
 const tones: Record<string, string> = {
@@ -24,9 +25,10 @@ const tones: Record<string, string> = {
 
 type StatusBadgeProps = {
   status: string;
+  children?: ReactNode;
 };
 
-export function StatusBadge({ status }: StatusBadgeProps) {
+export function StatusBadge({ status, children }: StatusBadgeProps) {
   return (
     <span
       className={cn(
@@ -34,7 +36,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         tones[status] ?? 'bg-zinc-100 text-zinc-700 ring-1 ring-zinc-400/20 dark:bg-white/10 dark:text-zinc-200 dark:ring-white/15'
       )}
     >
-      {status}
+      {children ?? status}
     </span>
   );
 }

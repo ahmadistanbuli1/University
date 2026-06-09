@@ -12,6 +12,7 @@ import { AdminDashboardPage } from '../pages/AdminDashboardPage.js';
 import { AdminLogsPage } from '../pages/AdminLogsPage.js';
 import { AdminNewsPage } from '../pages/AdminNewsPage.js';
 import { AdminUsersPage } from '../pages/AdminUsersPage.js';
+import { AffairsClearancePage } from '../pages/AffairsClearancePage.js';
 import { AffairsStudentsPage } from '../pages/AffairsStudentsPage.js';
 import { AffairsDashboardPage } from '../pages/AffairsDashboardPage.js';
 import { AffairsTranscriptsPage } from '../pages/AffairsTranscriptsPage.js';
@@ -35,6 +36,7 @@ import { ManagerRequestsPage } from '../pages/ManagerRequestsPage.js';
 import { ManagerStudentsPage } from '../pages/ManagerStudentsPage.js';
 import { NewsPage } from '../pages/NewsPage.js';
 import { StudentAppealsPage } from '../pages/StudentAppealsPage.js';
+import { StudentClearancePage } from '../pages/StudentClearancePage.js';
 import { StudentCoursesPage } from '../pages/StudentCoursesPage.js';
 import { StudentDashboardPage } from '../pages/StudentDashboardPage.js';
 import { StudentGradesPage } from '../pages/StudentGradesPage.js';
@@ -50,6 +52,7 @@ import { StudentDiscountsPage } from '../pages/StudentDiscountsPage.js';
 import { StudentFavoriteBooksPage } from '../pages/StudentFavoriteBooksPage.js';
 import { StudentLibraryPage } from '../pages/StudentLibraryPage.js';
 import { AdminDiscountsPage } from '../pages/AdminDiscountsPage.js';
+import { AdminFinancialSettingsPage } from '../pages/AdminFinancialSettingsPage.js';
 import { ProtectedRoute } from './ProtectedRoute.js';
 import { RoleRoute } from './RoleRoute.js';
 
@@ -79,6 +82,7 @@ export function AppRouter() {
           <Route path="study-plan" element={<StudentStudyPlanPage />} />
           <Route path="appeals" element={<StudentAppealsPage />} />
           <Route path="transcripts" element={<StudentTranscriptsPage />} />
+          <Route path="clearances" element={<StudentClearancePage />} />
           <Route path="tuition" element={<StudentTuitionPage />} />
           <Route path="pay/:installmentId" element={<StudentPaymentPage />} />
           <Route path="discounts" element={<StudentDiscountsPage />} />
@@ -115,6 +119,7 @@ export function AppRouter() {
           <Route path="news" element={<AdminNewsPage />} />
           <Route path="appeals" element={<AdminAppealsPage />} />
           <Route path="discounts" element={<AdminDiscountsPage />} />
+          <Route path="financial-settings" element={<AdminFinancialSettingsPage />} />
           <Route path="transcripts" element={<AffairsTranscriptsPage />} />
           <Route path="logs" element={<AdminLogsPage />} />
           <Route path="curriculum" element={<AdminCurriculumPage />} />
@@ -132,6 +137,7 @@ export function AppRouter() {
           <Route index element={<AffairsDashboardPage />} />
           <Route path="students" element={<AffairsStudentsPage />} />
           <Route path="transcripts" element={<AffairsTranscriptsPage />} />
+          <Route path="clearances" element={<AffairsClearancePage />} />
           <Route path="activity" element={<ActivityLogPage />} />
         </Route>
 

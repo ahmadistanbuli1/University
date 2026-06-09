@@ -5,10 +5,13 @@ import { toast } from 'sonner';
 import { isAxiosError } from 'axios';
 import {
   useAffairsStudentsQuery,
+  useCreateAffairsStudentMutation,
+  useDeleteAffairsStudentMutation,
   useDepartmentsQuery,
   usePatchAffairsStudentMutation,
   type AffairsStudentRow,
 } from '../api/hooks.js';
+import { MotionDialog } from '../components/motion/MotionDialog.js';
 import { Alert } from '../components/ui/Alert.js';
 import { Button } from '../components/ui/Button.js';
 import { Card } from '../components/ui/Card.js';
@@ -20,14 +23,29 @@ import { PageHeader } from '../components/ui/PageHeader.js';
 import { Pagination } from '../components/ui/Pagination.js';
 import { Select } from '../components/ui/Select.js';
 import { buildAcademicYearOptions } from '../lib/academic-options.js';
+import { getStudyYearLabel } from '../lib/department-labels.js';
+
+const emptyCreate = {
+  name: '',
+  email: '',
+  password: '',
+  departmentId: '',
+  academicNumber: '',
+  currentSemester: 1,
+  academicYear: '2025-2026',
+};
 
 export function AffairsStudentsPage() {
-  const { t } = useTranslation('nav');
+  const { t, i18n } = useTranslation('nav');
+  const lang = i18n.language;
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search.trim(), 400);
   const [departmentId, setDepartmentId] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState(emptyCreate);
   const [editing, setEditing] = useState<AffairsStudentRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AffairsStudentRow | null>(null);
   const [form, setForm] = useState({
     departmentId: '',
     academicNumber: '',
@@ -42,6 +60,8 @@ export function AffairsStudentsPage() {
     departmentId: departmentId || undefined,
   });
   const patch = usePatchAffairsStudentMutation();
+  const create = useCreateAffairsStudentMutation();
+  const remove = useDeleteAffairsStudentMutation();
   const academicYears = buildAcademicYearOptions();
 
   const openEdit = (row: AffairsStudentRow) => {
@@ -81,6 +101,23 @@ export function AffairsStudentsPage() {
     );
   };
 
+  const submitCreate = () => {
+    create.mutate(createForm, {
+      onSuccess: () => {
+        toast.success(t('affairs.studentCreated'));
+        setShowCreate(false);
+        setCreateForm(emptyCreate);
+      },
+      onError: (err) => {
+        const msg = isAxiosError(err)
+          ? (err.response?.data as { error?: string; message?: string })?.error ??
+            (err.response?.data as { message?: string })?.message
+          : undefined;
+        toast.error(msg ?? t('messages.loadError'));
+      },
+    });
+  };
+
   if (isLoading && !data) return <LoadingState />;
   if (isError && !data) return <Alert variant="error">{t('messages.loadError')}</Alert>;
 
@@ -89,6 +126,94 @@ export function AffairsStudentsPage() {
   return (
     <section className="flex flex-col gap-6">
       <PageHeader title={t('headings.affairsStudents')} description={t('messages.affairsStudentsLead')} />
+
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" onClick={() => setShowCreate((v) => !v)}>
+          {showCreate ? t('labels.cancel') : t('affairs.addStudent')}
+        </Button>
+      </div>
+
+      {showCreate ? (
+        <Card>
+          <h2 className="m-0 mb-4 text-lg font-semibold">{t('affairs.addStudent')}</h2>
+          <div className="grid max-w-xl gap-3">
+            <Field label={t('labels.fullName')}>
+              <Input
+                value={createForm.name}
+                onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
+              />
+            </Field>
+            <Field label={t('labels.email')}>
+              <Input
+                type="email"
+                value={createForm.email}
+                onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))}
+              />
+            </Field>
+            <Field label={t('labels.password')}>
+              <Input
+                type="password"
+                value={createForm.password}
+                onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
+              />
+            </Field>
+            <Field label={t('labels.department')}>
+              <Select
+                value={createForm.departmentId}
+                onChange={(e) => setCreateForm((f) => ({ ...f, departmentId: e.target.value }))}
+              >
+                <option value="">{t('excel.selectDepartment')}</option>
+                {departments?.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t('profile.academicNumber')}>
+              <Input
+                value={createForm.academicNumber}
+                onChange={(e) => setCreateForm((f) => ({ ...f, academicNumber: e.target.value }))}
+              />
+            </Field>
+            <Field label={t('profile.studyLevel')}>
+              <Select
+                value={String(createForm.currentSemester)}
+                onChange={(e) =>
+                  setCreateForm((f) => ({ ...f, currentSemester: Number(e.target.value) }))
+                }
+              >
+                {[1, 2, 3, 4, 5].map((level) => (
+                  <option key={level} value={(level - 1) * 2 + 1}>
+                    {getStudyYearLabel(level, lang)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t('labels.academicYear')}>
+              <Select
+                value={createForm.academicYear}
+                onChange={(e) => setCreateForm((f) => ({ ...f, academicYear: e.target.value }))}
+              >
+                {academicYears.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <p className="m-0 text-xs text-zinc-500">{t('affairs.createStudentHint')}</p>
+            <div className="flex gap-2">
+              <Button type="button" disabled={create.isPending} onClick={submitCreate}>
+                {t('labels.save')}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
+                {t('labels.cancel')}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : null}
 
       <Card className="flex flex-wrap gap-3">
         <Field label={t('labels.search')} className="min-w-[12rem] flex-1">
@@ -183,46 +308,96 @@ export function AffairsStudentsPage() {
       ) : null}
 
       <div className={isFetching ? 'opacity-60 transition-opacity' : undefined}>
-      <DataTable<AffairsStudentRow>
-        rowKey={(r) => r.id}
-        emptyMessage="—"
-        columns={[
-          { key: 'n', header: t('labels.fullName'), render: (r) => r.user.name },
-          { key: 'num', header: t('profile.academicNumber'), render: (r) => r.academicNumber },
-          { key: 'd', header: t('labels.department'), render: (r) => r.department.name },
-          { key: 'y', header: t('labels.academicYear'), render: (r) => r.academicYear },
-          { key: 's', header: t('profile.studyLevel'), render: (r) => String(r.currentSemester) },
-          {
-            key: 'c',
-            header: t('labels.enrolledCourses'),
-            render: (r) => String(r.enrollments.length),
-          },
-          {
-            key: 'a',
-            header: t('labels.actions'),
-            render: (r) => (
-              <Button type="button" size="sm" variant="secondary" onClick={() => openEdit(r)}>
-                {t('labels.edit')}
-              </Button>
-            ),
-          },
-        ]}
-        rows={rows}
-      />
+        <DataTable<AffairsStudentRow>
+          rowKey={(r) => r.id}
+          emptyMessage="—"
+          columns={[
+            { key: 'n', header: t('labels.fullName'), render: (r) => r.user.name },
+            { key: 'num', header: t('profile.academicNumber'), render: (r) => r.academicNumber },
+            { key: 'd', header: t('labels.department'), render: (r) => r.department.name },
+            { key: 'y', header: t('labels.academicYear'), render: (r) => r.academicYear },
+            { key: 's', header: t('profile.studyLevel'), render: (r) => String(r.currentSemester) },
+            {
+              key: 'c',
+              header: t('labels.enrolledCourses'),
+              render: (r) => String(r.enrollments.length),
+            },
+            {
+              key: 'a',
+              header: t('labels.actions'),
+              render: (r) => (
+                <div className="flex flex-wrap gap-1">
+                  <Button type="button" size="sm" variant="secondary" onClick={() => openEdit(r)}>
+                    {t('labels.edit')}
+                  </Button>
+                  {r.user.active !== false ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="danger"
+                      onClick={() => setDeleteTarget(r)}
+                    >
+                      {t('affairs.deactivateStudent')}
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-zinc-500">{t('labels.inactive')}</span>
+                  )}
+                </div>
+              ),
+            },
+          ]}
+          rows={rows}
+        />
       </div>
+
       {data ? (
-      <Pagination
-        page={page}
-        pageSize={data.pageSize}
-        total={data.total}
-        onPageChange={setPage}
-        summary={
-          <>
-            {t('labels.page')} {page}
-          </>
-        }
-      />
+        <Pagination
+          page={page}
+          pageSize={data.pageSize}
+          total={data.total}
+          onPageChange={setPage}
+          summary={
+            <>
+              {t('labels.page')} {page}
+            </>
+          }
+        />
       ) : null}
+
+      <MotionDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title={t('affairs.deactivateStudent')}
+      >
+        <p className="text-sm text-zinc-600 dark:text-zinc-300">
+          {t('affairs.deactivateConfirm', {
+            name: deleteTarget?.user.name ?? '',
+            number: deleteTarget?.academicNumber ?? '',
+          })}
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button type="button" variant="ghost" onClick={() => setDeleteTarget(null)}>
+            {t('labels.cancel')}
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            disabled={remove.isPending}
+            onClick={() => {
+              if (!deleteTarget) return;
+              remove.mutate(deleteTarget.id, {
+                onSuccess: () => {
+                  toast.success(t('affairs.studentDeactivated'));
+                  setDeleteTarget(null);
+                },
+                onError: () => toast.error(t('messages.loadError')),
+              });
+            }}
+          >
+            {t('affairs.deactivateStudent')}
+          </Button>
+        </div>
+      </MotionDialog>
     </section>
   );
 }

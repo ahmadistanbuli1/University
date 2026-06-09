@@ -1,5 +1,7 @@
 import type { UserRole } from '@prisma/client';
 import { AppError } from '../../utils/AppError.js';
+import { resolveStudentSemesterTuition } from '../../lib/financial-settings.js';
+import { prisma } from '../../lib/prisma.js';
 import type { AuditService } from '../audit/audit.service.js';
 import type { NotificationDispatchService } from '../notifications/notification.service.js';
 import type { TuitionRepository } from './tuition.repository.js';
@@ -75,7 +77,11 @@ export class TuitionService {
       };
     });
 
-    const collegeConfig = await this.repo.findCollegeTuitionConfig(student.department.collegeId);
+    const collegeConfig = await resolveStudentSemesterTuition(
+      prisma,
+      student.department.collegeId,
+      student.currentSemester
+    );
 
     const totalRemaining = Math.max(0, totalDue - totalPaid);
     const overallStatus =
@@ -87,12 +93,11 @@ export class TuitionService {
       totalRemaining,
       overallStatus,
       installments: rows,
-      collegeConfig: collegeConfig
-        ? {
-            totalAmount: Number(collegeConfig.totalAmount),
-            semesterAmount: Number(collegeConfig.semesterAmount),
-          }
-        : { totalAmount: 1000, semesterAmount: 500 },
+      collegeConfig: {
+        totalAmount: collegeConfig.annualAmount,
+        semesterAmount: collegeConfig.semesterAmount,
+        studyYear: collegeConfig.studyYear,
+      },
     };
   }
 

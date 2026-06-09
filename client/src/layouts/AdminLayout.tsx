@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  DollarSign,
   FileBadge,
   Inbox,
   LayoutDashboard,
@@ -21,6 +22,7 @@ const navItems: NavItem[] = [
   { to: '/admin/appeals', labelKey: 'admin.appeals', icon: Scale },
   { to: '/admin/transcripts', labelKey: 'admin.transcripts', icon: FileBadge },
   { to: '/admin/discounts', labelKey: 'admin.discounts', icon: Percent },
+  { to: '/admin/financial-settings', labelKey: 'admin.financialSettings', icon: DollarSign },
   { to: '/admin/logs', labelKey: 'admin.logs', icon: ScrollText },
 ];
 

@@ -5,6 +5,7 @@ import {
   fetchTranscriptPdfBlob,
   useMyTranscriptsQuery,
   useRequestTranscriptMutation,
+  useServiceFeesQuery,
 } from '../api/hooks.js';
 import { PaymentQr } from '../components/PaymentQr.js';
 import { MotionDialog } from '../components/motion/MotionDialog.js';
@@ -14,7 +15,6 @@ import { DataTable } from '../components/ui/DataTable.js';
 import { LoadingState } from '../components/ui/LoadingState.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
 import { StatusBadge } from '../components/ui/StatusBadge.js';
-import { TRANSCRIPT_FEE_USD } from '../lib/transcript-fee.js';
 import { transcriptStatusLabel } from '../lib/transcript-status.js';
 
 type Tr = {
@@ -48,6 +48,7 @@ async function openTranscriptPdf(id: string, download: boolean) {
 export function StudentTranscriptsPage() {
   const { t } = useTranslation('nav');
   const { data, isLoading, isError } = useMyTranscriptsQuery();
+  const fees = useServiceFeesQuery();
   const req = useRequestTranscriptMutation();
   const [payOpen, setPayOpen] = useState(false);
   const paymentPreviewRef = `TR-PREVIEW-${Date.now().toString(36).toUpperCase()}`;
@@ -57,6 +58,7 @@ export function StudentTranscriptsPage() {
 
   const rows = (data ?? []) as Tr[];
   const hasActive = rows.some((r) => r.status === 'PENDING' || r.status === 'AFFAIRS_APPROVED');
+  const transcriptFee = fees.data?.transcriptFee ?? 5;
 
   return (
     <section>
@@ -82,7 +84,7 @@ export function StudentTranscriptsPage() {
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-500">{t('tuition.amountDue')}</dt>
-            <dd className="m-0 text-lg font-bold text-brand">${TRANSCRIPT_FEE_USD.toFixed(2)}</dd>
+            <dd className="m-0 text-lg font-bold text-brand">${transcriptFee.toFixed(2)}</dd>
           </div>
         </dl>
         <div className="mt-4 flex justify-center">
@@ -141,7 +143,7 @@ export function StudentTranscriptsPage() {
             render: (r) =>
               r.feePaid ? (
                 <span className="text-xs text-zinc-600 dark:text-zinc-300">
-                  ${(r.feeAmount ?? TRANSCRIPT_FEE_USD).toFixed(2)}
+                  ${(r.feeAmount ?? transcriptFee).toFixed(2)}
                   {r.paymentReference ? ` · ${r.paymentReference}` : ''}
                 </span>
               ) : (
@@ -201,7 +203,7 @@ export function StudentTranscriptsPage() {
                     {r.feeRefunded ? (
                       <Alert variant="info" className="m-0 text-start text-sm">
                         {t('transcripts.refundMessage', {
-                          amount: (r.feeAmount ?? TRANSCRIPT_FEE_USD).toFixed(2),
+                          amount: (r.feeAmount ?? transcriptFee).toFixed(2),
                         })}
                       </Alert>
                     ) : null}
