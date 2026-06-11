@@ -5,8 +5,6 @@ export const loginFormSchema = z.object({
   password: z.string().min(6, { message: 'Min 6 characters' }),
 });
 
-const academicYearPattern = /^\d{4}-\d{4}$/;
-
 export const registerFormSchema = z.object({
   name: z.string().min(1, { message: 'Required' }),
   email: z.string().email(),
@@ -18,7 +16,6 @@ export const registerFormSchema = z.object({
     .max(32)
     .regex(/^[A-Za-z0-9-]+$/, { message: 'Letters, numbers, and hyphens only' }),
   currentSemester: z.coerce.number().int().min(1).max(10),
-  academicYear: z.string().regex(academicYearPattern, { message: 'Use format e.g. 2025-2026' }),
 });
 
 export const appealFormSchema = z.object({

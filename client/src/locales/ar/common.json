@@ -76,5 +76,11 @@
   "homeLatestNews": "آخر الإعلانات",
   "homeViewAllNews": "عرض كل الأخبار",
   "homeQuickLinks": "وصول سريع",
-  "homeNewsEmpty": "لا توجد إعلانات بعد. عد لاحقاً."
+  "homeNewsEmpty": "لا توجد إعلانات بعد. عد لاحقاً.",
+  "homeStatColleges": "كليات",
+  "homeStatAccess": "وصول للبوابة",
+  "homeStatDigital": "خدمات رقمية",
+  "footerFacebook": "فيسبوك",
+  "footerInstagram": "إنستغرام",
+  "footerLinkedin": "لينكدإن"
 }

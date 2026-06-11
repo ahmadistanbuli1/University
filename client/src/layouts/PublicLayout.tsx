@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { PublicFooter } from '../components/layout/PublicFooter.js';
 import { PublicNavbar } from '../components/layout/PublicNavbar.js';
 import { cn } from '../lib/cn.js';
 
@@ -6,19 +7,17 @@ export function PublicLayout() {
   return (
     <div
       className={cn(
-        'relative flex min-h-screen flex-col',
+        'relative flex min-h-screen flex-col overflow-x-hidden',
         'bg-zinc-50 dark:bg-zinc-950',
-        'before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_100%_80%_at_50%_-30%,rgba(99,102,241,0.18),transparent_55%)]',
-        'dark:before:bg-[radial-gradient(ellipse_90%_70%_at_80%_0%,rgba(139,92,246,0.18),transparent_50%)]'
+        'before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,rgba(2,86,146,0.12),transparent_50%)]',
+        'dark:before:bg-[radial-gradient(ellipse_100%_70%_at_80%_0%,rgba(3,136,190,0.15),transparent_55%)]'
       )}
     >
       <PublicNavbar />
-      <main className="relative mt-9 z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6 sm:pt-6">
+      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-10 pt-2 sm:px-6 sm:pt-4">
         <Outlet />
       </main>
-      <footer className="relative z-10 border-t border-zinc-200/60 bg-white/60 py-6 text-center text-xs font-medium text-zinc-500 backdrop-blur dark:border-white/5 dark:bg-zinc-950/60 dark:text-zinc-400">
-        <p className="m-0">SPU — Shamal Private University · جامعة الشمال الخاصة</p>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

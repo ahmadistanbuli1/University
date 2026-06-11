@@ -13,6 +13,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux.js';
 import { useSidebarCollapsed } from '../hooks/useSidebarCollapsed.js';
 import { cn } from '../lib/cn.js';
 import { springSnappy } from '../lib/motion.js';
+import { logoutSession } from '../api/http.js';
 import { NotificationBell } from '../components/NotificationBell.js';
 import { clearCredentials } from '../store/authSlice.js';
 
@@ -113,8 +114,12 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
             size="sm"
             className="rounded-2xl border border-zinc-200/80 bg-white/90 px-3 py-2 text-zinc-700 shadow-sm hover:bg-zinc-100 hover:text-zinc-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:hover:bg-white/10 dark:hover:text-white"
             onClick={() => {
-              dispatch(clearCredentials());
-              navigate('/login');
+              void logoutSession()
+                .catch(() => undefined)
+                .finally(() => {
+                  dispatch(clearCredentials());
+                  navigate('/login');
+                });
             }}
           >
             <LogOut className="size-4 sm:hidden" strokeWidth={1.85} aria-hidden />

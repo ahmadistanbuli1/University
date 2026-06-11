@@ -19,7 +19,7 @@ import { PageHeader } from '../components/ui/PageHeader.js';
 import { Select } from '../components/ui/Select.js';
 import { useAppDispatch } from '../hooks/redux.js';
 import i18n from '../i18n/config.js';
-import { buildAcademicYearOptions } from '../lib/academic-options.js';
+import { getCurrentAcademicYear } from '../lib/academic-options.js';
 import {
   buildStudyYearOptions,
   getCollegeLabel,
@@ -32,7 +32,6 @@ import { defaultRouteForRole } from '../lib/defaultRouteForRole.js';
 import { setCredentials } from '../store/authSlice.js';
 
 type RegisterResponse = {
-  token: string;
   user: { id: string; name: string; email: string; role: string };
 };
 
@@ -41,7 +40,6 @@ export function RegisterPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { data: departments, isLoading, isError } = useDepartmentsQuery();
-  const academicYears = useMemo(() => buildAcademicYearOptions(), []);
   const lang = i18nInstance.language;
 
   const {
@@ -58,7 +56,6 @@ export function RegisterPage() {
       departmentId: '',
       academicNumber: '',
       currentSemester: 1,
-      academicYear: academicYears[1] ?? academicYears[0] ?? '2025-2026',
     },
   });
 
@@ -98,11 +95,14 @@ export function RegisterPage() {
 
   const registerMut = useMutation({
     mutationFn: async (body: RegisterFormValues) => {
-      const { data } = await axiosInstance.post<RegisterResponse>('/api/auth/register', body);
+      const { data } = await axiosInstance.post<RegisterResponse>('/api/auth/register', {
+        ...body,
+        academicYear: getCurrentAcademicYear(),
+      });
       return data;
     },
     onSuccess: (data: RegisterResponse) => {
-      dispatch(setCredentials({ token: data.token, user: data.user }));
+      dispatch(setCredentials({ user: data.user }));
       toast.success(i18n.t('registerToastSuccess', { ns: 'common' }));
       navigate(defaultRouteForRole(data.user.role), { replace: true });
     },
@@ -137,7 +137,7 @@ export function RegisterPage() {
   }
 
   return (
-    <section className="relative mx-auto w-full max-w-lg">
+    <section className="relative mx-auto w-full max-w-lg mt-9">
       <div
         className="pointer-events-none absolute -inset-10 -z-10 rounded-[3rem] bg-[radial-gradient(circle_at_30%_20%,rgba(124,58,237,0.18),transparent_45%)] dark:bg-[radial-gradient(circle_at_70%_30%,rgba(192,132,252,0.2),transparent_50%)]"
         aria-hidden
@@ -191,29 +191,18 @@ export function RegisterPage() {
             </Select>
           </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t('registerStudyLevelLabel')} error={errors.currentSemester?.message}>
-              <Select
-                aria-invalid={!!errors.currentSemester}
-                {...register('currentSemester', { valueAsNumber: true })}
-              >
-                {studyYears.map((level) => (
-                  <option key={level} value={(level - 1) * 2 + 1}>
-                    {getStudyYearLabel(level, lang)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label={t('registerAcademicYearLabel')} error={errors.academicYear?.message}>
-              <Select aria-invalid={!!errors.academicYear} {...register('academicYear')}>
-                {academicYears.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
+          <Field label={t('registerStudyLevelLabel')} error={errors.currentSemester?.message}>
+            <Select
+              aria-invalid={!!errors.currentSemester}
+              {...register('currentSemester', { valueAsNumber: true })}
+            >
+              {studyYears.map((level) => (
+                <option key={level} value={(level - 1) * 2 + 1}>
+                  {getStudyYearLabel(level, lang)}
+                </option>
+              ))}
+            </Select>
+          </Field>
 
           {selectedDepartment && groupInfo ? (
             <div

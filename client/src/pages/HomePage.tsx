@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  ArrowUpRight,
   BookOpen,
   GraduationCap,
   Library,
@@ -9,7 +10,6 @@ import {
   Sparkles,
   TrendingUp,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useNewsListQuery } from '../api/hooks.js';
@@ -21,11 +21,10 @@ import {
   RevealStaggerItem,
 } from '../components/motion/Reveal.js';
 import { Button } from '../components/ui/Button.js';
-import { Card } from '../components/ui/Card.js';
-import { IconTile } from '../components/ui/IconTile.js';
 import type { NewsCardItem } from '../components/ui/NewsCard.js';
 import { NewsTimeline } from '../components/ui/NewsTimeline.js';
 import { NewsCardSkeleton } from '../components/ui/Skeleton.js';
+import { cn } from '../lib/cn.js';
 
 export function HomePage() {
   const { t } = useTranslation('common');
@@ -45,32 +44,52 @@ export function HomePage() {
     { to: '/login', title: t('navLogin'), desc: t('homeTileLogin'), icon: LogIn },
   ] as const;
 
+  const stats = [
+    { value: '7+', label: t('homeStatColleges') },
+    { value: '24/7', label: t('homeStatAccess') },
+    { value: '100%', label: t('homeStatDigital') },
+  ] as const;
+
   return (
-    <section className="space-y-14 pb-4">
-      <div className="relative overflow-hidden rounded-[2rem] border border-brand/20 bg-gradient-to-br from-white via-brand/5 to-indigo-50/40 px-6 py-12 shadow-xl sm:px-10 sm:py-16 dark:border-brand/20 dark:from-zinc-900 dark:via-brand/10 dark:to-zinc-950">
-        <motion.div
-          className="pointer-events-none absolute -end-24 -top-24 size-80 rounded-full bg-brand-light/20 blur-3xl"
+    <div className="flex flex-col gap-16 pb-4 sm:gap-20">
+      {/* Hero — stays inside layout, no viewport breakout */}
+      <section
+        className={cn(
+          'relative overflow-hidden rounded-3xl border border-zinc-200/70 bg-gradient-to-b from-white via-brand/[0.04] to-zinc-50/80',
+          'px-5 py-14 sm:px-10 sm:py-20 dark:border-white/10 dark:from-zinc-900 dark:via-brand/10 dark:to-zinc-950'
+        )}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-30 dark:opacity-15"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 1px 1px, rgb(2 86 146 / 0.12) 1px, transparent 0)',
+            backgroundSize: '24px 24px',
+          }}
           aria-hidden
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: 'easeOut' }}
         />
+        <div
+          className="pointer-events-none absolute -end-20 -top-20 size-64 rounded-full bg-brand/15 blur-3xl sm:size-80"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -bottom-16 -start-16 size-56 rounded-full bg-brand-secondary/15 blur-3xl"
+          aria-hidden
+        />
+
         <RevealHero className="relative mx-auto max-w-3xl text-center">
           <RevealHeroItem>
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand/25 bg-white/90 px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-brand dark:border-brand/30 dark:bg-white/5 dark:text-brand-light">
-              <Sparkles className="size-4" aria-hidden />
-              SPU
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-white/90 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-brand dark:border-brand/30 dark:bg-zinc-900/80 dark:text-brand-light">
+              <Sparkles className="size-3.5" aria-hidden />
+              {t('brandTagline')}
             </p>
           </RevealHeroItem>
           <RevealHeroItem>
-            <h1 className="text-3xl font-black tracking-tight text-zinc-900 sm:text-5xl dark:text-white">
-              {t('homeHeroTitle')}
+            <h1 className="text-3xl font-black leading-tight tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl dark:text-white">
+              <span className="bg-gradient-to-br from-zinc-900 via-brand to-brand-light bg-clip-text text-transparent dark:from-white dark:via-brand-light dark:to-brand-secondary">
+                {t('homeHeroTitle')}
+              </span>
             </h1>
-          </RevealHeroItem>
-          <RevealHeroItem>
-            <p className="mt-2 text-sm font-semibold text-brand dark:text-brand-light">
-              {t('brandFull')}
-            </p>
           </RevealHeroItem>
           <RevealHeroItem>
             <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
@@ -78,10 +97,11 @@ export function HomePage() {
             </p>
           </RevealHeroItem>
           <RevealHeroItem>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/login" className="no-underline">
-                <Button type="button" size="lg">
+                <Button type="button" size="lg" className="shadow-lg shadow-brand/20">
                   {t('homeCtaLogin')}
+                  <ArrowRight className="size-4 rtl:rotate-180" aria-hidden />
                 </Button>
               </Link>
               <Link to="/register" className="no-underline">
@@ -91,62 +111,85 @@ export function HomePage() {
               </Link>
             </div>
           </RevealHeroItem>
-        </RevealHero>
-      </div>
-
-      <RevealOnScroll>
-        <div className="grid gap-8 lg:grid-cols-2">
-          <Card className="p-6 sm:p-8">
-            <div className="mb-4 flex items-center gap-3">
-              <IconTile
-                icon={GraduationCap}
-                className="size-12 rounded-2xl bg-brand/10 text-brand dark:bg-brand/15 dark:text-brand-light"
-              />
-              <h2 className="m-0 text-2xl font-black text-zinc-900 dark:text-white">
-                {t('homeAboutTitle')}
-              </h2>
+          <RevealHeroItem>
+            <div className="mx-auto mt-10 grid max-w-md grid-cols-3 gap-3">
+              {stats.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-xl border border-zinc-200/70 bg-white/70 px-2 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-zinc-900/50"
+                >
+                  <p className="m-0 text-lg font-black text-brand sm:text-xl dark:text-brand-light">
+                    {s.value}
+                  </p>
+                  <p className="m-0 mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-500 sm:text-xs dark:text-zinc-400">
+                    {s.label}
+                  </p>
+                </div>
+              ))}
             </div>
-            <p className="m-0 text-sm leading-relaxed text-zinc-600 sm:text-base dark:text-zinc-300">
+          </RevealHeroItem>
+        </RevealHero>
+      </section>
+
+      {/* About + offers */}
+      <RevealOnScroll>
+        <div className="grid gap-5 lg:grid-cols-12">
+          <div
+            className={cn(
+              'relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white p-6 sm:p-8 lg:col-span-5',
+              'dark:border-white/10 dark:bg-zinc-900/80'
+            )}
+          >
+            <div className="mb-4 inline-flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-brand-light text-white shadow-md">
+              <GraduationCap className="size-5" strokeWidth={1.75} aria-hidden />
+            </div>
+            <h2 className="m-0 text-xl font-black text-zinc-900 sm:text-2xl dark:text-white">
+              {t('homeAboutTitle')}
+            </h2>
+            <p className="m-0 mt-3 text-sm leading-relaxed text-zinc-600 sm:text-base dark:text-zinc-300">
               {t('homeAboutBody')}
             </p>
-          </Card>
-          <Card className="p-6 sm:p-8">
-            <div className="mb-4 flex items-center gap-3">
-              <IconTile
-                icon={Sparkles}
-                className="size-12 rounded-2xl bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200"
-              />
-              <h2 className="m-0 text-2xl font-black text-zinc-900 dark:text-white">
+          </div>
+
+          <div className="flex flex-col gap-4 lg:col-span-7">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="size-5 text-brand-secondary" aria-hidden />
+              <h2 className="m-0 text-xl font-black text-zinc-900 dark:text-white">
                 {t('homeOffersTitle')}
               </h2>
             </div>
-            <RevealStagger className="flex flex-col gap-4" stagger={0.08}>
+            <RevealStagger className="grid gap-4 sm:grid-cols-2" stagger={0.06}>
               {offers.map((o) => {
                 const Icon = o.icon;
                 return (
                   <RevealStaggerItem key={o.title}>
-                    <div className="flex gap-3">
-                      <IconTile
-                        icon={Icon}
-                        className="size-10 shrink-0 rounded-xl bg-zinc-100 text-zinc-700 dark:bg-white/10 dark:text-brand-light"
-                      />
-                      <div>
-                        <p className="m-0 font-bold text-zinc-900 dark:text-white">{o.title}</p>
-                        <p className="m-0 mt-1 text-sm text-zinc-600 dark:text-zinc-400">{o.desc}</p>
+                    <div
+                      className={cn(
+                        'h-full rounded-2xl border border-zinc-200/80 bg-white p-5 transition hover:border-brand/25 hover:shadow-md',
+                        'dark:border-white/10 dark:bg-zinc-900/80 dark:hover:border-brand/30'
+                      )}
+                    >
+                      <div className="mb-3 inline-flex size-9 items-center justify-center rounded-lg bg-brand/10 text-brand dark:text-brand-light">
+                        <Icon className="size-4" strokeWidth={1.75} aria-hidden />
                       </div>
+                      <p className="m-0 font-bold text-zinc-900 dark:text-white">{o.title}</p>
+                      <p className="m-0 mt-1.5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        {o.desc}
+                      </p>
                     </div>
                   </RevealStaggerItem>
                 );
               })}
             </RevealStagger>
-          </Card>
+          </div>
         </div>
       </RevealOnScroll>
 
+      {/* News */}
       <RevealOnScroll delay={0.05}>
-        <div>
+        <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 sm:p-8 dark:border-white/10 dark:bg-zinc-900/80">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <h2 className="m-0 text-2xl font-black text-zinc-900 dark:text-white">
+            <h2 className="m-0 text-xl font-black text-zinc-900 sm:text-2xl dark:text-white">
               {t('homeLatestNews')}
             </h2>
             <Link
@@ -158,45 +201,50 @@ export function HomePage() {
             </Link>
           </div>
           {newsLoading ? (
-            <div className="max-w-3xl space-y-4">
+            <div className="space-y-4">
               <NewsCardSkeleton />
               <NewsCardSkeleton />
             </div>
           ) : previewItems.length === 0 ? (
-            <Card className="max-w-3xl border-dashed text-center text-sm text-zinc-500">
+            <p className="m-0 rounded-xl border border-dashed border-zinc-300/80 py-10 text-center text-sm text-zinc-500 dark:border-white/15">
               {t('homeNewsEmpty')}
-            </Card>
+            </p>
           ) : (
-            <div className="mx-auto max-w-3xl">
-              <NewsTimeline items={previewItems} />
-            </div>
+            <NewsTimeline items={previewItems} />
           )}
         </div>
       </RevealOnScroll>
 
+      {/* Quick links */}
       <RevealOnScroll delay={0.08}>
         <div>
           <h2 className="mb-4 text-xl font-black text-zinc-900 dark:text-white">
             {t('homeQuickLinks')}
           </h2>
-          <RevealStagger className="grid gap-4 sm:grid-cols-3" stagger={0.1}>
+          <RevealStagger className="grid gap-4 sm:grid-cols-3" stagger={0.08}>
             {tiles.map((tile) => {
               const Icon = tile.icon;
               return (
                 <RevealStaggerItem key={tile.to}>
                   <Link to={tile.to} className="group block h-full no-underline">
-                    <Card className="h-full transition group-hover:-translate-y-0.5 group-hover:border-brand/25 group-hover:shadow-lg">
-                      <div className="flex items-start gap-3">
-                        <IconTile
-                          icon={Icon}
-                          className="size-11 rounded-xl bg-brand/5 text-brand group-hover:bg-brand/10 dark:bg-brand/15 dark:text-brand-light"
-                        />
-                        <div>
-                          <p className="font-bold text-zinc-900 dark:text-white">{tile.title}</p>
-                          <p className="mt-1 text-sm text-zinc-500">{tile.desc}</p>
+                    <div
+                      className={cn(
+                        'flex h-full flex-col justify-between rounded-2xl border border-zinc-200/80 bg-white p-5 transition',
+                        'hover:border-brand/25 hover:shadow-md dark:border-white/10 dark:bg-zinc-900/80'
+                      )}
+                    >
+                      <div>
+                        <div className="mb-3 inline-flex size-10 items-center justify-center rounded-xl bg-brand/10 text-brand dark:text-brand-light">
+                          <Icon className="size-5" strokeWidth={1.75} aria-hidden />
                         </div>
+                        <p className="m-0 font-bold text-zinc-900 dark:text-white">{tile.title}</p>
+                        <p className="m-0 mt-1.5 text-sm text-zinc-500 dark:text-zinc-400">{tile.desc}</p>
                       </div>
-                    </Card>
+                      <ArrowUpRight
+                        className="mt-4 size-4 text-zinc-400 transition group-hover:text-brand rtl:rotate-180"
+                        aria-hidden
+                      />
+                    </div>
                   </Link>
                 </RevealStaggerItem>
               );
@@ -204,6 +252,6 @@ export function HomePage() {
           </RevealStagger>
         </div>
       </RevealOnScroll>
-    </section>
+    </div>
   );
 }

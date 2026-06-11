@@ -18,7 +18,6 @@ import { defaultRouteForRole } from '../lib/defaultRouteForRole.js';
 import { setCredentials } from '../store/authSlice.js';
 
 type LoginResponse = {
-  token: string;
   user: { id: string; name: string; email: string; role: string };
 };
 
@@ -44,7 +43,7 @@ export function LoginPage() {
       return data;
     },
     onSuccess: (data: LoginResponse) => {
-      dispatch(setCredentials({ token: data.token, user: data.user }));
+      dispatch(setCredentials({ user: data.user }));
       toast.success(i18n.t('loginToastSuccess', { ns: 'common' }));
       navigate(defaultRouteForRole(data.user.role), { replace: true });
     },
@@ -54,7 +53,7 @@ export function LoginPage() {
   });
 
   return (
-    <section className="relative mx-auto w-full max-w-md">
+    <section className="relative mx-auto w-full max-w-md mt-9">
       <div
         className="pointer-events-none absolute -inset-10 -z-10 rounded-[3rem] bg-[radial-gradient(circle_at_30%_20%,rgba(124,58,237,0.18),transparent_45%)] dark:bg-[radial-gradient(circle_at_70%_30%,rgba(192,132,252,0.2),transparent_50%)]"
         aria-hidden

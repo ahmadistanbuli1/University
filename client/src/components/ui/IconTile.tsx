@@ -15,7 +15,7 @@ export function IconTile({ icon: Icon, tone = 'soft', className }: IconTileProps
       className={cn(
         'grid size-10 shrink-0 place-items-center rounded-2xl transition-colors',
         tone === 'soft' &&
-          'bg-zinc-100 text-zinc-700 dark:bg-white/10 dark:text-indigo-200',
+          'bg-amber-400 text-white dark:bg-white/10 dark:text-indigo-200',
         tone === 'onAccent' && 'bg-white/20 text-white',
         className
       )}

@@ -7,55 +7,32 @@ export type AuthUser = {
   role: string;
 };
 
+export type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated';
+
 export type AuthState = {
-  token: string | null;
+  status: AuthStatus;
   user: AuthUser | null;
 };
 
-const TOKEN_KEY = 'university_token';
-const USER_KEY = 'university_user';
-
-function readPersisted(): AuthState {
-  if (typeof localStorage === 'undefined') {
-    return { token: null, user: null };
-  }
-  try {
-    const token = localStorage.getItem(TOKEN_KEY);
-    const raw = localStorage.getItem(USER_KEY);
-    const user = raw ? (JSON.parse(raw) as AuthUser) : null;
-    if (token && user) {
-      return { token, user };
-    }
-  } catch {
-    /* ignore */
-  }
-  return { token: null, user: null };
-}
+const initialState: AuthState = { status: 'unknown', user: null };
 
 const authSlice = createSlice({
   name: 'auth',
-  /** Read localStorage synchronously so refresh does not flash redirect to /login. */
-  initialState: readPersisted(),
+  initialState,
   reducers: {
-    hydrateFromStorage(state) {
-      const next = readPersisted();
-      state.token = next.token;
-      state.user = next.user;
-    },
-    setCredentials(state, action: PayloadAction<{ token: string; user: AuthUser }>) {
-      state.token = action.payload.token;
+    setCredentials(state, action: PayloadAction<{ user: AuthUser }>) {
       state.user = action.payload.user;
-      localStorage.setItem(TOKEN_KEY, action.payload.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(action.payload.user));
+      state.status = 'authenticated';
     },
     clearCredentials(state) {
-      state.token = null;
       state.user = null;
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
+      state.status = 'unauthenticated';
+    },
+    setAuthStatus(state, action: PayloadAction<AuthStatus>) {
+      state.status = action.payload;
     },
   },
 });
 
-export const { hydrateFromStorage, setCredentials, clearCredentials } = authSlice.actions;
+export const { setCredentials, clearCredentials, setAuthStatus } = authSlice.actions;
 export const authReducer = authSlice.reducer;

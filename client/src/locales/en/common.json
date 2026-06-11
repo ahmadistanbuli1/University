@@ -76,5 +76,11 @@
   "homeLatestNews": "Latest announcements",
   "homeViewAllNews": "View all news",
   "homeQuickLinks": "Quick access",
-  "homeNewsEmpty": "No announcements yet. Check back soon."
+  "homeNewsEmpty": "No announcements yet. Check back soon.",
+  "homeStatColleges": "Colleges",
+  "homeStatAccess": "Portal access",
+  "homeStatDigital": "Digital services",
+  "footerFacebook": "Facebook",
+  "footerInstagram": "Instagram",
+  "footerLinkedin": "LinkedIn"
 }

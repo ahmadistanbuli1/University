@@ -28,6 +28,8 @@
 @layer base {
   :root {
     --public-nav-h: 4.25rem;
+    --public-nav-float-gap: 1rem;
+    --public-nav-offset: calc(var(--public-nav-h) + var(--public-nav-float-gap));
     --dashboard-nav-h: 4.25rem;
   }
 

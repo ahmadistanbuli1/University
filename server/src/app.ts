@@ -1,11 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import path, { resolve } from 'node:path';
 import type { Env } from './config.js';
 import { prisma } from './lib/prisma.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { createAuthenticateMiddleware } from './middleware/authenticate.js';
+import { createAuthenticateMiddleware, optionalAuthenticate } from './middleware/authenticate.js';
 import { ActivityLogController } from './domains/audit/activity-log.controller.js';
 import { createActivityLogRouter } from './domains/audit/activity-log.routes.js';
 import { AuditRepository } from './domains/audit/audit.repository.js';
@@ -71,18 +72,23 @@ import { createGradeSubmissionsRouter } from './domains/gradeSubmissions/grade-s
 
 export function createApp(env: Env) {
   const app = express();
+  if (env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+  }
   app.use(helmet());
   app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
+  app.use(cookieParser());
   app.use(express.json());
 
   const authenticate = createAuthenticateMiddleware(env);
+  const optionalAuth = optionalAuthenticate(env);
 
   const auditRepo = new AuditRepository(prisma);
   const auditService = new AuditService(auditRepo);
 
   const authRepo = new AuthRepository(prisma);
   const authService = new AuthService(authRepo, auditService, env);
-  const authController = new AuthController(authService);
+  const authController = new AuthController(authService, env);
 
   const usersRepo = new UsersRepository(prisma);
   const usersService = new UsersService(usersRepo);
@@ -150,7 +156,7 @@ export function createApp(env: Env) {
 
   app.use('/uploads', express.static(path.resolve(env.UPLOAD_DIR)));
 
-  app.use('/api/auth', createAuthRouter(authController));
+  app.use('/api/auth', createAuthRouter(authController, authenticate, optionalAuth));
   app.use('/api/users', createUsersRouter(usersController, authenticate));
   app.use('/api/structure', createStructureRouter(structureController));
   app.use('/api/academic', createAcademicRouter(academicController, authenticate));

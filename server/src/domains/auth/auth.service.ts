@@ -8,6 +8,7 @@ import {
   syncStudentDepartmentEnrollments,
 } from '../../lib/student-enrollment.js';
 import { ensureStudentTuitionInstallments } from '../../lib/tuition-bootstrap.js';
+import { getCurrentAcademicYear } from '../../lib/academic-year.js';
 import { maxStudyYearsForDepartment } from '../../lib/dept-study-years.js';
 import type { AuthRepository } from './auth.repository.js';
 import type { AuditService } from '../audit/audit.service.js';
@@ -49,6 +50,23 @@ export class AuthService {
     };
   }
 
+  async getMe(userId: string) {
+    const user = await this.users.findById(userId);
+    if (!user || user.active === false) {
+      throw new AppError(401, 'Unauthorized');
+    }
+    return { id: user.id, name: user.name, email: user.email, role: user.role };
+  }
+
+  async logout(userId: string) {
+    await this.audit?.log({
+      userId,
+      action: 'LOGOUT',
+      entity: 'users',
+      entityId: userId,
+    });
+  }
+
   async register(input: {
     name: string;
     email: string;
@@ -56,8 +74,9 @@ export class AuthService {
     departmentId: string;
     academicNumber: string;
     currentSemester: number;
-    academicYear: string;
+    academicYear?: string;
   }) {
+    const academicYear = input.academicYear ?? getCurrentAcademicYear();
     const existing = await this.users.findByEmail(input.email);
     if (existing) {
       throw new AppError(409, 'Email already registered');
@@ -88,20 +107,20 @@ export class AuthService {
       departmentId: input.departmentId,
       academicNumber: input.academicNumber,
       currentSemester,
-      academicYear: input.academicYear,
+      academicYear,
     });
     const student = await prisma.student.findUnique({ where: { userId: user.id } });
     if (student) {
       await syncStudentDepartmentEnrollments(prisma, {
         studentId: student.id,
         departmentId: input.departmentId,
-        academicYear: input.academicYear,
+        academicYear,
       });
       await ensureStudentTuitionInstallments(
         prisma,
         student.id,
         department.collegeId,
-        input.academicYear
+        academicYear
       );
     }
     await this.audit?.log({

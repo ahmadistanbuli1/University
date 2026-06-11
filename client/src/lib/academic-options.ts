@@ -1,3 +1,10 @@
+/** Current academic year (starts in September). */
+export function getCurrentAcademicYear(date = new Date()): string {
+  const year = date.getFullYear();
+  const startYear = date.getMonth() >= 8 ? year : year - 1;
+  return `${startYear}-${startYear + 1}`;
+}
+
 /** Academic year options in YYYY-YYYY format (e.g. 2021-2022). */
 export function buildAcademicYearOptions(anchorYear = new Date().getFullYear()): string[] {
   const START_YEAR = 2021;

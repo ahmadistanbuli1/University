@@ -1,18 +1,33 @@
 import { useEffect } from 'react';
+import { axiosInstance } from '../api/http.js';
 import { useAppDispatch } from '../hooks/redux.js';
-import { hydrateFromStorage } from '../store/authSlice.js';
+import type { AuthUser } from '../store/authSlice.js';
+import { clearCredentials, setCredentials } from '../store/authSlice.js';
 
-/** Re-sync auth when another tab changes localStorage (login/logout). */
+/** Restore session from HttpOnly auth cookie on app load. */
 export function AuthBootstrap() {
   const dispatch = useAppDispatch();
+
   useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'university_token' || e.key === 'university_user') {
-        dispatch(hydrateFromStorage());
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const { data } = await axiosInstance.get<{ user: AuthUser }>('/api/auth/me');
+        if (!cancelled) {
+          dispatch(setCredentials({ user: data.user }));
+        }
+      } catch {
+        if (!cancelled) {
+          dispatch(clearCredentials());
+        }
       }
+    })();
+
+    return () => {
+      cancelled = true;
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
   }, [dispatch]);
+
   return null;
 }
