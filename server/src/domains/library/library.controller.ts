@@ -5,6 +5,7 @@ import {
   listBooksQuerySchema,
   updateBookSchema,
 } from './library.schemas.js';
+import { storedUploadUrl } from '../../lib/multer-upload.js';
 import type { LibraryService } from './library.service.js';
 
 export class LibraryController {
@@ -37,7 +38,7 @@ export class LibraryController {
       res.status(400).json({ error: 'PDF file is required' });
       return;
     }
-    const filePath = `/uploads/${file.filename}`;
+    const filePath = storedUploadUrl('library', file.filename);
     const book = await this.library.createBook({
       librarianId: req.authUser!.id,
       title: body.title,

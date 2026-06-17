@@ -235,6 +235,23 @@ export class TuitionService {
     return this.repo.listMyDiscountRequests(student.id);
   }
 
+  async getDiscountProofPath(userId: string, role: UserRole, discountId: string) {
+    const row = await this.repo.findDiscountRequest(discountId);
+    if (!row) {
+      throw new AppError(404, 'Request not found');
+    }
+    if (!row.proofFilePath) {
+      throw new AppError(404, 'Proof file not found');
+    }
+
+    const isOwner = row.student.userId === userId;
+    if (!isOwner && role !== 'ADMIN') {
+      throw new AppError(403, 'Forbidden');
+    }
+
+    return row.proofFilePath;
+  }
+
   async reviewDiscountRequest(
     adminId: string,
     role: UserRole,

@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import multer from 'multer';
-import fs from 'node:fs';
 import rateLimit from 'express-rate-limit';
 import { asyncHandler } from '../../utils/asyncHandler.js';
+import { validateUploadMagic } from '../../lib/file-magic.js';
+import { createDiskUpload } from '../../lib/multer-upload.js';
 import { requireRoles } from '../../middleware/requireRoles.js';
 import type { LibraryController } from './library.controller.js';
 import type { Env } from '../../config.js';
@@ -14,25 +14,13 @@ export function createLibraryRouter(
   env: Env
 ) {
   const r = Router();
-  fs.mkdirSync(env.UPLOAD_DIR, { recursive: true });
-  const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, env.UPLOAD_DIR),
-    filename: (_req, file, cb) => {
-      const safe = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      cb(null, safe);
-    },
+  const upload = createDiskUpload(env.UPLOAD_DIR, {
+    category: 'library',
+    maxBytes: 20 * 1024 * 1024,
+    allowedMagic: ['pdf'],
+    allowedMime: /^application\/pdf$/,
   });
-  const upload = multer({
-    storage,
-    limits: { fileSize: 20 * 1024 * 1024 },
-    fileFilter: (_req, file, cb) => {
-      if (file.mimetype !== 'application/pdf') {
-        cb(new Error('Only PDF uploads are allowed'));
-        return;
-      }
-      cb(null, true);
-    },
-  });
+  const validatePdfMagic = validateUploadMagic(['pdf']);
 
   const counterLimiter = rateLimit({ windowMs: 60_000, max: 120 });
 
@@ -67,9 +55,15 @@ export function createLibraryRouter(
     requireRoles('LIBRARIAN'),
     asyncHandler(controller.stats.bind(controller))
   );
-  r.patch('/books/:id/read', counterLimiter, asyncHandler(controller.patchRead.bind(controller)));
+  r.patch(
+    '/books/:id/read',
+    authenticate,
+    counterLimiter,
+    asyncHandler(controller.patchRead.bind(controller))
+  );
   r.patch(
     '/books/:id/download',
+    authenticate,
     counterLimiter,
     asyncHandler(controller.patchDownload.bind(controller))
   );
@@ -78,6 +72,7 @@ export function createLibraryRouter(
     authenticate,
     requireRoles('LIBRARIAN'),
     upload.single('file'),
+    validatePdfMagic,
     asyncHandler(controller.createBook.bind(controller))
   );
   r.patch(

@@ -1,5 +1,15 @@
 import type { NewsCategory, Prisma, PrismaClient } from '@prisma/client';
 
+const listInclude = {
+  author: { select: { id: true, name: true } },
+  college: { select: { id: true, name: true } },
+} as const;
+
+const detailInclude = {
+  ...listInclude,
+  galleryImages: { orderBy: { sortOrder: 'asc' as const } },
+} as const;
+
 export class NewsRepository {
   constructor(private readonly db: PrismaClient) {}
 
@@ -26,9 +36,18 @@ export class NewsRepository {
         orderBy: { createdAt: 'desc' },
         skip,
         take: params.pageSize,
-        include: {
-          author: { select: { id: true, name: true } },
-          college: { select: { id: true, name: true } },
+        select: {
+          id: true,
+          title: true,
+          summary: true,
+          imageUrl: true,
+          category: true,
+          enablePayNow: true,
+          tuitionSemesterKey: true,
+          collegeId: true,
+          createdAt: true,
+          author: listInclude.author,
+          college: listInclude.college,
         },
       }),
       this.db.news.count({ where }),
@@ -38,20 +57,19 @@ export class NewsRepository {
   findById(id: string) {
     return this.db.news.findUnique({
       where: { id },
-      include: {
-        author: { select: { id: true, name: true } },
-        college: { select: { id: true, name: true } },
-      },
+      include: detailInclude,
     });
   }
 
-  create(data: Prisma.NewsCreateInput) {
+  create(data: Prisma.NewsCreateInput, gallery?: Array<{ imageUrl: string; sortOrder: number }>) {
     return this.db.news.create({
-      data,
-      include: {
-        author: { select: { id: true, name: true } },
-        college: { select: { id: true, name: true } },
+      data: {
+        ...data,
+        galleryImages: gallery?.length
+          ? { create: gallery.map((g) => ({ imageUrl: g.imageUrl, sortOrder: g.sortOrder })) }
+          : undefined,
       },
+      include: detailInclude,
     });
   }
 
@@ -59,10 +77,30 @@ export class NewsRepository {
     return this.db.news.update({
       where: { id },
       data,
-      include: {
-        author: { select: { id: true, name: true } },
-        college: { select: { id: true, name: true } },
-      },
+      include: detailInclude,
+    });
+  }
+
+  addGalleryImages(newsId: string, images: Array<{ imageUrl: string; sortOrder: number }>) {
+    if (!images.length) return Promise.resolve();
+    return this.db.newsImage.createMany({
+      data: images.map((img) => ({
+        newsId,
+        imageUrl: img.imageUrl,
+        sortOrder: img.sortOrder,
+      })),
+    });
+  }
+
+  deleteGalleryImages(ids: string[]) {
+    if (!ids.length) return Promise.resolve({ count: 0 });
+    return this.db.newsImage.deleteMany({ where: { id: { in: ids } } });
+  }
+
+  maxGallerySortOrder(newsId: string) {
+    return this.db.newsImage.aggregate({
+      where: { newsId },
+      _max: { sortOrder: true },
     });
   }
 

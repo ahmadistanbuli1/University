@@ -2,6 +2,7 @@ import { Home, Library, LogIn, Menu, Newspaper, UserPlus, X } from 'lucide-react
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink } from 'react-router-dom';
+import spuLogo from '../../images/spu.png';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher.js';
 import { ThemeToggle } from '../ui/ThemeToggle.js';
 import { cn } from '../../lib/cn.js';
@@ -94,12 +95,12 @@ export function PublicNavbar() {
               className="flex min-w-0 items-center gap-2.5 font-black tracking-tight text-zinc-900 no-underline sm:gap-3 dark:text-white"
               onClick={() => setOpen(false)}
             >
-              <span
-                className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand via-brand-light to-brand-secondary text-xs font-black text-white shadow-lg shadow-brand/30 sm:size-11 sm:rounded-2xl sm:text-sm"
+              <img
+                src={spuLogo}
+                alt=""
+                className="size-10 shrink-0 rounded-xl object-contain shadow-md shadow-brand/20 sm:size-11 sm:rounded-2xl"
                 aria-hidden
-              >
-                SPU
-              </span>
+              />
               <span className="hidden min-w-0 flex-col sm:flex">
                 <span className="text-sm font-black leading-tight sm:text-base">{t('brandShort')}</span>
                 <span className="truncate text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">

@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { passwordSchema } from '../../lib/password-policy.js';
 
 export const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(1),
 });
 
 const academicYearPattern = /^\d{4}-\d{4}$/;
@@ -10,7 +11,7 @@ const academicYearPattern = /^\d{4}-\d{4}$/;
 export const registerSchema = z.object({
   name: z.string().min(1).max(120),
   email: z.string().email(),
-  password: z.string().min(6).max(128),
+  password: passwordSchema,
   departmentId: z.string().uuid(),
   academicNumber: z
     .string()

@@ -40,6 +40,6 @@ describe('buildTranscriptPdfData', () => {
     expect(data.rows[0]!.total).toBe(80);
     expect(data.rows[0]!.status).toBe('Pass');
     expect(data.gpa).toBe(85);
-    expect(data.universityName).toContain('SPU');
+    expect(data.universityName).toBe('AlShamal Private University');
   });
 });

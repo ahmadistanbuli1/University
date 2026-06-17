@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import PDFDocument from 'pdfkit';
+import { drawUniversityPdfHeader, UNIVERSITY_NAME } from './pdf-branding.js';
 
 type PdfDoc = InstanceType<typeof PDFDocument>;
 
@@ -50,22 +51,18 @@ export async function generateTranscriptPdf(
     const stream = fs.createWriteStream(outputAbsolutePath);
     doc.pipe(stream);
 
-    doc
-      .fontSize(18)
-      .font('Helvetica-Bold')
-      .fillColor('#1e3a8a')
-      .text(data.universityName, { align: 'center' });
-    doc
-      .fontSize(12)
-      .fillColor('#334155')
-      .font('Helvetica')
-      .text('Official Academic Grade Transcript', { align: 'center' });
-    doc.moveDown(0.5);
+    const contentTop = drawUniversityPdfHeader(doc, {
+      subtitle: 'Official Academic Grade Transcript',
+      margin: 50,
+    });
+
+    doc.y = contentTop;
     doc
       .fontSize(9)
       .fillColor('#64748b')
-      .text(`Issued: ${data.issuedAt.toISOString().slice(0, 10)}`, { align: 'center' });
-    doc.moveDown(1.2);
+      .font('Helvetica')
+      .text(`Issued: ${data.issuedAt.toISOString().slice(0, 10)}`, { align: 'right' });
+    doc.moveDown(1);
 
     doc.fontSize(10).fillColor('#0f172a').font('Helvetica-Bold').text('Student Information');
     doc.moveDown(0.3);
@@ -125,7 +122,7 @@ export async function generateTranscriptPdf(
         { align: 'left' }
       );
     doc.moveDown(0.5);
-    doc.text('This document was generated electronically by the university portal.', {
+    doc.text(`This document was generated electronically by ${UNIVERSITY_NAME}.`, {
       align: 'center',
     });
 

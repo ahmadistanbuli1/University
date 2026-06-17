@@ -17,6 +17,7 @@ type DiscountRow = {
   type: string;
   status: string;
   notes?: string | null;
+  proofFilePath?: string | null;
   student?: { user?: { name?: string; email?: string }; department?: { name?: string } };
 };
 
@@ -55,6 +56,16 @@ export function AdminDiscountsPage() {
               <p className="mt-2 text-sm">
                 {t(`tuition.discountTypes.${r.type}`)} — {r.notes}
               </p>
+              {r.proofFilePath ? (
+                <a
+                  href={`/api/tuition/discounts/${r.id}/proof`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-block text-xs text-brand hover:underline"
+                >
+                  {t('tuition.viewProof')}
+                </a>
+              ) : null}
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <Field label={t('tuition.discountPercent')}>
                   <Input

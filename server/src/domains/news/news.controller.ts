@@ -5,6 +5,7 @@ import {
   parseNewsFormBody,
   parseNewsUpdateBody,
 } from './news.schemas.js';
+import { parseNewsMultipartUploads } from './news-uploads.js';
 import type { NewsService } from './news.service.js';
 
 export class NewsController {
@@ -25,18 +26,20 @@ export class NewsController {
   };
 
   create = async (req: Request, res: Response) => {
-    const uploaded = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const uploads = parseNewsMultipartUploads(req);
     const body = parseNewsFormBody({
       ...(req.body as Record<string, unknown>),
-      ...(uploaded ? { imageUrl: uploaded } : {}),
+      ...(uploads.coverUrl ? { imageUrl: uploads.coverUrl } : {}),
     });
     const created = await this.news.createNews({
       authorId: req.authUser!.id,
       role: req.authUser!.role,
       collegeId: body.collegeId,
       title: body.title,
+      summary: body.summary,
       content: body.content,
       imageUrl: body.imageUrl,
+      gallery: uploads.gallery,
       authorCollegeId: req.authUser!.collegeId ?? null,
       category: body.category,
       enablePayNow: body.enablePayNow,
@@ -47,16 +50,24 @@ export class NewsController {
   };
 
   update = async (req: Request, res: Response) => {
-    const uploaded = req.file ? `/uploads/${req.file.filename}` : undefined;
+    const uploads = parseNewsMultipartUploads(req);
     const body = parseNewsUpdateBody({
       ...(req.body as Record<string, unknown>),
-      ...(uploaded ? { imageUrl: uploaded } : {}),
+      ...(uploads.coverUrl ? { imageUrl: uploads.coverUrl } : {}),
     });
-    const updated = await this.news.updateNews(paramId(req), {
-      id: req.authUser!.id,
-      role: req.authUser!.role,
-      collegeId: req.authUser!.collegeId ?? null,
-    }, body);
+    const updated = await this.news.updateNews(
+      paramId(req),
+      {
+        id: req.authUser!.id,
+        role: req.authUser!.role,
+        collegeId: req.authUser!.collegeId ?? null,
+      },
+      {
+        ...body,
+        gallery: uploads.gallery.length ? uploads.gallery : undefined,
+        removedGalleryIds: body.removedGalleryIds,
+      }
+    );
     res.json(updated);
   };
 

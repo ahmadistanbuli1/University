@@ -1,8 +1,7 @@
 import type { StudyTerm } from '@prisma/client';
 import { averageCourseTotals, courseTotalScore, studyYearFromSemester } from '../domains/academic/study-plan.js';
+import { UNIVERSITY_NAME } from './pdf-branding.js';
 import type { TranscriptPdfData, TranscriptPdfRow } from './transcript-pdf.js';
-
-const UNIVERSITY_NAME = 'Syrian Private University (SPU)';
 
 function termLabel(term: StudyTerm): string {
   return term === 'FIRST' ? 'Term I' : 'Term II';

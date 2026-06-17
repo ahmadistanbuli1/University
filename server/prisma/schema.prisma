@@ -485,21 +485,35 @@ model BookKeyword {
 // -----------------------------------------------------------------------------
 
 model News {
-  id           String       @id @default(uuid()) @db.Uuid
-  title        String
-  content      String       @db.Text
-  imageUrl     String?      @map("image_url")
+  id                 String       @id @default(uuid()) @db.Uuid
+  title              String
+  summary            String       @db.Text
+  content            String       @db.Text
+  imageUrl           String?      @map("image_url")
   category           NewsCategory @default(ANNOUNCEMENT)
   enablePayNow       Boolean      @default(false) @map("enable_pay_now")
   /// When category is TUITION: semester-1 | semester-2 — which installment pay box to unlock.
   tuitionSemesterKey String?      @map("tuition_semester_key")
-  collegeId    String?      @map("college_id") @db.Uuid
-  college      College?     @relation(fields: [collegeId], references: [id])
-  authorId     String       @map("author_id") @db.Uuid
-  author       User         @relation(fields: [authorId], references: [id])
-  createdAt    DateTime     @default(now()) @map("created_at")
+  collegeId          String?      @map("college_id") @db.Uuid
+  college            College?     @relation(fields: [collegeId], references: [id])
+  authorId           String       @map("author_id") @db.Uuid
+  author             User         @relation(fields: [authorId], references: [id])
+  createdAt          DateTime     @default(now()) @map("created_at")
+  galleryImages      NewsImage[]
 
   @@map("news")
+}
+
+model NewsImage {
+  id        String   @id @default(uuid()) @db.Uuid
+  newsId    String   @map("news_id") @db.Uuid
+  news      News     @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  imageUrl  String   @map("image_url")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([newsId])
+  @@map("news_images")
 }
 
 // -----------------------------------------------------------------------------

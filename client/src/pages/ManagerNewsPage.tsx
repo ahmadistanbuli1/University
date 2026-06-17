@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useCreateNewsMutation, useMeQuery } from '../api/hooks.js';
+import { NewsGalleryUpload } from '../components/news/NewsGalleryUpload.js';
 import { Alert } from '../components/ui/Alert.js';
 import { Button } from '../components/ui/Button.js';
 import { Card } from '../components/ui/Card.js';
@@ -18,6 +19,7 @@ import { MANAGER_NEWS_CATEGORIES, newsCategoryLabel, newsScopeLabel } from '../l
 
 const managerNewsSchema = z.object({
   title: z.string().min(1),
+  summary: z.string().min(1).max(500),
   content: z.string().min(1),
   scope: z.enum(['COLLEGE', 'UNIVERSITY']),
   category: z.enum(['ANNOUNCEMENT', 'WORKSHOP', 'TRAINING']),
@@ -29,7 +31,8 @@ export function ManagerNewsPage() {
   const { t } = useTranslation('nav');
   const { data: me } = useMeQuery();
   const create = useCreateNewsMutation();
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
 
   const collegeName =
     (me as { college?: { name?: string } } | undefined)?.college?.name ?? '';
@@ -43,6 +46,7 @@ export function ManagerNewsPage() {
     resolver: zodResolver(managerNewsSchema),
     defaultValues: {
       title: '',
+      summary: '',
       content: '',
       scope: 'COLLEGE',
       category: 'ANNOUNCEMENT',
@@ -57,7 +61,7 @@ export function ManagerNewsPage() {
         <Alert variant="info">{t('news.managerCollegeHint', { college: collegeName })}</Alert>
       ) : null}
 
-      <Card className="max-w-lg">
+      <Card className="max-w-2xl">
         <form
           className="flex flex-col gap-4"
           onSubmit={handleSubmit((vals) => {
@@ -65,42 +69,51 @@ export function ManagerNewsPage() {
               {
                 body: {
                   title: vals.title,
+                  summary: vals.summary,
                   content: vals.content,
                   category: vals.category,
                   scope: vals.scope,
                   collegeId: vals.scope === 'COLLEGE' ? undefined : null,
                 },
-                imageFile,
+                coverFile,
+                galleryFiles,
               },
               {
                 onSuccess: () => {
                   toast.success(t('messages.newsCreated'));
                   reset();
-                  setImageFile(null);
+                  setCoverFile(null);
+                  setGalleryFiles([]);
                 },
                 onError: () => toast.error(t('messages.loadError')),
               }
             );
           })}
         >
-          <NewsImageUpload
-            file={imageFile}
-            onFileChange={setImageFile}
-            disabled={create.isPending}
-          />
+          <NewsImageUpload file={coverFile} onFileChange={setCoverFile} disabled={create.isPending} />
           <Field label={t('labels.title')} error={errors.title?.message}>
             <Input aria-invalid={!!errors.title} {...register('title')} />
           </Field>
-          <Field label={t('labels.content')} error={errors.content?.message}>
-            <Textarea rows={6} aria-invalid={!!errors.content} {...register('content')} />
+          <Field label={t('news.summary')} error={errors.summary?.message}>
+            <Textarea rows={3} aria-invalid={!!errors.summary} {...register('summary')} />
           </Field>
+          <Field label={t('news.fullContent')} error={errors.content?.message}>
+            <Textarea rows={8} aria-invalid={!!errors.content} {...register('content')} />
+          </Field>
+          <NewsGalleryUpload
+            newFiles={galleryFiles}
+            onNewFilesChange={setGalleryFiles}
+            removedIds={[]}
+            onToggleRemoveExisting={() => undefined}
+            disabled={create.isPending}
+          />
           <Field label={t('news.publishScope')}>
             <Select {...register('scope')}>
               <option value="COLLEGE">{newsScopeLabel('COLLEGE', t)}</option>
               <option value="UNIVERSITY">{newsScopeLabel('UNIVERSITY', t)}</option>
             </Select>
           </Field>
-          <Field label={t('news.filterCategory')} error={errors.category?.message}>
+          <Field label={t('news.filterCategory')}>
             <Select {...register('category')}>
               {MANAGER_NEWS_CATEGORIES.map((c) => (
                 <option key={c} value={c}>

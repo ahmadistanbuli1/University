@@ -1,6 +1,6 @@
 import type { LibraryBookCategory, PrismaClient } from '@prisma/client';
 
-const PLACEHOLDER = '/uploads/sample-placeholder.pdf';
+const PLACEHOLDER = '/uploads/library/sample-placeholder.pdf';
 
 type BookSeed = {
   title: string;

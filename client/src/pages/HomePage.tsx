@@ -22,7 +22,7 @@ import {
 } from '../components/motion/Reveal.js';
 import { Button } from '../components/ui/Button.js';
 import type { NewsCardItem } from '../components/ui/NewsCard.js';
-import { NewsTimeline } from '../components/ui/NewsTimeline.js';
+import { NewsFeedCard } from '../components/news/NewsFeedCard.js';
 import { NewsCardSkeleton } from '../components/ui/Skeleton.js';
 import { cn } from '../lib/cn.js';
 
@@ -210,7 +210,11 @@ export function HomePage() {
               {t('homeNewsEmpty')}
             </p>
           ) : (
-            <NewsTimeline items={previewItems} />
+            <div className="grid gap-6 sm:grid-cols-2">
+              {previewItems.map((item) => (
+                <NewsFeedCard key={item.id} item={item} />
+              ))}
+            </div>
           )}
         </div>
       </RevealOnScroll>

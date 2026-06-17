@@ -14,6 +14,7 @@ import { useSidebarCollapsed } from '../hooks/useSidebarCollapsed.js';
 import { cn } from '../lib/cn.js';
 import { springSnappy } from '../lib/motion.js';
 import { logoutSession } from '../api/http.js';
+import spuLogo from '../images/spu.png';
 import { NotificationBell } from '../components/NotificationBell.js';
 import { clearCredentials } from '../store/authSlice.js';
 
@@ -78,11 +79,12 @@ export function DashboardShell({ titleKey, navItems }: DashboardShellProps) {
               <PanelLeftClose className="size-[1.15rem]" strokeWidth={1.85} aria-hidden />
             )}
           </Button>
-          <span className="hidden sm:grid">
-            <span className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand-light text-xs font-black text-white shadow-md">
-              SPU
-            </span>
-          </span>
+          <img
+            src={spuLogo}
+            alt=""
+            className="hidden size-11 shrink-0 rounded-2xl object-contain shadow-md sm:block"
+            aria-hidden
+          />
           <div className="min-w-0 sm:ps-0">
             <p className="truncate text-[10px] font-extrabold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
               {t('labels.workspace')}

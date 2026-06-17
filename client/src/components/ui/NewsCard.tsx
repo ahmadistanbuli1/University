@@ -1,6 +1,7 @@
 import { Calendar, User } from 'lucide-react';
 import { newsCategoryLabel } from '../../lib/news-categories.js';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Card } from './Card.js';
 import { NewsCover } from './NewsCover.js';
 import { cn } from '../../lib/cn.js';
@@ -8,7 +9,8 @@ import { cn } from '../../lib/cn.js';
 export type NewsCardItem = {
   id: string;
   title: string;
-  content: string;
+  summary?: string;
+  content?: string;
   createdAt: string;
   imageUrl?: string | null;
   category?: string;
@@ -19,7 +21,6 @@ export type NewsCardItem = {
 type NewsCardProps = {
   item: NewsCardItem;
   className?: string;
-  /** Full article on timeline; shorter excerpt on grids */
   variant?: 'card' | 'compact';
 };
 
@@ -37,11 +38,12 @@ function formatDate(iso: string) {
 
 export function NewsCard({ item, className, variant = 'card' }: NewsCardProps) {
   const { t } = useTranslation('nav');
-  const excerptLen = variant === 'compact' ? 140 : 280;
+  const excerptLen = variant === 'compact' ? 140 : 200;
   const excerpt =
-    item.content.length > excerptLen
+    item.summary ??
+    (item.content && item.content.length > excerptLen
       ? `${item.content.slice(0, excerptLen).trim()}…`
-      : item.content;
+      : item.content ?? '');
   const author = item.author?.name?.trim();
   const hasImage = Boolean(item.imageUrl);
 
@@ -52,14 +54,16 @@ export function NewsCard({ item, className, variant = 'card' }: NewsCardProps) {
         className
       )}
     >
-      {hasImage ? (
-        <NewsCover imageUrl={item.imageUrl} alt={item.title} heightClass="h-48 sm:h-52" />
-      ) : (
-        <div
-          className="h-1.5 w-full bg-gradient-to-r from-brand via-brand-light to-brand-secondary"
-          aria-hidden
-        />
-      )}
+      <Link to={`/news/${item.id}`} className="block">
+        {hasImage ? (
+          <NewsCover imageUrl={item.imageUrl} alt={item.title} heightClass="h-48 sm:h-52" />
+        ) : (
+          <div
+            className="h-1.5 w-full bg-gradient-to-r from-brand via-brand-light to-brand-secondary"
+            aria-hidden
+          />
+        )}
+      </Link>
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
           {item.category ? (
@@ -79,11 +83,11 @@ export function NewsCard({ item, className, variant = 'card' }: NewsCardProps) {
           ) : null}
         </div>
         <h3 className="text-lg font-bold leading-snug tracking-tight text-zinc-900 sm:text-xl dark:text-white">
-          {item.title}
+          <Link to={`/news/${item.id}`} className="hover:text-brand dark:hover:text-brand-light">
+            {item.title}
+          </Link>
         </h3>
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-          {excerpt}
-        </p>
+        <p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">{excerpt}</p>
       </div>
     </Card>
   );

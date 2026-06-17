@@ -1150,6 +1150,17 @@ export function useNewsListQuery(page: number, pageSize = 10, filters?: NewsList
   });
 }
 
+export function useNewsDetailQuery(id: string, enabled = true) {
+  return useQuery({
+    queryKey: ['news', 'detail', id],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<unknown>(`/api/news/${id}`);
+      return data;
+    },
+    enabled: enabled && Boolean(id),
+  });
+}
+
 export function useDeleteNewsMutation() {
   const qc = useQueryClient();
   return useMutation({
@@ -1379,6 +1390,7 @@ export function useCreateNewsMutation() {
     mutationFn: async (args: {
       body: {
         title: string;
+        summary: string;
         content: string;
         imageUrl?: string | null;
         collegeId?: string | null;
@@ -1386,11 +1398,13 @@ export function useCreateNewsMutation() {
         enablePayNow?: boolean;
         tuitionSemesterKey?: 'semester-1' | 'semester-2' | null;
         scope?: 'COLLEGE' | 'UNIVERSITY';
+        removedGalleryIds?: string[];
       };
-      imageFile?: File | null;
+      coverFile?: File | null;
+      galleryFiles?: File[];
     }) => {
       const { buildNewsFormData } = await import('../lib/news-form.js');
-      const fd = buildNewsFormData(args.body, args.imageFile);
+      const fd = buildNewsFormData(args.body, args.coverFile, args.galleryFiles);
       const { data } = await postFormData<unknown>('/api/news', fd);
       return data;
     },
@@ -1409,17 +1423,20 @@ export function useUpdateNewsMutation() {
       id: string;
       body: {
         title: string;
+        summary: string;
         content: string;
         imageUrl?: string | null;
         collegeId?: string | null;
         category?: 'ANNOUNCEMENT' | 'WORKSHOP' | 'TRAINING' | 'TUITION';
         enablePayNow?: boolean;
         tuitionSemesterKey?: 'semester-1' | 'semester-2' | null;
+        removedGalleryIds?: string[];
       };
-      imageFile?: File | null;
+      coverFile?: File | null;
+      galleryFiles?: File[];
     }) => {
       const { buildNewsFormData } = await import('../lib/news-form.js');
-      const fd = buildNewsFormData(args.body, args.imageFile);
+      const fd = buildNewsFormData(args.body, args.coverFile, args.galleryFiles);
       const { data } = await patchFormData<unknown>(`/api/news/${args.id}`, fd);
       return data;
     },

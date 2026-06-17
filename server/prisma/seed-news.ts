@@ -11,6 +11,10 @@ const DEMO_IMAGES: Record<NewsCategory, string> = {
     'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=400&fit=crop&q=80',
 };
 
+function autoSummary(content: string) {
+  return content.length > 220 ? `${content.slice(0, 220).trim()}…` : content;
+}
+
 /** Demo news across categories and colleges — most with cover images, some without. */
 export async function seedNewsDemo(prisma: PrismaClient) {
   const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
@@ -106,21 +110,23 @@ export async function seedNewsDemo(prisma: PrismaClient) {
     const dup = await prisma.news.findFirst({
       where: { title: item.title, collegeId: item.collegeId ?? null },
     });
-    const imageUrl =
-      item.withImage !== false ? DEMO_IMAGES[item.category] : null;
+    const imageUrl = item.withImage !== false ? DEMO_IMAGES[item.category] : null;
+    const summary = autoSummary(item.content);
 
     if (dup) {
-      if (!dup.imageUrl && imageUrl) {
-        await prisma.news.update({
-          where: { id: dup.id },
-          data: { imageUrl },
-        });
-      }
+      await prisma.news.update({
+        where: { id: dup.id },
+        data: {
+          summary: dup.summary || summary,
+          ...( !dup.imageUrl && imageUrl ? { imageUrl } : {}),
+        },
+      });
       continue;
     }
     await prisma.news.create({
       data: {
         title: item.title,
+        summary,
         content: item.content,
         category: item.category,
         authorId: admin.id,

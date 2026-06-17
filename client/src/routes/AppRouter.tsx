@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { AdminLayout } from '../layouts/AdminLayout.js';
 import { AffairsLayout } from '../layouts/AffairsLayout.js';
 import { FacultyLayout } from '../layouts/FacultyLayout.js';
@@ -35,6 +35,7 @@ import { ManagerNewsPage } from '../pages/ManagerNewsPage.js';
 import { ManagerRequestsPage } from '../pages/ManagerRequestsPage.js';
 import { ManagerStudentsPage } from '../pages/ManagerStudentsPage.js';
 import { NewsPage } from '../pages/NewsPage.js';
+import { NewsDetailPage } from '../pages/NewsDetailPage.js';
 import { StudentAppealsPage } from '../pages/StudentAppealsPage.js';
 import { StudentClearancePage } from '../pages/StudentClearancePage.js';
 import { StudentCoursesPage } from '../pages/StudentCoursesPage.js';
@@ -56,6 +57,12 @@ import { AdminFinancialSettingsPage } from '../pages/AdminFinancialSettingsPage.
 import { ProtectedRoute } from './ProtectedRoute.js';
 import { RoleRoute } from './RoleRoute.js';
 
+function NewsDetailRoute() {
+  const { id } = useParams<{ id: string }>();
+  if (!id) return <Navigate to="/news" replace />;
+  return <NewsDetailPage id={id} />;
+}
+
 export function AppRouter() {
   return (
     <Routes>
@@ -64,6 +71,7 @@ export function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/news" element={<NewsPage />} />
+        <Route path="/news/:id" element={<NewsDetailRoute />} />
         <Route path="/library" element={<LibraryPage />} />
       </Route>
 

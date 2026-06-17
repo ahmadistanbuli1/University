@@ -7,7 +7,7 @@ const testEnv: Env = {
   NODE_ENV: 'test',
   PORT: 4000,
   DATABASE_URL: process.env.DATABASE_URL ?? 'postgresql://localhost:5432/university_test',
-  JWT_SECRET: 'test-jwt-secret-min-16-chars',
+  JWT_SECRET: 'test-jwt-secret-minimum-32-characters-long',
   JWT_EXPIRES_IN: '1h',
   UPLOAD_DIR: './test-uploads',
   CLIENT_ORIGIN: 'http://localhost:5173',

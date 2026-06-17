@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { optionalPasswordSchema, passwordSchema } from '../../lib/password-policy.js';
 
 export const paginationQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -41,7 +42,7 @@ export const adminCreateUserSchema = z
   .object({
     name: z.string().min(1).max(120),
     email: z.string().email(),
-    password: z.string().min(6).max(128),
+    password: passwordSchema,
     role: userRoleEnum,
     collegeId: z.string().uuid().nullable().optional(),
     studentProfile: studentProfileFields.optional(),
@@ -73,7 +74,7 @@ export const adminUpdateUserSchema = z.object({
   role: userRoleEnum.optional(),
   collegeId: z.string().uuid().nullable().optional(),
   active: z.boolean().optional(),
-  password: z.string().min(6).max(128).optional(),
+  password: optionalPasswordSchema.optional(),
   studentProfile: studentProfileFields.partial().optional(),
   facultyCourseIds: z.array(z.string().uuid()).optional(),
 });

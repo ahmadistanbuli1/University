@@ -100,6 +100,7 @@ export async function seedTuitionAndDiscounts(prisma: PrismaClient) {
       await prisma.news.create({
         data: {
           title: 'Second semester tuition payment is open',
+          summary: 'Tuition for the second semester ($500) is now due via the student portal.',
           content:
             'Tuition for the second semester ($500) is now due. Please complete payment through the student portal.',
           category: 'TUITION',
@@ -111,6 +112,7 @@ export async function seedTuitionAndDiscounts(prisma: PrismaClient) {
       await prisma.news.create({
         data: {
           title: 'بدأ تسديد أقساط الفصل الثاني',
+          summary: 'بدء فترة تسديد أقساط الفصل الدراسي الثاني عبر بوابة الطالب.',
           content:
             'يسر الجامعة إعلام الطلبة ببدء فترة تسديد أقساط الفصل الدراسي الثاني. يمكنكم الدفع عبر بوابة الطالب.',
           category: 'TUITION',

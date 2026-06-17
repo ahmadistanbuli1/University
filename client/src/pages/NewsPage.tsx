@@ -2,9 +2,9 @@ import { Newspaper } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCollegesQuery, useMeQuery, useNewsListQuery, type NewsListFilters } from '../api/hooks.js';
+import { NewsFeedCard } from '../components/news/NewsFeedCard.js';
 import { Alert } from '../components/ui/Alert.js';
 import type { NewsCardItem } from '../components/ui/NewsCard.js';
-import { NewsTimeline } from '../components/ui/NewsTimeline.js';
 import { PageHeader } from '../components/ui/PageHeader.js';
 import { Pagination } from '../components/ui/Pagination.js';
 import { Field } from '../components/ui/Field.js';
@@ -45,7 +45,7 @@ export function NewsPage() {
     category: category || undefined,
   };
 
-  const { data, isLoading, isError } = useNewsListQuery(page, 10, filters);
+  const { data, isLoading, isError } = useNewsListQuery(page, 9, filters);
 
   if (isError) return <Alert variant="error">{t('messages.loadError')}</Alert>;
 
@@ -55,11 +55,11 @@ export function NewsPage() {
     <section>
       <PageHeader
         title={t('headings.publicNews')}
-        description={t('messages.newsTimelineLead')}
+        description={t('messages.newsFeedLead')}
         icon={Newspaper}
       />
 
-      <div className="mb-6 flex flex-wrap gap-3">
+      <div className="mb-8 flex flex-wrap gap-3">
         <Field label={t('news.filterCategory')} className="min-w-[10rem]">
           <Select
             value={category}
@@ -86,12 +86,14 @@ export function NewsPage() {
       </div>
 
       {studentCollegeId && collegeId === studentCollegeId ? (
-        <Alert variant="info">{t('news.collegeFilterHint')}</Alert>
+        <Alert variant="info" className="mb-6">
+          {t('news.collegeFilterHint')}
+        </Alert>
       ) : null}
 
       {isLoading ? (
-        <div className="max-w-3xl space-y-6">
-          {Array.from({ length: 3 }).map((_, i) => (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
             <NewsCardSkeleton key={i} />
           ))}
         </div>
@@ -100,8 +102,10 @@ export function NewsPage() {
           {items.length === 0 ? (
             <Alert variant="info">{t('messages.noNews')}</Alert>
           ) : (
-            <div className="mx-auto max-w-3xl">
-              <NewsTimeline items={items} />
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((item, index) => (
+                <NewsFeedCard key={item.id} item={item} featured={page === 1 && index === 0} />
+              ))}
             </div>
           )}
           {data ? (

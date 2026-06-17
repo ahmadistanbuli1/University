@@ -13,8 +13,6 @@ import { PageHeader } from '../components/ui/PageHeader.js';
 import { Select } from '../components/ui/Select.js';
 import { StatusBadge } from '../components/ui/StatusBadge.js';
 import { Textarea } from '../components/ui/Textarea.js';
-import { resolveMediaUrl } from '../lib/mediaUrl.js';
-
 const schema = z.object({
   type: z.enum(['MARTYR_RELATIVE', 'ACADEMIC_EXCELLENCE', 'HUMANITARIAN']),
   notes: z.string().max(2000).optional(),
@@ -125,7 +123,7 @@ export function StudentDiscountsPage() {
                 ) : null}
                 {r.proofFilePath ? (
                   <a
-                    href={resolveMediaUrl(r.proofFilePath)}
+                    href={`/api/tuition/discounts/${r.id}/proof`}
                     target="_blank"
                     rel="noreferrer"
                     className="mt-2 inline-block text-xs text-brand hover:underline"

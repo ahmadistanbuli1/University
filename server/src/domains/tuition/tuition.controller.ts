@@ -1,4 +1,7 @@
+import fs from 'node:fs';
 import type { Request, Response } from 'express';
+import { resolveStoredUploadAbsolutePath } from '../../lib/upload-paths.js';
+import { storedUploadUrl } from '../../lib/multer-upload.js';
 import { paramId } from '../../utils/paramId.js';
 import {
   discountRequestSchema,
@@ -8,7 +11,10 @@ import {
 import type { TuitionService } from './tuition.service.js';
 
 export class TuitionController {
-  constructor(private readonly svc: TuitionService) {}
+  constructor(
+    private readonly svc: TuitionService,
+    private readonly uploadRoot: string
+  ) {}
 
   mySummary = async (req: Request, res: Response) => {
     const data = await this.svc.getMySummary(req.authUser!.id, req.authUser!.role);
@@ -37,7 +43,7 @@ export class TuitionController {
   submitDiscount = async (req: Request, res: Response) => {
     const body = discountRequestSchema.parse(req.body);
     const file = req.file;
-    const proofFilePath = file ? `/uploads/${file.filename}` : undefined;
+    const proofFilePath = file ? storedUploadUrl('discounts', file.filename) : undefined;
     const created = await this.svc.submitDiscountRequest(
       req.authUser!.id,
       req.authUser!.role,
@@ -66,5 +72,19 @@ export class TuitionController {
       body
     );
     res.json(updated);
+  };
+
+  downloadDiscountProof = async (req: Request, res: Response) => {
+    const proofPath = await this.svc.getDiscountProofPath(
+      req.authUser!.id,
+      req.authUser!.role,
+      paramId(req)
+    );
+    const absolutePath = resolveStoredUploadAbsolutePath(this.uploadRoot, proofPath);
+    if (!fs.existsSync(absolutePath)) {
+      res.status(404).json({ error: 'Proof file missing on server' });
+      return;
+    }
+    res.sendFile(absolutePath);
   };
 }

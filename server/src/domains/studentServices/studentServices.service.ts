@@ -7,6 +7,7 @@ import { getServiceFees } from '../../lib/financial-settings.js';
 import { generateTranscriptPdf } from '../../lib/transcript-pdf.js';
 import { generateClearancePdf } from '../../lib/clearance-pdf.js';
 import { generateStudentProfilePdf } from '../../lib/student-profile-pdf.js';
+import { resolveStoredUploadAbsolutePath } from '../../lib/upload-paths.js';
 import { prisma } from '../../lib/prisma.js';
 import { maxStudyYearsForDepartment } from '../../lib/dept-study-years.js';
 import {
@@ -244,14 +245,14 @@ export class StudentServicesService {
       })),
     });
     const fileName = `transcript-${id}.pdf`;
-    const transcriptsDir = path.join(this.uploadDir, 'transcripts');
+    const transcriptsDir = path.join(this.uploadDir, 'private', 'transcripts');
     if (!fs.existsSync(transcriptsDir)) {
       fs.mkdirSync(transcriptsDir, { recursive: true });
     }
     const absolutePath = path.join(transcriptsDir, fileName);
     await generateTranscriptPdf(pdfData, absolutePath);
 
-    const filePath = `/uploads/transcripts/${fileName}`;
+    const filePath = `/uploads/private/transcripts/${fileName}`;
     const updated = await this.repo.updateTranscript(id, {
       status: 'DELIVERED',
       filePath,
@@ -290,11 +291,7 @@ export class StudentServicesService {
       throw new AppError(403, 'Forbidden');
     }
 
-    const relative = tr.filePath.replace(/^\/uploads\/?/, '');
-    const absolutePath = path.resolve(this.uploadDir, relative);
-    if (!absolutePath.startsWith(path.resolve(this.uploadDir))) {
-      throw new AppError(400, 'Invalid file path');
-    }
+    const absolutePath = resolveStoredUploadAbsolutePath(this.uploadDir, tr.filePath);
     if (!fs.existsSync(absolutePath)) {
       throw new AppError(404, 'Transcript file missing on server');
     }
@@ -559,7 +556,7 @@ export class StudentServicesService {
     }
 
     const studyYear = studyYearFromSemester(student.currentSemester);
-    const profilesDir = path.join(this.uploadDir, 'profiles');
+    const profilesDir = path.join(this.uploadDir, 'private', 'profiles');
     if (!fs.existsSync(profilesDir)) {
       fs.mkdirSync(profilesDir, { recursive: true });
     }
@@ -703,7 +700,7 @@ export class StudentServicesService {
       throw new AppError(400, 'Clearance fee not paid');
     }
 
-    const clearancesDir = path.join(this.uploadDir, 'clearances');
+    const clearancesDir = path.join(this.uploadDir, 'private', 'clearances');
     if (!fs.existsSync(clearancesDir)) {
       fs.mkdirSync(clearancesDir, { recursive: true });
     }
@@ -724,7 +721,7 @@ export class StudentServicesService {
       absolutePath
     );
 
-    const filePath = `/uploads/clearances/${fileName}`;
+    const filePath = `/uploads/private/clearances/${fileName}`;
     const updated = await this.repo.updateClearance(id, {
       status: 'DELIVERED',
       filePath,
@@ -762,11 +759,7 @@ export class StudentServicesService {
       throw new AppError(403, 'Forbidden');
     }
 
-    const relative = row.filePath.replace(/^\/uploads\/?/, '');
-    const absolutePath = path.resolve(this.uploadDir, relative);
-    if (!absolutePath.startsWith(path.resolve(this.uploadDir))) {
-      throw new AppError(400, 'Invalid file path');
-    }
+    const absolutePath = resolveStoredUploadAbsolutePath(this.uploadDir, row.filePath);
     if (!fs.existsSync(absolutePath)) {
       throw new AppError(404, 'Clearance file missing on server');
     }

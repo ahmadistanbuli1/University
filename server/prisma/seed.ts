@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { seedCollegeManagers } from './seed-managers.js';
@@ -11,6 +13,19 @@ import { seedNewsDemo } from './seed-news.js';
 import { seedExamOfficer } from './seed-exam-officer.js';
 
 const prisma = new PrismaClient();
+
+function ensureSampleLibraryPdf() {
+  const uploadRoot = path.resolve(process.env.UPLOAD_DIR ?? './uploads');
+  const targetDir = path.join(uploadRoot, 'public', 'library');
+  fs.mkdirSync(targetDir, { recursive: true });
+  const target = path.join(targetDir, 'sample-placeholder.pdf');
+  if (!fs.existsSync(target)) {
+    fs.writeFileSync(
+      target,
+      Buffer.from('%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n')
+    );
+  }
+}
 
 async function seedStaffAndContent(password: string) {
   const deptInfoEng = await prisma.department.findUniqueOrThrow({ where: { code: 'INFO_ENG' } });
@@ -48,7 +63,7 @@ async function seedStaffAndContent(password: string) {
   await prisma.book.create({
     data: {
       title: 'Introduction to Algorithms',
-      filePath: '/uploads/sample-placeholder.pdf',
+      filePath: '/uploads/library/sample-placeholder.pdf',
       category: 'PROGRAMMING',
       departmentId: deptInfoEng.id,
       addedById: librarian.id,
@@ -62,6 +77,7 @@ async function seedStaffAndContent(password: string) {
   await prisma.news.create({
     data: {
       title: 'Welcome to the new portal',
+      summary: 'The university web system is now live.',
       content: 'The university web system is now live.',
       category: 'ANNOUNCEMENT',
       authorId: admin.id,
@@ -76,6 +92,7 @@ async function seedStaffAndContent(password: string) {
     await prisma.news.create({
       data: {
         title: 'Information Engineering town hall',
+        summary: 'Join us this Friday for the college town hall.',
         content: 'Join us this Friday.',
         category: 'ANNOUNCEMENT',
         authorId: infoEngManager.id,
@@ -94,6 +111,7 @@ async function seedStaffAndContent(password: string) {
 }
 
 async function main() {
+  ensureSampleLibraryPdf();
   await seedUniversityStructure(prisma);
 
   const password = await bcrypt.hash(SEED_STUDENT_PASSWORD, 10);

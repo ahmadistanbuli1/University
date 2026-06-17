@@ -4,6 +4,9 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import path, { resolve } from 'node:path';
 import type { Env } from './config.js';
+import { parseClientOrigins } from './config.js';
+import { ensureUploadDirs } from './lib/upload-paths.js';
+import { apiRateLimiter } from './middleware/rate-limit.js';
 import { prisma } from './lib/prisma.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { createAuthenticateMiddleware, optionalAuthenticate } from './middleware/authenticate.js';
@@ -72,13 +75,26 @@ import { createGradeSubmissionsRouter } from './domains/gradeSubmissions/grade-s
 
 export function createApp(env: Env) {
   const app = express();
+  const uploadRoot = resolve(env.UPLOAD_DIR);
+  ensureUploadDirs(uploadRoot);
+
   if (env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
   }
-  app.use(helmet());
-  app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    })
+  );
+  app.use(
+    cors({
+      origin: parseClientOrigins(env.CLIENT_ORIGIN),
+      credentials: true,
+    })
+  );
   app.use(cookieParser());
-  app.use(express.json());
+  app.use(express.json({ limit: '512kb' }));
+  app.use('/api', apiRateLimiter);
 
   const authenticate = createAuthenticateMiddleware(env);
   const optionalAuth = optionalAuthenticate(env);
@@ -130,7 +146,7 @@ export function createApp(env: Env) {
 
   const tuitionRepo = new TuitionRepository(prisma);
   const tuitionService = new TuitionService(tuitionRepo, auditService, notificationDispatch);
-  const tuitionController = new TuitionController(tuitionService);
+  const tuitionController = new TuitionController(tuitionService, uploadRoot);
 
   const curriculumRepo = new CurriculumRepository(prisma);
   const curriculumService = new CurriculumService(curriculumRepo, auditService);
@@ -154,7 +170,7 @@ export function createApp(env: Env) {
     res.json({ status: 'ok' });
   });
 
-  app.use('/uploads', express.static(path.resolve(env.UPLOAD_DIR)));
+  app.use('/uploads', express.static(path.join(uploadRoot, 'public')));
 
   app.use('/api/auth', createAuthRouter(authController, authenticate, optionalAuth));
   app.use('/api/users', createUsersRouter(usersController, authenticate));

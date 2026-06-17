@@ -8,9 +8,11 @@ import {
   useCollegesQuery,
   useCreateNewsMutation,
   useDeleteNewsMutation,
+  useNewsDetailQuery,
   useNewsListQuery,
   useUpdateNewsMutation,
 } from '../api/hooks.js';
+import { NewsGalleryUpload } from '../components/news/NewsGalleryUpload.js';
 import { MotionDialog } from '../components/motion/MotionDialog.js';
 import { Alert } from '../components/ui/Alert.js';
 import { Button } from '../components/ui/Button.js';
@@ -28,6 +30,7 @@ import { NEWS_CATEGORIES, newsCategoryLabel } from '../lib/news-categories.js';
 
 const publishSchema = z.object({
   title: z.string().min(1),
+  summary: z.string().min(1).max(500),
   content: z.string().min(1),
   category: z.enum(['ANNOUNCEMENT', 'WORKSHOP', 'TRAINING', 'TUITION']),
   collegeId: z.string().optional(),
@@ -40,7 +43,8 @@ type PublishValues = z.infer<typeof publishSchema>;
 type NewsItem = {
   id: string;
   title: string;
-  content: string;
+  summary?: string;
+  content?: string;
   createdAt: string;
   imageUrl?: string | null;
   category?: string;
@@ -48,6 +52,7 @@ type NewsItem = {
   tuitionSemesterKey?: string | null;
   college?: { id: string; name: string } | null;
   author?: { name?: string };
+  galleryImages?: Array<{ id: string; imageUrl: string }>;
 };
 
 function tuitionPayload(vals: PublishValues) {
@@ -63,12 +68,19 @@ function tuitionPayload(vals: PublishValues) {
 export function AdminNewsPage() {
   const { t } = useTranslation('nav');
   const [page, setPage] = useState(1);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [editing, setEditing] = useState<NewsItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<NewsItem | null>(null);
-  const [editImageFile, setEditImageFile] = useState<File | null>(null);
-  const [editImageCleared, setEditImageCleared] = useState(false);
+  const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
+  const [editCoverCleared, setEditCoverCleared] = useState(false);
+  const [editGalleryFiles, setEditGalleryFiles] = useState<File[]>([]);
+  const [removedGalleryIds, setRemovedGalleryIds] = useState<string[]>([]);
   const { data, isLoading, isError } = useNewsListQuery(page, 20);
+  const { data: editingDetail, isLoading: editDetailLoading } = useNewsDetailQuery(
+    editing?.id ?? '',
+    !!editing
+  );
   const { data: colleges } = useCollegesQuery();
   const create = useCreateNewsMutation();
   const update = useUpdateNewsMutation();
@@ -84,6 +96,7 @@ export function AdminNewsPage() {
     resolver: zodResolver(publishSchema),
     defaultValues: {
       title: '',
+      summary: '',
       content: '',
       category: 'ANNOUNCEMENT' as const,
       collegeId: '',
@@ -96,6 +109,7 @@ export function AdminNewsPage() {
     resolver: zodResolver(publishSchema),
     defaultValues: {
       title: '',
+      summary: '',
       content: '',
       category: 'ANNOUNCEMENT' as const,
       collegeId: '',
@@ -109,23 +123,28 @@ export function AdminNewsPage() {
   const editCategory = editForm.watch('category');
   const editEnablePayNow = editForm.watch('enablePayNow');
 
+  const detail = editingDetail as NewsItem | undefined;
+
   useEffect(() => {
-    if (!editing) return;
+    if (!editing || !detail) return;
     const tuitionKey =
-      editing.tuitionSemesterKey === 'semester-1' || editing.tuitionSemesterKey === 'semester-2'
-        ? editing.tuitionSemesterKey
+      detail.tuitionSemesterKey === 'semester-1' || detail.tuitionSemesterKey === 'semester-2'
+        ? detail.tuitionSemesterKey
         : 'semester-2';
     editForm.reset({
-      title: editing.title,
-      content: editing.content,
-      category: (editing.category ?? 'ANNOUNCEMENT') as PublishValues['category'],
-      collegeId: editing.college?.id ?? '',
-      enablePayNow: editing.enablePayNow ?? false,
+      title: detail.title,
+      summary: detail.summary ?? '',
+      content: detail.content ?? '',
+      category: (detail.category ?? 'ANNOUNCEMENT') as PublishValues['category'],
+      collegeId: detail.college?.id ?? '',
+      enablePayNow: detail.enablePayNow ?? false,
       tuitionSemesterKey: tuitionKey,
     });
-    setEditImageFile(null);
-    setEditImageCleared(false);
-  }, [editing, editForm]);
+    setEditCoverFile(null);
+    setEditCoverCleared(false);
+    setEditGalleryFiles([]);
+    setRemovedGalleryIds([]);
+  }, [editing, detail, editForm]);
 
   if (isLoading && !data) return <LoadingState />;
   if (isError && !data) return <Alert variant="error">{t('messages.loadError')}</Alert>;
@@ -136,7 +155,7 @@ export function AdminNewsPage() {
     <section className="flex flex-col gap-8">
       <PageHeader title={t('headings.adminNews')} />
 
-      <Card className="max-w-xl">
+      <Card className="max-w-2xl">
         <h2 className="m-0 mb-4 text-lg font-semibold text-zinc-900 dark:text-white">
           {t('labels.publishNews')}
         </h2>
@@ -148,35 +167,44 @@ export function AdminNewsPage() {
               {
                 body: {
                   title: vals.title,
+                  summary: vals.summary,
                   content: vals.content,
                   category: vals.category,
                   collegeId: vals.collegeId || null,
                   ...tuition,
                 },
-                imageFile,
+                coverFile,
+                galleryFiles,
               },
               {
                 onSuccess: () => {
                   toast.success(t('messages.newsCreated'));
                   reset();
-                  setImageFile(null);
+                  setCoverFile(null);
+                  setGalleryFiles([]);
                 },
                 onError: () => toast.error(t('messages.loadError')),
               }
             );
           })}
         >
-          <NewsImageUpload
-            file={imageFile}
-            onFileChange={setImageFile}
-            disabled={create.isPending}
-          />
+          <NewsImageUpload file={coverFile} onFileChange={setCoverFile} disabled={create.isPending} />
           <Field label={t('labels.title')} error={errors.title?.message}>
             <Input {...register('title')} />
           </Field>
-          <Field label={t('labels.content')} error={errors.content?.message}>
-            <Textarea rows={5} {...register('content')} />
+          <Field label={t('news.summary')} error={errors.summary?.message}>
+            <Textarea rows={3} {...register('summary')} placeholder={t('news.summaryHint')} />
           </Field>
+          <Field label={t('news.fullContent')} error={errors.content?.message}>
+            <Textarea rows={8} {...register('content')} />
+          </Field>
+          <NewsGalleryUpload
+            newFiles={galleryFiles}
+            onNewFilesChange={setGalleryFiles}
+            removedIds={[]}
+            onToggleRemoveExisting={() => undefined}
+            disabled={create.isPending}
+          />
           <Field label={t('news.filterCategory')}>
             <Select {...register('category')}>
               {NEWS_CATEGORIES.map((c) => (
@@ -237,12 +265,7 @@ export function AdminNewsPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setEditing(n)}
-                  >
+                  <Button type="button" variant="secondary" size="sm" onClick={() => setEditing(n)}>
                     {t('news.edit')}
                   </Button>
                   <Button
@@ -255,10 +278,7 @@ export function AdminNewsPage() {
                   </Button>
                 </div>
               </div>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-300">
-                {n.content.slice(0, 400)}
-                {n.content.length > 400 ? '…' : ''}
-              </p>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{n.summary ?? '—'}</p>
             </div>
           </Card>
         ))}
@@ -314,94 +334,116 @@ export function AdminNewsPage() {
         open={!!editing}
         onClose={() => setEditing(null)}
         title={t('news.editNews')}
-        className="max-w-xl"
+        className="max-w-2xl"
       >
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={editForm.handleSubmit((vals) => {
-            if (!editing) return;
-            const tuition = tuitionPayload(vals);
-            update.mutate(
-              {
-                id: editing.id,
-                body: {
-                  title: vals.title,
-                  content: vals.content,
-                  category: vals.category,
-                  collegeId: vals.collegeId || null,
-                  ...tuition,
-                  ...(editImageCleared ? { imageUrl: null } : {}),
+        {editDetailLoading && !detail ? (
+          <LoadingState />
+        ) : (
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={editForm.handleSubmit((vals) => {
+              if (!editing) return;
+              const tuition = tuitionPayload(vals);
+              update.mutate(
+                {
+                  id: editing.id,
+                  body: {
+                    title: vals.title,
+                    summary: vals.summary,
+                    content: vals.content,
+                    category: vals.category,
+                    collegeId: vals.collegeId || null,
+                    ...tuition,
+                    ...(editCoverCleared ? { imageUrl: null } : {}),
+                    removedGalleryIds,
+                  },
+                  coverFile: editCoverFile,
+                  galleryFiles: editGalleryFiles,
                 },
-                imageFile: editImageFile,
-              },
-              {
-                onSuccess: () => {
-                  toast.success(t('news.updated'));
-                  setEditing(null);
-                },
-                onError: () => toast.error(t('messages.loadError')),
+                {
+                  onSuccess: () => {
+                    toast.success(t('news.updated'));
+                    setEditing(null);
+                  },
+                  onError: () => toast.error(t('messages.loadError')),
+                }
+              );
+            })}
+          >
+            <NewsImageUpload
+              file={editCoverFile}
+              onFileChange={setEditCoverFile}
+              previewUrl={detail?.imageUrl}
+              previewCleared={editCoverCleared}
+              onClearPreview={() => setEditCoverCleared(true)}
+              disabled={update.isPending}
+            />
+            <Field label={t('labels.title')} error={editForm.formState.errors.title?.message}>
+              <Input {...editForm.register('title')} />
+            </Field>
+            <Field label={t('news.summary')} error={editForm.formState.errors.summary?.message}>
+              <Textarea rows={3} {...editForm.register('summary')} />
+            </Field>
+            <Field label={t('news.fullContent')} error={editForm.formState.errors.content?.message}>
+              <Textarea rows={8} {...editForm.register('content')} />
+            </Field>
+            <NewsGalleryUpload
+              newFiles={editGalleryFiles}
+              onNewFilesChange={setEditGalleryFiles}
+              existing={detail?.galleryImages}
+              removedIds={removedGalleryIds}
+              onToggleRemoveExisting={(id) =>
+                setRemovedGalleryIds((prev) =>
+                  prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                )
               }
-            );
-          })}
-        >
-          <NewsImageUpload
-            file={editImageFile}
-            onFileChange={setEditImageFile}
-            previewUrl={editing?.imageUrl}
-            previewCleared={editImageCleared}
-            onClearPreview={() => setEditImageCleared(true)}
-            disabled={update.isPending}
-          />
-          <Field label={t('labels.title')} error={editForm.formState.errors.title?.message}>
-            <Input {...editForm.register('title')} />
-          </Field>
-          <Field label={t('labels.content')} error={editForm.formState.errors.content?.message}>
-            <Textarea rows={5} {...editForm.register('content')} />
-          </Field>
-          <Field label={t('news.filterCategory')}>
-            <Select {...editForm.register('category')}>
-              {NEWS_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {newsCategoryLabel(c, t)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label={t('news.targetCollege')}>
-            <Select {...editForm.register('collegeId')}>
-              <option value="">{t('news.universityWide')}</option>
-              {colleges?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          {editCategory === 'TUITION' ? (
-            <>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" {...editForm.register('enablePayNow')} />
-                {t('tuition.enablePaymentOnDashboard')}
-              </label>
-              {editEnablePayNow ? (
-                <Field label={t('tuition.tuitionSemesterTarget')}>
-                  <Select {...editForm.register('tuitionSemesterKey')}>
-                    <option value="semester-1">{t('tuition.payFirstSemesterFees')}</option>
-                    <option value="semester-2">{t('tuition.paySecondSemesterFees')}</option>
-                  </Select>
-                </Field>
-              ) : null}
-            </>
-          ) : null}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
-              {t('labels.cancel')}
-            </Button>
-            <Button type="submit" disabled={update.isPending}>
-              {t('labels.save')}
-            </Button>
-          </div>
-        </form>
+              disabled={update.isPending}
+            />
+            <Field label={t('news.filterCategory')}>
+              <Select {...editForm.register('category')}>
+                {NEWS_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {newsCategoryLabel(c, t)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t('news.targetCollege')}>
+              <Select {...editForm.register('collegeId')}>
+                <option value="">{t('news.universityWide')}</option>
+                {colleges?.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            {editCategory === 'TUITION' ? (
+              <>
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" {...editForm.register('enablePayNow')} />
+                  {t('tuition.enablePaymentOnDashboard')}
+                </label>
+                {editEnablePayNow ? (
+                  <Field label={t('tuition.tuitionSemesterTarget')}>
+                    <Select {...editForm.register('tuitionSemesterKey')}>
+                      <option value="semester-1">{t('tuition.payFirstSemesterFees')}</option>
+                      <option value="semester-2">{t('tuition.paySecondSemesterFees')}</option>
+                    </Select>
+                  </Field>
+                ) : null}
+              </>
+            ) : null}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
+                {t('labels.cancel')}
+              </Button>
+              <Button type="submit" disabled={update.isPending}>
+                {t('labels.save')}
+              </Button>
+            </div>
+          </form>
+        )}
       </MotionDialog>
     </section>
   );

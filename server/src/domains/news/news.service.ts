@@ -6,6 +6,8 @@ import type { NotificationDispatchService } from '../notifications/notification.
 
 type NewsCategoryInput = NewsCategory;
 
+type GalleryInput = Array<{ imageUrl: string; sortOrder: number }>;
+
 export class NewsService {
   constructor(
     private readonly repo: NewsRepository,
@@ -35,13 +37,37 @@ export class NewsService {
     return item;
   }
 
+  private async applyGalleryChanges(
+    newsId: string,
+    gallery: GalleryInput | undefined,
+    removedGalleryIds: string[] | undefined
+  ) {
+    if (removedGalleryIds?.length) {
+      await this.repo.deleteGalleryImages(removedGalleryIds);
+    }
+    if (gallery?.length) {
+      const max = await this.repo.maxGallerySortOrder(newsId);
+      const base = (max._max.sortOrder ?? -1) + 1;
+      await this.repo.addGalleryImages(
+        newsId,
+        gallery.map((img, index) => ({
+          imageUrl: img.imageUrl,
+          sortOrder: base + index,
+        }))
+      );
+    }
+    return this.repo.findById(newsId);
+  }
+
   async createNews(input: {
     authorId: string;
     role: UserRole;
     collegeId: string | null | undefined;
     title: string;
+    summary: string;
     content: string;
     imageUrl?: string | null;
+    gallery?: GalleryInput;
     authorCollegeId: string | null;
     category?: NewsCategoryInput;
     enablePayNow?: boolean;
@@ -54,16 +80,20 @@ export class NewsService {
       const tuitionSemesterKey =
         enablePayNow && input.tuitionSemesterKey ? input.tuitionSemesterKey : null;
 
-      const news = await this.repo.create({
-        title: input.title,
-        content: input.content,
-        imageUrl: input.imageUrl ?? undefined,
-        category,
-        enablePayNow,
-        tuitionSemesterKey,
-        author: { connect: { id: input.authorId } },
-        college: input.collegeId ? { connect: { id: input.collegeId } } : undefined,
-      });
+      const news = await this.repo.create(
+        {
+          title: input.title,
+          summary: input.summary,
+          content: input.content,
+          imageUrl: input.imageUrl ?? undefined,
+          category,
+          enablePayNow,
+          tuitionSemesterKey,
+          author: { connect: { id: input.authorId } },
+          college: input.collegeId ? { connect: { id: input.collegeId } } : undefined,
+        },
+        input.gallery
+      );
       await this.audit?.log({
         userId: input.authorId,
         action: 'CREATE_NEWS',
@@ -99,16 +129,20 @@ export class NewsService {
         }
       }
 
-      const news = await this.repo.create({
-        title: input.title,
-        content: input.content,
-        imageUrl: input.imageUrl ?? undefined,
-        category,
-        enablePayNow: false,
-        tuitionSemesterKey: null,
-        author: { connect: { id: input.authorId } },
-        college: collegeId ? { connect: { id: collegeId } } : undefined,
-      });
+      const news = await this.repo.create(
+        {
+          title: input.title,
+          summary: input.summary,
+          content: input.content,
+          imageUrl: input.imageUrl ?? undefined,
+          category,
+          enablePayNow: false,
+          tuitionSemesterKey: null,
+          author: { connect: { id: input.authorId } },
+          college: collegeId ? { connect: { id: collegeId } } : undefined,
+        },
+        input.gallery
+      );
       await this.audit?.log({
         userId: input.authorId,
         action: 'CREATE_NEWS',
@@ -132,12 +166,15 @@ export class NewsService {
     actor: { id: string; role: UserRole; collegeId: string | null },
     data: {
       title?: string;
+      summary?: string;
       content?: string;
       imageUrl?: string | null;
       collegeId?: string | null;
       category?: NewsCategoryInput;
       enablePayNow?: boolean;
       tuitionSemesterKey?: 'semester-1' | 'semester-2' | null;
+      gallery?: GalleryInput;
+      removedGalleryIds?: string[];
     }
   ) {
     const existing = await this.repo.findById(id);
@@ -150,8 +187,9 @@ export class NewsService {
         category === 'TUITION'
           ? data.enablePayNow ?? existing.enablePayNow
           : false;
-      const updated = await this.repo.update(id, {
+      await this.repo.update(id, {
         title: data.title,
+        summary: data.summary,
         content: data.content,
         imageUrl: data.imageUrl,
         category: data.category,
@@ -164,31 +202,34 @@ export class NewsService {
             : { college: { disconnect: true } }
           : {}),
       });
+      const refreshed = await this.applyGalleryChanges(id, data.gallery, data.removedGalleryIds);
       await this.audit?.log({
         userId: actor.id,
         action: 'UPDATE_NEWS',
         entity: 'news',
         entityId: id,
       });
-      return updated;
+      return refreshed!;
     }
     if (actor.role === 'MANAGER') {
       if (!actor.collegeId || existing.collegeId !== actor.collegeId) {
         throw new AppError(403, 'Forbidden');
       }
-      const updated = await this.repo.update(id, {
+      await this.repo.update(id, {
         title: data.title,
+        summary: data.summary,
         content: data.content,
         imageUrl: data.imageUrl,
         category: data.category === 'TUITION' ? undefined : data.category,
       });
+      const refreshed = await this.applyGalleryChanges(id, data.gallery, data.removedGalleryIds);
       await this.audit?.log({
         userId: actor.id,
         action: 'UPDATE_NEWS',
         entity: 'news',
         entityId: id,
       });
-      return updated;
+      return refreshed!;
     }
     throw new AppError(403, 'Forbidden');
   }

@@ -16,16 +16,37 @@ const imageUrlSchema = z
   .nullable()
   .transform((v) => (v === '' || v == null ? null : v));
 
+const removedGalleryIdsSchema = z
+  .union([
+    z.array(z.string().uuid()),
+    z.string().transform((raw, ctx) => {
+      try {
+        const parsed = JSON.parse(raw) as unknown;
+        const result = z.array(z.string().uuid()).safeParse(parsed);
+        if (!result.success) {
+          ctx.addIssue({ code: 'custom', message: 'Invalid removedGalleryIds' });
+          return z.NEVER;
+        }
+        return result.data;
+      } catch {
+        ctx.addIssue({ code: 'custom', message: 'Invalid removedGalleryIds JSON' });
+        return z.NEVER;
+      }
+    }),
+  ])
+  .optional();
+
 const newsBodySchema = z.object({
   title: z.string().min(1),
+  summary: z.string().min(1).max(500),
   content: z.string().min(1),
   imageUrl: imageUrlSchema,
   collegeId: z.string().uuid().optional().nullable(),
   category: z.enum(NEWS_CONTENT_CATEGORIES).optional(),
   enablePayNow: z.boolean().optional(),
   tuitionSemesterKey: z.enum(['semester-1', 'semester-2']).optional().nullable(),
-  /** MANAGER: college-only post vs university-wide (collegeId cleared). */
   scope: z.enum(['COLLEGE', 'UNIVERSITY']).optional(),
+  removedGalleryIds: removedGalleryIdsSchema,
 });
 
 export const createNewsSchema = newsBodySchema.superRefine((data, ctx) => {
@@ -43,20 +64,10 @@ export const createNewsSchema = newsBodySchema.superRefine((data, ctx) => {
       path: ['category'],
     });
   }
-  if (
-    data.scope === 'UNIVERSITY' &&
-    data.category &&
-    data.category !== 'ANNOUNCEMENT' &&
-    data.category !== 'WORKSHOP' &&
-    data.category !== 'TRAINING'
-  ) {
-    // TUITION only via admin without scope
-  }
 });
 
 export const updateNewsSchema = newsBodySchema.partial();
 
-/** Multipart form fields arrive as strings */
 export function parseNewsFormBody(raw: Record<string, unknown>) {
   const enablePayNow =
     raw.enablePayNow === true ||
@@ -64,6 +75,7 @@ export function parseNewsFormBody(raw: Record<string, unknown>) {
     raw.enablePayNow === '1';
   return createNewsSchema.parse({
     title: raw.title,
+    summary: raw.summary,
     content: raw.content,
     imageUrl: raw.imageUrl,
     collegeId: raw.collegeId === '' ? null : raw.collegeId,
@@ -74,6 +86,7 @@ export function parseNewsFormBody(raw: Record<string, unknown>) {
         ? null
         : raw.tuitionSemesterKey,
     scope: raw.scope || undefined,
+    removedGalleryIds: raw.removedGalleryIds,
   });
 }
 
@@ -81,12 +94,14 @@ export function parseNewsUpdateBody(raw: Record<string, unknown>) {
   const patch: Record<string, unknown> = {};
   for (const key of [
     'title',
+    'summary',
     'content',
     'imageUrl',
     'collegeId',
     'category',
     'tuitionSemesterKey',
     'scope',
+    'removedGalleryIds',
   ] as const) {
     if (raw[key] !== undefined) patch[key] = raw[key] === '' ? null : raw[key];
   }

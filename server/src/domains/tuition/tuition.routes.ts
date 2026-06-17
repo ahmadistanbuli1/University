@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import type { RequestHandler } from 'express';
-import multer from 'multer';
-import fs from 'node:fs';
 import { asyncHandler } from '../../utils/asyncHandler.js';
+import { validateUploadMagic } from '../../lib/file-magic.js';
+import { createDiskUpload } from '../../lib/multer-upload.js';
 import { requireRoles } from '../../middleware/requireRoles.js';
 import type { TuitionController } from './tuition.controller.js';
 import type { Env } from '../../config.js';
+
+const PROOF_MAGIC = ['pdf', 'jpeg', 'png', 'webp', 'gif'] as const;
 
 export function createTuitionRouter(
   controller: TuitionController,
@@ -13,30 +15,13 @@ export function createTuitionRouter(
   env: Env
 ) {
   const r = Router();
-  fs.mkdirSync(env.UPLOAD_DIR, { recursive: true });
-  const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, env.UPLOAD_DIR),
-    filename: (_req, file, cb) => {
-      const safe = `discount-${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      cb(null, safe);
-    },
+  const upload = createDiskUpload(env.UPLOAD_DIR, {
+    category: 'discounts',
+    maxBytes: 10 * 1024 * 1024,
+    allowedMagic: [...PROOF_MAGIC],
+    allowedMime: /^(image\/(jpeg|png|webp|gif)|application\/pdf)$/,
   });
-  const upload = multer({
-    storage,
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (_req, file, cb) => {
-      const ok =
-        file.mimetype.startsWith('image/') ||
-        file.mimetype === 'application/pdf' ||
-        file.mimetype === 'application/msword' ||
-        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      if (!ok) {
-        cb(new Error('Proof must be an image or PDF/DOC file'));
-        return;
-      }
-      cb(null, true);
-    },
-  });
+  const validateProofMagic = validateUploadMagic([...PROOF_MAGIC]);
 
   r.use(authenticate);
 
@@ -59,6 +44,7 @@ export function createTuitionRouter(
     '/discounts',
     requireRoles('STUDENT', 'FACULTY'),
     upload.single('proof'),
+    validateProofMagic,
     asyncHandler(controller.submitDiscount.bind(controller))
   );
   r.get(
@@ -70,6 +56,11 @@ export function createTuitionRouter(
     '/discounts',
     requireRoles('ADMIN'),
     asyncHandler(controller.listDiscounts.bind(controller))
+  );
+  r.get(
+    '/discounts/:id/proof',
+    requireRoles('STUDENT', 'FACULTY', 'ADMIN'),
+    asyncHandler(controller.downloadDiscountProof.bind(controller))
   );
   r.patch(
     '/discounts/:id/review',

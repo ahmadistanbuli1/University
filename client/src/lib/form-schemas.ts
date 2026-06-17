@@ -1,14 +1,23 @@
 import { z } from 'zod';
 
+const passwordField = z
+  .string()
+  .min(8, { message: 'Min 8 characters' })
+  .max(128)
+  .regex(/[A-Za-z]/, { message: 'Include at least one letter' })
+  .regex(/[0-9]/, { message: 'Include at least one number' });
+
+const optionalPasswordField = z.union([z.literal(''), passwordField]);
+
 export const loginFormSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6, { message: 'Min 6 characters' }),
+  password: z.string().min(1, { message: 'Required' }),
 });
 
 export const registerFormSchema = z.object({
   name: z.string().min(1, { message: 'Required' }),
   email: z.string().email(),
-  password: z.string().min(6, { message: 'Min 6 characters' }),
+  password: passwordField,
   departmentId: z.string().uuid({ message: 'Select your department' }),
   academicNumber: z
     .string()
@@ -82,7 +91,7 @@ export const adminCreateUserFormSchema = z
   .object({
     name: z.string().min(1),
     email: z.string().email(),
-    password: z.string().min(6),
+    password: passwordField,
     role: userRoleEnum,
     collegeId: z.union([z.literal(''), z.string().uuid()]),
     departmentId: z.union([z.literal(''), z.string().uuid()]),
@@ -108,7 +117,7 @@ export const adminEditUserFormSchema = z.object({
   role: userRoleEnum,
   collegeId: z.union([z.literal(''), z.string().uuid()]),
   active: z.boolean(),
-  password: z.union([z.literal(''), z.string().min(6)]),
+  password: optionalPasswordField,
   departmentId: z.union([z.literal(''), z.string().uuid()]).optional(),
   academicNumber: z.string().optional(),
   currentSemester: z.coerce.number().int().min(1).max(10).optional(),

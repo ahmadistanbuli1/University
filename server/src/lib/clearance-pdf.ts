@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import PDFDocument from 'pdfkit';
 import { studyYearFromSemester } from '../domains/academic/study-plan.js';
+import { drawUniversityPdfHeader, UNIVERSITY_NAME } from './pdf-branding.js';
 
 export type ClearancePdfData = {
   studentName: string;
@@ -31,17 +32,12 @@ export async function generateClearancePdf(
     const stream = fs.createWriteStream(outputAbsolutePath);
     doc.pipe(stream);
 
-    doc
-      .fontSize(20)
-      .font('Helvetica-Bold')
-      .fillColor('#025692')
-      .text('North Private University', { align: 'center' });
-    doc
-      .fontSize(14)
-      .fillColor('#334155')
-      .font('Helvetica-Bold')
-      .text('Clearance Certificate', { align: 'center' });
-    doc.moveDown(1.5);
+    const contentTop = drawUniversityPdfHeader(doc, {
+      subtitle: 'Clearance Certificate',
+      margin: 56,
+    });
+
+    doc.y = contentTop;
 
     doc.fontSize(11).font('Helvetica').fillColor('#1e293b');
     doc.text(
@@ -68,7 +64,7 @@ export async function generateClearancePdf(
     doc.moveDown(1);
     doc.fontSize(10).fillColor('#64748b').text(`Issued on ${dateStr}`, { align: 'left' });
     doc.moveDown(2);
-    doc.text('Student Affairs Office — North Private University', { align: 'center' });
+    doc.text(`Student Affairs Office — ${UNIVERSITY_NAME}`, { align: 'center' });
 
     stream.on('finish', resolve);
     stream.on('error', reject);
